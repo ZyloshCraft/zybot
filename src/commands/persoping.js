@@ -1,0 +1,113 @@
+import { generateForwardMessageContent, generateWAMessageFromContent, jidNormalizedUser } from '@whiskeysockets/baileys';
+import { replyOrEditTemporary, replyOrEdit } from '../utils/stealth.js';
+import { findMessageById } from '../services/messageStore.js';
+
+export default {
+  name: 'persoping',
+  description: 'Copie le message cité en privé (suppression automatique de la trace après 5s)',
+  async execute({ sock, msg, jid }) {
+    const msgContent = msg.message;
+    const contextInfo =
+      msgContent?.extendedTextMessage?.contextInfo ||
+      msgContent?.[Object.keys(msgContent || {})[0]]?.contextInfo;
+
+    const quotedMessage = contextInfo?.quotedMessage;
+
+    if (!quotedMessage) {
+      await replyOrEditTemporary(sock, jid, msg, 'Usage : Répondez à un message avec /persoping', 5000);
+      return;
+    }
+
+    const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
+    if (!selfJid) {
+      await replyOrEditTemporary(sock, jid, msg, 'Erreur : JID personnel introuvable', 5000);
+      return;
+    }
+
+    const quotedSender = contextInfo.participant || contextInfo.remoteJid || 'Inconnu';
+    const authorNumber = quotedSender.split('@')[0];
+    const stanzaId = contextInfo.stanzaId;
+
+    // Retrouver la date et heure d'envoi originale du message cité
+    const originalEntry = findMessageById(stanzaId);
+    let originalDateStr = '';
+
+    if (originalEntry?.timestamp) {
+      originalDateStr = new Date(originalEntry.timestamp).toLocaleString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } else {
+      originalDateStr = 'Date antérieure à l\'historique récent';
+    }
+
+    // Origine (groupe ou privé)
+    let originName = 'Discussion privée';
+    if (jid.endsWith('@g.us')) {
+      try {
+        const meta = await sock.groupMetadata(jid);
+        originName = meta?.subject ? `Groupe "${meta.subject}"` : 'Groupe';
+      } catch (e) {
+        originName = 'Groupe';
+      }
+    }
+
+    // Métadonnées complètes envoyées uniquement en privé
+    const metaHeader = [
+      '📌 *Message sauvegardé*',
+      `• Auteur : +${authorNumber}`,
+      `• Date d'envoi originale : ${originalDateStr}`,
+      `• Origine : ${originName}`,
+      `• ID : \`${stanzaId || 'N/A'}\``
+    ].join('\n');
+
+    try {
+      // 1. Envoyer les infos détaillées dans votre chat privé
+      await sock.sendMessage(selfJid, { text: metaHeader });
+
+      // 2. Transférer le message cité original
+      const forwardContent = generateForwardMessageContent(
+        {
+          key: {
+            fromMe: false,
+            remoteJid: jid,
+            id: stanzaId || ''
+          },
+          message: quotedMessage
+        },
+        true
+      );
+
+      const forwardWaMsg = generateWAMessageFromContent(selfJid, forwardContent, {});
+      await sock.relayMessage(selfJid, forwardWaMsg.message, { messageId: forwardWaMsg.key.id });
+
+      // 3. Modifier la commande en "Sauvegardé en privé", puis la supprimer après 5 secondes pour tout le monde
+      await replyOrEditTemporary(sock, jid, msg, 'Sauvegardé en privé', 5000);
+    } catch (err) {
+      console.error('Erreur persoping:', err);
+
+      // Fallback textuel
+      try {
+        const textFallback =
+          quotedMessage.conversation ||
+          quotedMessage.extendedTextMessage?.text ||
+          quotedMessage.imageMessage?.caption ||
+          quotedMessage.videoMessage?.caption;
+
+        if (textFallback) {
+          await sock.sendMessage(selfJid, {
+            text: `Contenu du message :\n> ${textFallback}`
+          });
+          await replyOrEditTemporary(sock, jid, msg, 'Sauvegardé en privé', 5000);
+          return;
+        }
+      } catch (fbErr) {}
+
+      await replyOrEditTemporary(sock, jid, msg, `Erreur persoping : ${err.message}`, 5000);
+    }
+  }
+};

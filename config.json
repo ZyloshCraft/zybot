@@ -1,0 +1,21 @@
+{
+  "prefix": "/",
+  "vacances": {
+    "enabled": false,
+    "message": "Bonjour, je suis actuellement indisponible. Je vous répondrai dès que possible !",
+    "cooldownMinutes": 120
+  },
+  "vacancesLog": {},
+  "alerts": {
+    "enabled": true,
+    "words": [
+      "important",
+      "reunion"
+    ]
+  },
+  "stealth": {
+    "enabled": true,
+    "humanTypingMinMs": 1500,
+    "humanTypingMaxMs": 3500
+  }
+}
