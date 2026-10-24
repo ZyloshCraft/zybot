@@ -1,4 +1,3 @@
-import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { getConfig } from '../config.js';
 
 export function sleep(ms) {
@@ -48,23 +47,24 @@ export async function replyOrEdit(sock, jid, msg, text) {
 }
 
 /**
- * Affiche une réponse en modifiant le message de commande, puis le supprime
- * automatiquement après un délai (par défaut 5 secondes) pour ne laisser aucune preuve.
+ * Affiche une réponse en modifiant le message de commande.
+ * RÈGLE DE FURTIVITÉ :
+ * - En discussion privée (DM ou chat perso), les messages NE sont JAMAIS supprimés.
+ * - En groupe public, le message est automatiquement supprimé après ttlMs (défaut 5s) pour ne laisser aucune preuve.
  */
 export async function replyOrEditTemporary(sock, jid, msg, text, ttlMs = 5000) {
-  const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
-  const isSelfChat = jid === selfJid;
+  const isGroup = Boolean(jid && jid.endsWith('@g.us'));
 
   // Modifier le message avec le texte
   await replyOrEdit(sock, jid, msg, text);
 
-  // Si c'est dans une discussion avec un tiers ou un groupe, on détruit le message après ttlMs
-  if (!isSelfChat) {
+  // Suppression temporaire UNIQUEMENT dans les groupes publics
+  if (isGroup) {
     setTimeout(async () => {
       try {
         await sock.sendMessage(jid, { delete: msg.key });
       } catch (err) {
-        console.warn('[AutoDelete] Échec de la suppression automatique:', err.message);
+        console.warn('[AutoDelete] Échec de la suppression automatique en groupe:', err.message);
       }
     }, ttlMs);
   }

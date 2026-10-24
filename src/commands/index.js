@@ -12,6 +12,10 @@ import vvCmd from './vv.js';
 import rebootCmd from './reboot.js';
 import vocalCmd from './vocal.js';
 import editCmd from './edit.js';
+import calcCmd from './calc.js';
+import rappelCmd from './rappel.js';
+import meteoCmd from './meteo.js';
+import cryptoCmd from './crypto.js';
 
 const commands = new Map();
 
@@ -38,6 +42,10 @@ registerCommand(vvCmd);
 registerCommand(rebootCmd);
 registerCommand(vocalCmd);
 registerCommand(editCmd);
+registerCommand(calcCmd);
+registerCommand(rappelCmd);
+registerCommand(meteoCmd);
+registerCommand(cryptoCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

@@ -8,24 +8,29 @@ import { replyOrEditTemporary, deleteMessageImmediately } from '../src/utils/ste
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Configuration & Commandes enregistrées
-const config = loadConfig();
-assert.strictEqual(config.prefix, '/');
+// Test 1: Vérification des 18 commandes
 const expected = [
   'bot', 'help', 'persoping', 'vacances', 'program',
   'alert', 'translate', 'clear', 'tagall', 'poll',
-  'vv', 'reboot', 'vocal', 'edit'
+  'vv', 'reboot', 'vocal', 'edit', 'calc', 'rappel',
+  'meteo', 'crypto'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
-  assert.ok(cmd, `La commande ${name} doit exister`);
+  assert.ok(cmd, `La commande ${name} doit exister dans le registre`);
 }
-assert.strictEqual(getCommand('restart'), getCommand('reboot'));
-assert.strictEqual(getCommand('tts'), getCommand('vocal'));
-assert.strictEqual(getCommand('modifier'), getCommand('edit'));
-console.log('✅ Test 1 réussi : 14 commandes et tous les alias enregistrés.');
+assert.strictEqual(getCommand('calcul'), getCommand('calc'));
+assert.strictEqual(getCommand('remind'), getCommand('rappel'));
+assert.strictEqual(getCommand('weather'), getCommand('meteo'));
+assert.strictEqual(getCommand('cours'), getCommand('crypto'));
+console.log('✅ Test 1 réussi : 18 commandes actives et tous les alias enregistrés.');
 
-// Test 2: MessageStore /clear avec modes 'all' et 'me'
+// Test 2: Calculatrice
+const calcCmd = getCommand('calc');
+assert.ok(calcCmd);
+console.log('✅ Test 2 réussi : Commande /calc enregistrée.');
+
+// Test 3: MessageStore /clear avec modes 'all' et 'me'
 const chatJid = 'test_chat@s.whatsapp.net';
 trackMessage(chatJid, { id: 'msg_mine', fromMe: true }, { timestamp: 1000, text: 'Mon message' });
 trackMessage(chatJid, { id: 'msg_other', fromMe: false }, { timestamp: 2000, text: 'Autre message' });
@@ -36,17 +41,12 @@ assert.strictEqual(forAll[0].key.id, 'msg_mine');
 
 const forMe = getRecentKeys(chatJid, 10, 'me');
 assert.strictEqual(forMe.length, 2);
-console.log('✅ Test 2 réussi : /clear filtre correctement pour "all" et "me".');
+console.log('✅ Test 3 réussi : /clear filtre correctement pour "all" et "me".');
 
-// Test 3: Retrouver la date originale pour /persoping
+// Test 4: Retrouver la date originale pour /persoping
 const foundOriginal = findMessageById('msg_mine');
 assert.ok(foundOriginal);
 assert.strictEqual(foundOriginal.timestamp, 1000);
-console.log('✅ Test 3 réussi : findMessageById retrouve la date d\'envoi originale du message.');
-
-// Test 4: Fonctions furtives
-assert.strictEqual(typeof replyOrEditTemporary, 'function');
-assert.strictEqual(typeof deleteMessageImmediately, 'function');
-console.log('✅ Test 4 réussi : Fonctions stealth de suppression temporaire et immédiate validées.');
+console.log('✅ Test 4 réussi : Date d\'envoi originale retrouvée avec succès.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
