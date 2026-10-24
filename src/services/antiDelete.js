@@ -1,14 +1,17 @@
 import { downloadMediaMessage, jidNormalizedUser } from '@whiskeysockets/baileys';
 import { getConfig } from '../config.js';
 import { findMessageById } from './messageStore.js';
+import { recordDeletedIntercepted, recordEditedIntercepted } from './statsTracker.js';
 
 // Cache des IDs de messages supprimés déjà traités pour éviter les doublons
 const handledRevokedIds = new Set();
+// Cache des messages modifiés (messageId + '_' + newText) pour éviter les doublons
+const handledEditedKeys = new Set();
 // Cache des noms de groupes pour éviter des requêtes réseau répétitives
 const groupNameCache = new Map();
 
 /**
- * Traite un événement de message supprimé (Revoke) et l'envoie au groupe dédié
+ * Traite un événement de message supprimé (Revoke) et l'envoie au groupe dédié (antidelete)
  * @param {object} params
  * @param {import('@whiskeysockets/baileys').WASocket} params.sock
  * @param {object} params.revokedKey - Clé du message supprimé
@@ -72,6 +75,7 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
   const deleteTime = new Date().toLocaleTimeString('fr-FR');
 
   console.log(`[AntiDelete] Message supprimé détecté de +${senderNumber} dans ${chatOrigin} (id: ${messageId})`);
+  recordDeletedIntercepted();
 
   // Cas 1 : Le message contient un média et est en mémoire
   if (stored?.rawMessage) {
@@ -174,5 +178,99 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
     await sock.sendMessage(targetJid, { text: fallbackNotification });
   } catch (err) {
     console.error('[AntiDelete] Erreur envoi notif fallback:', err);
+  }
+}
+
+/**
+ * Traite un événement de message modifié (Anti-Edit) et l'envoie au groupe dédié (antidelete)
+ * @param {object} params
+ * @param {import('@whiskeysockets/baileys').WASocket} params.sock
+ * @param {object} params.targetKey - Clé du message ciblé
+ * @param {string} params.newText - Nouveau contenu textuel après modification
+ * @param {object} [params.newRawMessage]
+ * @param {number} [params.timestamp]
+ */
+export async function handleEditedMessage({ sock, targetKey, newText, newRawMessage, timestamp }) {
+  if (!sock || !targetKey?.id || !newText) return;
+
+  // Ignorer nos propres modifications (ex: /edit personnel ou bot replyOrEdit)
+  if (targetKey.fromMe) return;
+
+  const messageId = targetKey.id;
+  const dedupKey = `${messageId}_${newText.trim()}`;
+  if (handledEditedKeys.has(dedupKey)) return;
+  handledEditedKeys.add(dedupKey);
+
+  // Nettoyer le cache
+  if (handledEditedKeys.size > 2000) {
+    const firstItems = Array.from(handledEditedKeys).slice(0, 500);
+    for (const k of firstItems) handledEditedKeys.delete(k);
+  }
+
+  const config = getConfig();
+  const targetJid = config.hub?.antiDelete || config.groupAliases?.antidelete;
+  if (!targetJid) return;
+
+  const rawChatJid = targetKey.remoteJid;
+  if (!rawChatJid) return;
+  const chatJid = jidNormalizedUser(rawChatJid);
+
+  if (chatJid === jidNormalizedUser(targetJid)) return;
+
+  const stored = findMessageById(messageId);
+  const oldText = stored?.text ? stored.text : '_(Message d\'origine non disponible)_';
+
+  // Si le texte est strictement identique (ex: mise à jour technique), ne pas alerter
+  if (stored && stored.text && stored.text.trim() === newText.trim()) return;
+
+  // Mettre à jour en mémoire le message pour de futures modifications
+  if (stored) {
+    stored.text = newText;
+    if (newRawMessage) stored.rawMessage = newRawMessage;
+  }
+
+  // Déterminer l'expéditeur et la discussion
+  const rawSender = targetKey.participant || stored?.sender || rawChatJid;
+  const senderNumber = rawSender.split('@')[0].split(':')[0];
+  const senderPushName = stored?.pushName ? ` (${stored.pushName})` : '';
+
+  let chatOrigin = `Discussion privée (+${senderNumber})`;
+  if (chatJid.endsWith('@g.us')) {
+    if (groupNameCache.has(chatJid)) {
+      chatOrigin = `Groupe "${groupNameCache.get(chatJid)}"`;
+    } else {
+      try {
+        const meta = await sock.groupMetadata(chatJid);
+        const subject = meta?.subject || chatJid;
+        groupNameCache.set(chatJid, subject);
+        chatOrigin = `Groupe "${subject}"`;
+      } catch (e) {
+        chatOrigin = `Groupe (${chatJid})`;
+      }
+    }
+  }
+
+  const editTime = new Date().toLocaleTimeString('fr-FR');
+  console.log(`[AntiEdit] Modification interceptée de +${senderNumber} dans ${chatOrigin} (id: ${messageId})`);
+  recordEditedIntercepted();
+
+  const editNotification = [
+    '✏️ *MESSAGE MODIFIÉ INTERCEPTÉ*',
+    '━━━━━━━━━━━━━━━━━━━━',
+    `• *De :* +${senderNumber}${senderPushName}`,
+    `• *Discussion :* ${chatOrigin}`,
+    `• *Modifié à :* ${editTime}`,
+    '━━━━━━━━━━━━━━━━━━━━',
+    '❌ *Avant :*',
+    oldText,
+    '',
+    '✅ *Après :*',
+    newText
+  ].join('\n');
+
+  try {
+    await sock.sendMessage(targetJid, { text: editNotification });
+  } catch (err) {
+    console.error('[AntiEdit] Erreur envoi notif:', err.message);
   }
 }

@@ -9,9 +9,10 @@ import makeWASocket, {
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcodeTerminal from 'qrcode-terminal';
-import { handleMessagesUpsert } from './handlers/message.js';
+import { handleMessagesUpsert, extractTextFromMessage } from './handlers/message.js';
 import { trackMessage, saveMessageHistory } from './services/messageStore.js';
-import { handleRevokedMessage } from './services/antiDelete.js';
+import { handleRevokedMessage, handleEditedMessage } from './services/antiDelete.js';
+import { initDailyRecapScheduler } from './services/statsTracker.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -118,13 +119,17 @@ export async function createWhatsAppClient() {
       console.log(`🛡️  Protection anti-détection : Active`);
       console.log(`💬 Envoyez /help dans votre chat privé pour tester le bot.`);
       console.log('=============================================================\n');
+
+      // Initialiser le planificateur du récapitulatif quotidien à 23h00
+      initDailyRecapScheduler(sock);
     }
   });
 
-  // Gestion des messages supprimés / révoqués (Anti-Delete)
+  // Gestion des messages supprimés (Anti-Delete) et modifiés (Anti-Edit)
   sock.ev.on('messages.update', async (updates) => {
     if (!updates || !updates.length) return;
     for (const update of updates) {
+      // 1. Détection des suppressions
       if (
         update.update?.messageStubType === WAMessageStubType.REVOKE ||
         update.update?.message === null
@@ -132,6 +137,20 @@ export async function createWhatsAppClient() {
         await handleRevokedMessage({
           sock,
           revokedKey: update.key,
+          timestamp: Date.now()
+        });
+      }
+
+      // 2. Détection des modifications
+      const editedWrapper = update.update?.message?.editedMessage;
+      if (editedWrapper) {
+        const newRaw = editedWrapper.message || editedWrapper;
+        const newText = extractTextFromMessage(newRaw).trim();
+        await handleEditedMessage({
+          sock,
+          targetKey: update.key,
+          newText,
+          newRawMessage: newRaw,
           timestamp: Date.now()
         });
       }

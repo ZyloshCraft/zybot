@@ -32,7 +32,8 @@ const DEFAULT_CONFIG = {
     enabled: true,
     humanTypingMinMs: 1500,
     humanTypingMaxMs: 3500
-  }
+  },
+  tempChats: {}
 };
 
 let inMemoryConfig = null;

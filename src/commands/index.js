@@ -15,6 +15,8 @@ import rappelCmd from './rappel.js';
 import meteoCmd from './meteo.js';
 import idCmd from './id.js';
 import groupeCmd from './groupe.js';
+import tempCmd from './temp.js';
+import recapCmd from './recap.js';
 
 const commands = new Map();
 
@@ -44,6 +46,8 @@ registerCommand(rappelCmd);
 registerCommand(meteoCmd);
 registerCommand(idCmd);
 registerCommand(groupeCmd);
+registerCommand(tempCmd);
+registerCommand(recapCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

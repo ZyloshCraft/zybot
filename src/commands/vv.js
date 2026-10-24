@@ -1,6 +1,7 @@
 import { downloadMediaMessage, jidNormalizedUser } from '@whiskeysockets/baileys';
 import { deleteMessageImmediately } from '../utils/stealth.js';
 import { getConfig } from '../config.js';
+import { recordViewOnceIntercepted } from '../services/statsTracker.js';
 
 export default {
   name: 'vv',
@@ -63,6 +64,8 @@ export default {
           caption: `🔓 *Vidéo vue unique capturée*\n• De : +${senderNumber}`
         });
       }
+
+      recordViewOnceIntercepted();
     } catch (err) {
       console.error('Erreur vv:', err);
       await sock.sendMessage(targetJid, {

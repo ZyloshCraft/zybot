@@ -1,13 +1,14 @@
-import { normalizeMessageContent, WAMessageStubType } from '@whiskeysockets/baileys';
+import { normalizeMessageContent, WAMessageStubType, jidNormalizedUser } from '@whiskeysockets/baileys';
 import { getConfig } from '../config.js';
 import { getCommand } from '../commands/index.js';
 import { handleKeywordAlert } from './keywordAlert.js';
 import { trackMessage } from '../services/messageStore.js';
 import { hasActiveWizard, handleWizardStep } from '../services/programWizard.js';
-import { handleRevokedMessage } from '../services/antiDelete.js';
+import { handleRevokedMessage, handleEditedMessage } from '../services/antiDelete.js';
+import { recordMessageSent, recordPrivateMessageReceived } from '../services/statsTracker.js';
 
 /**
- * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique)
+ * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
  */
 export function extractTextFromMessage(message) {
   if (!message) return '';
@@ -20,6 +21,8 @@ export function extractTextFromMessage(message) {
     normalized.documentMessage?.caption ||
     normalized.buttonsResponseMessage?.selectedDisplayText ||
     normalized.templateButtonReplyMessage?.selectedId ||
+    normalized.editedMessage?.message?.conversation ||
+    normalized.editedMessage?.message?.extendedTextMessage?.text ||
     ''
   );
 }
@@ -49,9 +52,10 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
 
   for (const msg of messages) {
     try {
-      // 1. Détection des suppressions de message (Anti-Delete)
       const protocolMessage = msg.message?.protocolMessage;
-      if (protocolMessage && (protocolMessage.type === 0 || protocolMessage.type === 14)) {
+
+      // 1. Détection des suppressions (Anti-Delete, type 0 = REVOKE)
+      if (protocolMessage && protocolMessage.type === 0) {
         const revokedKey = {
           remoteJid: protocolMessage.key?.remoteJid || msg.key.remoteJid,
           id: protocolMessage.key?.id,
@@ -67,6 +71,27 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         continue;
       }
 
+      // 2. Détection des modifications (Anti-Edit, type 14 = MESSAGE_EDIT)
+      if (protocolMessage && protocolMessage.type === 14) {
+        const targetKey = {
+          remoteJid: protocolMessage.key?.remoteJid || msg.key.remoteJid,
+          id: protocolMessage.key?.id,
+          participant: protocolMessage.key?.participant || msg.key.participant,
+          fromMe: protocolMessage.key?.fromMe
+        };
+        const newRawMessage = protocolMessage.editedMessage;
+        const newText = extractTextFromMessage(newRawMessage).trim();
+        await handleEditedMessage({
+          sock,
+          targetKey,
+          newText,
+          newRawMessage,
+          timestamp: msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now()
+        });
+        continue;
+      }
+
+      // Détection des suppressions par stub WhatsApp interne
       if (msg.messageStubType === WAMessageStubType.REVOKE || msg.messageStubType === 68) {
         await handleRevokedMessage({
           sock,
@@ -82,10 +107,18 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
       const jid = msg.key.remoteJid;
       if (!jid || jid.includes('@broadcast') || jid.endsWith('@newsletter')) continue;
 
+      const normJid = jidNormalizedUser(jid);
       const text = extractTextFromMessage(msg.message).trim();
       const isOwner = isOwnerMessage(sock, msg);
 
-      // Mémoriser tous les messages (pour Anti-Delete, /clear et /persoping date exacte)
+      // Statistiques quotidiennes
+      if (isOwner) {
+        recordMessageSent();
+      } else if (!jid.endsWith('@g.us')) {
+        recordPrivateMessageReceived();
+      }
+
+      // Mémoriser tous les messages (pour Anti-Delete, Anti-Edit, /clear et /persoping date exacte)
       trackMessage(jid, msg.key, {
         timestamp: msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now(),
         fromMe: msg.key.fromMe,
@@ -94,6 +127,18 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         pushName: msg.pushName,
         rawMessage: msg.message
       });
+
+      // Gestion de l'auto-destruction programmée (/temp) pour vos messages dans cette discussion
+      if (isOwner && config.tempChats && config.tempChats[normJid]) {
+        const tempDuration = config.tempChats[normJid].durationMs;
+        if (tempDuration > 0) {
+          setTimeout(async () => {
+            try {
+              await sock.sendMessage(jid, { delete: msg.key });
+            } catch (err) {}
+          }, tempDuration);
+        }
+      }
 
       // Gestion de l'assistant pas-à-pas (ex: /program en mode guidé)
       const userId = msg.key.participant || msg.key.remoteJid;

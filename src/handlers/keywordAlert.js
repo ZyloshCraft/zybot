@@ -1,5 +1,6 @@
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { getConfig } from '../config.js';
+import { recordKeywordAlert } from '../services/statsTracker.js';
 
 /**
  * Nettoie et normalise une chaîne pour une comparaison insensible à la casse,
@@ -74,6 +75,7 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
   ].join('\n');
 
   console.log(`[KeywordAlert] Mot-clé "${matchedWord}" détecté dans ${originName} par +${senderNumber}`);
+  recordKeywordAlert();
 
   try {
     await sock.sendMessage(targetAlertJid, { text: alertNotification });

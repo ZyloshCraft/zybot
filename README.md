@@ -1,4 +1,4 @@
-# 🤖 ZyBot — Selfbot WhatsApp
+# 🤖 ZyBot — Selfbot WhatsApp Furtif & Intelligent
 
 <p align="center">
   <img src="https://img.shields.io/badge/Node.js-v20+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
@@ -7,16 +7,18 @@
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
-**ZyBot** est un selfbot WhatsApp modulaire, discret et ultra-épuré pour compte personnel, conçu sur l'architecture **Baileys** (`@whiskeysockets/baileys`). Doté d'un **moteur anti-détection avancé (Stealth Engine)**, d'un **système Anti-Delete complet** et d'un **Hub Communautaire privé**, il s'exécute directement sur votre session sans laisser de traces suspectes.
+**ZyBot** est un selfbot WhatsApp modulaire, discret et ultra-épuré pour compte personnel, conçu sur l'architecture **Baileys** (`@whiskeysockets/baileys`). Doté d'un **moteur anti-détection avancé (Stealth Engine)**, d'un **système Anti-Delete & Anti-Edit**, d'un **mode éphémère sélectif (`/temp`)** et d'un **Hub Communautaire privé**, il s'exécute directement sur votre session sans laisser de traces suspectes.
 
 ---
 
 ## 🛡️ Architecture Furtive & Fonctionnalités Clés
 
-### 1. 🗑️ Moteur Anti-Delete Intégré (Zéro Message Perdu)
-- Intercepte automatiquement **tous les messages supprimés pour tous** par d'autres utilisateurs (textes, photos, vidéos, vocaux, stickers, documents).
-- Retransmet instantanément l'original avec auteur, discussion d'origine, date d'envoi et heure de suppression directement dans le groupe dédié **`antidelete`** (`120363430044075107@g.us`).
-- Filtre intelligemment vos propres suppressions (pas de faux positifs lors d'un `/clear`).
+### 1. 🗑️ Moteur Anti-Delete & ✏️ Anti-Edit (Zéro Message Perdu)
+- **Anti-Delete** : Intercepte automatiquement **tous les messages supprimés pour tous** par d'autres utilisateurs (textes, photos, vidéos, vocaux, stickers, documents) et les retransmet instantanément dans le groupe dédié **`antidelete`** (`120363430044075107@g.us`).
+- **Anti-Edit** : Intercepte en temps réel les **messages modifiés** par vos interlocuteurs et affiche dans `antidelete` le comparatif exact :
+  - ❌ *Avant :* [ancien texte]
+  - ✅ *Après :* [nouveau texte]
+- Filtre intelligemment vos propres actions (pas de faux positifs lors d'un `/clear` ou d'un `/edit`).
 
 ### 2. 🏛️ Hub Communautaire de Gestion Dédié
 Au lieu d'encombrer votre chat personnel, ZyBot achemine chaque catégorie d'événement vers vos groupes de gestion privés :
@@ -24,24 +26,42 @@ Au lieu d'encombrer votre chat personnel, ZyBot achemine chaque catégorie d'év
 - 🚨 **Groupe Alertes Mots-Clés (`importantmsg`)** : `120363432686901629@g.us`
 - 🔒 **Groupe Vue-Unique & Persoping (`persopingunevue`)** : `120363430665427462@g.us`
 - 📢 **Groupe Notifications Système (`notifds`)** : `120363413901804206@g.us`
-- 🗑️ **Groupe Anti-Delete (`antidelete`)** : `120363430044075107@g.us`
+- 🗑️ **Groupe Anti-Delete & Anti-Edit (`antidelete`)** : `120363430044075107@g.us`
 
 > **Règle d'or : Dans tous ces groupes du Hub ainsi qu'en message privé, les messages ne s'effacent JAMAIS.**
 
-### 3. 🔔 Notifications Mémoire Long Terme (`notifds`)
+### 3. ⏱️ Auto-Destruction Sélective (`/temp`)
+- Activez l'auto-destruction automatique de **tous vos prochains messages** dans une discussion spécifique :
+  - `/temp 30s`, `/temp 5m`, `/temp 1h`, etc.
+  - Vos messages envoyés dans cette discussion s'effacent automatiquement pour tous après le délai configuré.
+  - Désactivation en un clin d'œil avec `/temp off`.
+
+### 4. 📊 Statistiques Journalières & Rapport Automatique (`/recap`)
+- Suivi automatique de votre activité quotidienne :
+  - Messages envoyés par vous.
+  - Messages reçus en privé (hors groupes).
+  - Messages supprimés interceptés par l'Anti-Delete.
+  - Messages modifiés interceptés par l'Anti-Edit.
+  - Alertes mots-clés déclenchées.
+  - Vues uniques capturées.
+- **Rapport automatique tous les soirs à 23h00** envoyé discrètement dans votre groupe `notifds`.
+- Consultation instantanée à tout moment avec `/recap`.
+
+### 5. 🔔 Notifications Mémoire Long Terme (`notifds`)
 Dès qu'un élément persistant est ajouté ou supprimé de la configuration, une notification est automatiquement envoyée dans votre groupe `notifds` avec les émojis dédiés :
 - `✅ Alias : <nom> <id_groupe>` / `🗑️ Alias : <nom> supprimé`
 - `✅ Mot-clé : <mot>` / `🗑️ Mot-clé : <mot> supprimé`
+- `✅ Mode temporaire : activé (<temps>) pour <jid>` / `🗑️ Mode temporaire : désactivé`
 - Récapitulatif complet de chaque message programmé avec `/program` ou `/rappel`.
 
-### 4. 🚨 Détection Intelligente & Tolérante des Mots-Clés
+### 6. 🚨 Détection Intelligente & Tolérante des Mots-Clés
 Le système `/alert` surveille tous les groupes et discussions avec une tolérance absolue :
 - **Insensible à la casse** : `bonjour`, `Bonjour`, `bonJour`, `BONJOUR`.
 - **Insensible au formatage** : `*bonjour*` (gras), `_bonjour_` (italique), `~bonjour~` (barré).
 - **Insensible aux accents** : `héros` / `heros`, `valentin` / `Valèntin`.
 - **Mots collés sans espace** : déclenche même si la personne a écrit `bonjourca va` ou `salutbonjour` !
 
-### 5. 🥷 Furtivité Zéro-Trace & Browser Spoofing
+### 7. 🥷 Furtivité Zéro-Trace & Browser Spoofing
 - **Empreinte Officielle** : Le bot s'identifie auprès des serveurs WhatsApp comme un navigateur légitime `Google Chrome` sur `macOS` (`Mac OS / Chrome`).
 - **Comportement Humain** : Simulation d'écriture (`composing`) pendant un intervalle aléatoire (**1,5s à 3,5s**).
 - **Suppression Invisible `/program`** : À la fin de la programmation, les messages du guide pas-à-pas sont supprimés pour tous puis pour vous-même, évitant l'encart *"Ce message a été supprimé"*.
@@ -58,12 +78,14 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | :--- | :--- | :--- |
 | **`/vv`** | *(En réponse)* `/vv` | Capture discrètement une photo ou vidéo à vue unique (View Once 1️⃣) et la transmet en clair dans le groupe `persopingunevue`. Zéro trace dans le chat ! |
 | **`/persoping`** | *(En réponse)* `/persoping` | Transfère le message ciblé dans `persopingunevue` avec sa **date/heure d'envoi originale**, son auteur, son origine et son ID. |
-| **`/clear`** | `/clear <nb> [all\|me]` | Supprime vos derniers messages avec un délai aléatoire anti-flag. `all` = pour tous (delete revoke), `me` = pour vous seul. Fonctionne aussi sur les messages passés. |
+| **`/clear`** | `/clear <nb> [all\|me]` | Supprime vos derniers messages instantanément (~1s pour 10 messages). `all` = pour tous (revoke), `me` = pour vous seul. |
+| **`/temp`** | `/temp <temps\|off>` | Active l'auto-destruction de tous vos futurs messages dans cette discussion (ex: `/temp 30s`, `/temp 5m`, `/temp 1h`, `/temp off`). |
 | **`/edit`** | *(En réponse)* `/edit <texte>` | Modifie directement l'un de vos messages récents sans passer par les menus de l'application. |
 
 ### 🛠️ Utilitaires & Productivité
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
+| **`/recap`** | `/recap` | Affiche en direct le tableau de bord des statistiques d'activité et d'interception du jour. |
 | **`/calc`** | `/calc <calcul>` | Calcule instantanément une expression mathématique (ex: `/calc 15 * 84 + 12.5`) et remplace la commande sur place. |
 | **`/rappel`** | `/rappel <texte> \| <temps>` | Définit un rappel personnel envoyé automatiquement dans `notifds` (ex: `/rappel Réunion \| +15m` ou `/rappel Sortir \| 18:30`). |
 | **`/meteo`** | `/meteo [ville]` | Affiche la météo en direct d'une ville (température, ressenti, vent) directement à la place de la commande. |

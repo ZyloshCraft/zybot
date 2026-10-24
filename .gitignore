@@ -1,6 +1,7 @@
 node_modules/
 auth_info/
 message_history.json
+stats.json
 .DS_Store
 *.log
 .env
