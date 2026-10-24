@@ -11,12 +11,12 @@ import { getTodayStats, recordMessageSent, recordPrivateMessageReceived, formatR
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 20 commandes actives (avec temp, recap, ntfy)
+// Test 1: Vérification des 21 commandes actives (avec temp, recap, ntfy, update)
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'tagall', 'poll',
   'vv', 'reboot', 'edit', 'calc', 'rappel',
-  'meteo', 'id', 'groupe', 'temp', 'recap', 'ntfy'
+  'meteo', 'id', 'groupe', 'temp', 'recap', 'ntfy', 'update'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -25,7 +25,7 @@ for (const name of expected) {
 assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être supprimé');
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
 assert.strictEqual(getCommand('vocal'), undefined, 'vocal doit être supprimé');
-console.log('✅ Test 1 réussi : 20 commandes actives enregistrées.');
+console.log('✅ Test 1 réussi : 21 commandes actives enregistrées.');
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');

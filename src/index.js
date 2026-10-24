@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { loadConfig } from './config.js';
 import { createWhatsAppClient, getActiveSocket } from './client.js';
 import { startScheduler } from './services/scheduler.js';
+import { startAutoUpdater } from './services/autoUpdater.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,8 +55,9 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 // 1. Charger la configuration
 loadConfig();
 
-// 2. Démarrer le service de programmation
+// 2. Démarrer le service de programmation et les mises à jour automatiques
 startScheduler(getActiveSocket);
+startAutoUpdater(getActiveSocket);
 
 // 3. Lancer le client WhatsApp
 createWhatsAppClient().catch((err) => {

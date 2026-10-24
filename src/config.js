@@ -37,6 +37,10 @@ const DEFAULT_CONFIG = {
   ntfy: {
     enabled: false,
     topic: ''
+  },
+  autoUpdate: {
+    enabled: true,
+    intervalMinutes: 1
   }
 };
 

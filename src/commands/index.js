@@ -18,6 +18,7 @@ import groupeCmd from './groupe.js';
 import tempCmd from './temp.js';
 import recapCmd from './recap.js';
 import ntfyCmd from './ntfy.js';
+import updateCmd from './update.js';
 
 const commands = new Map();
 
@@ -50,6 +51,7 @@ registerCommand(groupeCmd);
 registerCommand(tempCmd);
 registerCommand(recapCmd);
 registerCommand(ntfyCmd);
+registerCommand(updateCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

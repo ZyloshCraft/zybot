@@ -31,5 +31,9 @@
   "ntfy": {
     "enabled": true,
     "topic": "zybot-valentin-99"
+  },
+  "autoUpdate": {
+    "enabled": true,
+    "intervalMinutes": 1
   }
 }

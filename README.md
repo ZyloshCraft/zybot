@@ -113,6 +113,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 ### ⚙️ Système & Maintenance
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
+| **`/update`** | `/update` ou `/update [on\|off]` | Vérifie les commits GitHub, effectue le `git pull`, met à jour les dépendances et redémarre instantanément. |
 | **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
 | **`/bot`** | `/bot` | Affiche l'uptime, l'utilisation RAM, la latence et la version Node.js. |
 | **`/help`** | `/help` | Affiche le menu d'aide condensé. |
