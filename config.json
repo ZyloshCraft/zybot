@@ -29,7 +29,7 @@
   },
   "tempChats": {},
   "ntfy": {
-    "enabled": false,
-    "topic": ""
+    "enabled": true,
+    "topic": "zybot-valentin-99"
   }
 }
