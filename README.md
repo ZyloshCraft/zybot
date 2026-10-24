@@ -58,7 +58,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | **`/poll`** | `/poll <question> \| <c1> \| <c2>` | Crée instantanément un vrai sondage natif WhatsApp dans la discussion courante. |
 | **`/tagall`** | `/tagall [message]` | *(En groupe)* Mentionne instantanément tous les membres du groupe d'un seul coup. |
 | **`/alert`** | `/alert [list\|add\|del\|on\|off]` | Surveille des mots-clés dans vos groupes et discussions privées. Vous envoie un ping privé dès qu'un mot est prononcé. |
-| **`/program`** | `/program <msg> \| <date/heure>` | Programme l'envoi futur d'un message dans la discussion active (`+15m`, `21:30`, `25/12/2026 14:00`). |
+| **`/program`** | `/program` ou `/program <msg> \| <date> [\| dest]` | **Mode Guidé Interactif** : tapez juste `/program` pour être guidé pas-à-pas (date/heure, message long, destinataire). En direct : permet d'indiquer le numéro du contact en privé (ex: `0612345678`) ou envoie sur le groupe si vous êtes dans un groupe. Envoie un récapitulatif complet dans votre chat privé personnel ! Annulable avec `/stop`. |
 | **`/vacances`** | `/vacances [on\|off\|msg\|cooldown]`| Active ou configure le répondeur intelligent d'absence (anti-flood par contact). |
 
 ### ⚙️ Système & Maintenance

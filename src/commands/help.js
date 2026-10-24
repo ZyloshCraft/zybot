@@ -23,7 +23,7 @@ export default {
       `• ${prefix}poll <question> | <opt1> | <opt2> : Crée un sondage`,
       `• ${prefix}tagall [msg] : Mentionne tout le groupe`,
       `• ${prefix}alert [list|add|del|on|off] : Alertes mots-clés`,
-      `• ${prefix}program <msg> | <date> : Envoi programmé`,
+      `• ${prefix}program : Assistant interactif guidé (ou direct: <msg> | <date> [| numéro])`,
       `• ${prefix}vacances [on|off|msg] : Répondeur d'absence`,
       `• ${prefix}reboot : Redémarre le bot`,
       `• ${prefix}bot : Statut et performances`

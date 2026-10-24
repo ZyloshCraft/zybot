@@ -4,6 +4,7 @@ import { getCommand } from '../commands/index.js';
 import { handleAutoReply } from './autoReply.js';
 import { handleKeywordAlert } from './keywordAlert.js';
 import { trackMessage } from '../services/messageStore.js';
+import { hasActiveWizard, handleWizardStep } from '../services/programWizard.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique)
@@ -61,6 +62,13 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         fromMe: msg.key.fromMe,
         text
       });
+
+      // Gestion de l'assistant pas-à-pas (ex: /program en mode guidé)
+      const userId = msg.key.participant || msg.key.remoteJid;
+      if (isOwner && hasActiveWizard(userId)) {
+        const handled = await handleWizardStep({ sock, msg, jid, text, userId });
+        if (handled) continue;
+      }
 
       // Si le message commence par le préfixe et provient du propriétaire
       if (text.startsWith(prefix) && isOwner) {
