@@ -50,7 +50,7 @@ export async function replyOrEdit(sock, jid, msg, text) {
  * Affiche une réponse en modifiant le message de commande.
  * RÈGLE DE FURTIVITÉ & GESTION HUB :
  * - En discussion privée (DM ou chat perso), les messages NE sont JAMAIS supprimés.
- * - Dans les groupes du Hub de gestion (testbot, notifds, persopingunevue, importantmsg), les messages NE sont JAMAIS supprimés.
+ * - Dans les groupes du Hub de gestion (testbot, notifds, persopingunevue, importantmsg, antidelete), les messages NE sont JAMAIS supprimés.
  * - Dans les groupes publics normaux avec des tiers, le message est automatiquement supprimé après ttlMs (défaut 5s).
  */
 export async function replyOrEditTemporary(sock, jid, msg, text, ttlMs = 5000) {
@@ -81,5 +81,22 @@ export async function deleteMessageImmediately(sock, jid, key) {
     await sock.sendMessage(jid, { delete: key });
   } catch (err) {
     console.warn('[deleteImmediately] Échec:', err.message);
+  }
+}
+
+/**
+ * Marque automatiquement une discussion comme "Non lue" (pastille verte)
+ * pour qu'elle remonte immédiatement en haut de votre liste de discussions WhatsApp.
+ */
+export async function markChatUnread(sock, jid, lastKey = null) {
+  if (!sock || !jid) return;
+  try {
+    const mod = { markRead: false };
+    if (lastKey) {
+      mod.lastMessages = [{ key: lastKey, messageTimestamp: Math.floor(Date.now() / 1000) }];
+    }
+    await sock.chatModify(mod, jid);
+  } catch (err) {
+    console.warn(`[markChatUnread] Échec marquage non lu pour ${jid}:`, err.message);
   }
 }

@@ -2,6 +2,7 @@ import { downloadMediaMessage, jidNormalizedUser } from '@whiskeysockets/baileys
 import { getConfig } from '../config.js';
 import { findMessageById } from './messageStore.js';
 import { recordDeletedIntercepted, recordEditedIntercepted } from './statsTracker.js';
+import { markChatUnread } from '../utils/stealth.js';
 
 // Cache des IDs de messages supprimés déjà traités pour éviter les doublons
 const handledRevokedIds = new Set();
@@ -45,6 +46,8 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
   // Ne pas capturer si la suppression a eu lieu dans le groupe anti-delete lui-même
   if (chatJid === jidNormalizedUser(targetJid)) return;
 
+  const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
+  const myNumber = selfJid ? selfJid.split('@')[0].split(':')[0] : null;
   const stored = findMessageById(messageId);
 
   // Déterminer le numéro et nom de l'expéditeur
@@ -77,6 +80,9 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
   console.log(`[AntiDelete] Message supprimé détecté de +${senderNumber} dans ${chatOrigin} (id: ${messageId})`);
   recordDeletedIntercepted();
 
+  const mentionList = selfJid ? [selfJid] : [];
+  const mentionTag = myNumber ? `\n🔔 @${myNumber}` : '';
+
   // Cas 1 : Le message contient un média et est en mémoire
   if (stored?.rawMessage) {
     const raw = stored.rawMessage;
@@ -101,40 +107,38 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
           `• *Discussion :* ${chatOrigin}`,
           `• *Envoyé le :* ${sentDate}`,
           `• *Supprimé à :* ${deleteTime}`,
-          stored.text ? `• *Légende :* ${stored.text}` : ''
+          stored.text ? `• *Légende :* ${stored.text}` : '',
+          mentionTag
         ].filter(Boolean).join('\n');
 
+        let sentMsg = null;
         if (isImage) {
-          await sock.sendMessage(targetJid, { image: buffer, caption });
-          return;
-        }
-        if (isVideo) {
-          await sock.sendMessage(targetJid, { video: buffer, caption });
-          return;
-        }
-        if (isAudio) {
+          sentMsg = await sock.sendMessage(targetJid, { image: buffer, caption, mentions: mentionList });
+        } else if (isVideo) {
+          sentMsg = await sock.sendMessage(targetJid, { video: buffer, caption, mentions: mentionList });
+        } else if (isAudio) {
           await sock.sendMessage(targetJid, {
             audio: buffer,
             mimetype: raw.audioMessage?.mimetype || 'audio/mp4',
             ptt: Boolean(raw.audioMessage?.ptt)
           });
-          await sock.sendMessage(targetJid, { text: caption });
-          return;
-        }
-        if (isSticker) {
+          sentMsg = await sock.sendMessage(targetJid, { text: caption, mentions: mentionList });
+        } else if (isSticker) {
           await sock.sendMessage(targetJid, { sticker: buffer });
-          await sock.sendMessage(targetJid, { text: caption });
-          return;
-        }
-        if (isDoc) {
-          await sock.sendMessage(targetJid, {
+          sentMsg = await sock.sendMessage(targetJid, { text: caption, mentions: mentionList });
+        } else if (isDoc) {
+          sentMsg = await sock.sendMessage(targetJid, {
             document: buffer,
             mimetype: raw.documentMessage?.mimetype || 'application/octet-stream',
             fileName: raw.documentMessage?.fileName || 'document',
-            caption
+            caption,
+            mentions: mentionList
           });
-          return;
         }
+
+        // Marquer la discussion comme Non lue (pastille verte)
+        await markChatUnread(sock, targetJid, sentMsg?.key);
+        return;
       } catch (mediaErr) {
         console.warn(`[AntiDelete] Échec du téléchargement du média supprimé (${mediaErr.message}), envoi en texte.`);
       }
@@ -152,11 +156,13 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
       `• *Supprimé à :* ${deleteTime}`,
       '━━━━━━━━━━━━━━━━━━━━',
       '📝 *Contenu :*',
-      stored.text || '_(Message média ou contenu vide)_'
-    ].join('\n');
+      stored.text || '_(Message média ou contenu vide)_',
+      mentionTag
+    ].filter(Boolean).join('\n');
 
     try {
-      await sock.sendMessage(targetJid, { text: textNotification });
+      const sentMsg = await sock.sendMessage(targetJid, { text: textNotification, mentions: mentionList });
+      await markChatUnread(sock, targetJid, sentMsg?.key);
     } catch (err) {
       console.error('[AntiDelete] Erreur envoi notif texte:', err);
     }
@@ -171,11 +177,13 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
     `• *Discussion :* ${chatOrigin}`,
     `• *Supprimé à :* ${deleteTime}`,
     '━━━━━━━━━━━━━━━━━━━━',
-    '⚠️ _(Contenu non disponible : message antérieur au démarrage du bot ou purgé de la mémoire)_'
-  ].join('\n');
+    '⚠️ _(Contenu non disponible : message antérieur au démarrage du bot ou purgé de la mémoire)_',
+    mentionTag
+  ].filter(Boolean).join('\n');
 
   try {
-    await sock.sendMessage(targetJid, { text: fallbackNotification });
+    const sentMsg = await sock.sendMessage(targetJid, { text: fallbackNotification, mentions: mentionList });
+    await markChatUnread(sock, targetJid, sentMsg?.key);
   } catch (err) {
     console.error('[AntiDelete] Erreur envoi notif fallback:', err);
   }
@@ -217,6 +225,8 @@ export async function handleEditedMessage({ sock, targetKey, newText, newRawMess
 
   if (chatJid === jidNormalizedUser(targetJid)) return;
 
+  const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
+  const myNumber = selfJid ? selfJid.split('@')[0].split(':')[0] : null;
   const stored = findMessageById(messageId);
   const oldText = stored?.text ? stored.text : '_(Message d\'origine non disponible)_';
 
@@ -254,6 +264,9 @@ export async function handleEditedMessage({ sock, targetKey, newText, newRawMess
   console.log(`[AntiEdit] Modification interceptée de +${senderNumber} dans ${chatOrigin} (id: ${messageId})`);
   recordEditedIntercepted();
 
+  const mentionList = selfJid ? [selfJid] : [];
+  const mentionTag = myNumber ? `\n🔔 @${myNumber}` : '';
+
   const editNotification = [
     '✏️ *MESSAGE MODIFIÉ INTERCEPTÉ*',
     '━━━━━━━━━━━━━━━━━━━━',
@@ -265,11 +278,13 @@ export async function handleEditedMessage({ sock, targetKey, newText, newRawMess
     oldText,
     '',
     '✅ *Après :*',
-    newText
-  ].join('\n');
+    newText,
+    mentionTag
+  ].filter(Boolean).join('\n');
 
   try {
-    await sock.sendMessage(targetJid, { text: editNotification });
+    const sentMsg = await sock.sendMessage(targetJid, { text: editNotification, mentions: mentionList });
+    await markChatUnread(sock, targetJid, sentMsg?.key);
   } catch (err) {
     console.error('[AntiEdit] Erreur envoi notif:', err.message);
   }

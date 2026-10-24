@@ -1,5 +1,5 @@
 import { downloadMediaMessage, jidNormalizedUser } from '@whiskeysockets/baileys';
-import { deleteMessageImmediately } from '../utils/stealth.js';
+import { deleteMessageImmediately, markChatUnread } from '../utils/stealth.js';
 import { getConfig } from '../config.js';
 import { recordViewOnceIntercepted } from '../services/statsTracker.js';
 
@@ -12,6 +12,7 @@ export default {
     await deleteMessageImmediately(sock, jid, msg.key);
 
     const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
+    const myNumber = selfJid ? selfJid.split('@')[0].split(':')[0] : null;
     const config = getConfig();
     const targetJid = config.hub?.viewOnce || selfJid;
     if (!targetJid) return;
@@ -53,18 +54,25 @@ export default {
       const buffer = await downloadMediaMessage(messageToDownload, 'buffer', {});
       const senderNumber = (contextInfo.participant || contextInfo.remoteJid || 'Inconnu').split('@')[0];
 
+      const mentionList = selfJid ? [selfJid] : [];
+      const mentionTag = myNumber ? `\n🔔 @${myNumber}` : '';
+
+      let sentMsg = null;
       if (isImage) {
-        await sock.sendMessage(targetJid, {
+        sentMsg = await sock.sendMessage(targetJid, {
           image: buffer,
-          caption: `🔓 *Photo vue unique capturée*\n• De : +${senderNumber}`
+          caption: `🔓 *Photo vue unique capturée*\n• De : +${senderNumber}${mentionTag}`,
+          mentions: mentionList
         });
       } else {
-        await sock.sendMessage(targetJid, {
+        sentMsg = await sock.sendMessage(targetJid, {
           video: buffer,
-          caption: `🔓 *Vidéo vue unique capturée*\n• De : +${senderNumber}`
+          caption: `🔓 *Vidéo vue unique capturée*\n• De : +${senderNumber}${mentionTag}`,
+          mentions: mentionList
         });
       }
 
+      await markChatUnread(sock, targetJid, sentMsg?.key);
       recordViewOnceIntercepted();
     } catch (err) {
       console.error('Erreur vv:', err);

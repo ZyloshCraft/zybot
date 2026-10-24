@@ -1,5 +1,5 @@
 import { generateForwardMessageContent, generateWAMessageFromContent, jidNormalizedUser } from '@whiskeysockets/baileys';
-import { replyOrEditTemporary, replyOrEdit } from '../utils/stealth.js';
+import { replyOrEditTemporary, replyOrEdit, markChatUnread } from '../utils/stealth.js';
 import { findMessageById } from '../services/messageStore.js';
 import { getConfig } from '../config.js';
 
@@ -71,7 +71,11 @@ export default {
 
     try {
       // 1. Envoyer les infos détaillées dans le groupe dédié (ou chat privé)
-      await sock.sendMessage(targetPersoJid, { text: metaHeader });
+      const myNumber = selfJid ? selfJid.split('@')[0].split(':')[0] : null;
+      const sentMeta = await sock.sendMessage(targetPersoJid, {
+        text: myNumber ? `${metaHeader}\n🔔 @${myNumber}` : metaHeader,
+        mentions: selfJid ? [selfJid] : []
+      });
 
       // 2. Transférer le message cité original
       const forwardContent = generateForwardMessageContent(
@@ -88,6 +92,9 @@ export default {
 
       const forwardWaMsg = generateWAMessageFromContent(targetPersoJid, forwardContent, {});
       await sock.relayMessage(targetPersoJid, forwardWaMsg.message, { messageId: forwardWaMsg.key.id });
+
+      // Marquer le groupe comme non lu (pastille verte)
+      await markChatUnread(sock, targetPersoJid, sentMeta?.key);
 
       // 3. Modifier la commande en "Sauvegardé en privé", puis la supprimer après 5 secondes pour tout le monde (sauf hub/privé)
       await replyOrEditTemporary(sock, jid, msg, 'Sauvegardé', 5000);

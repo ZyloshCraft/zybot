@@ -1,6 +1,7 @@
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { getConfig } from '../config.js';
 import { recordKeywordAlert } from '../services/statsTracker.js';
+import { markChatUnread } from '../utils/stealth.js';
 
 /**
  * Nettoie et normalise une chaîne pour une comparaison insensible à la casse,
@@ -56,6 +57,7 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
 
   const senderJid = msg.key.participant || msg.key.remoteJid || 'Inconnu';
   const senderNumber = senderJid.split('@')[0].split(':')[0];
+  const myNumber = selfJid ? selfJid.split('@')[0].split(':')[0] : null;
 
   let originName = `Discussion privée (+${senderNumber})`;
   if (jid.endsWith('@g.us')) {
@@ -71,14 +73,20 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
     `🚨 *Alerte mot-clé : "${matchedWord}"*`,
     `• De : +${senderNumber}`,
     `• Lieu : ${originName}`,
-    `• Message : "${text}"`
-  ].join('\n');
+    `• Message : "${text}"`,
+    myNumber ? `🔔 @${myNumber}` : ''
+  ].filter(Boolean).join('\n');
 
   console.log(`[KeywordAlert] Mot-clé "${matchedWord}" détecté dans ${originName} par +${senderNumber}`);
   recordKeywordAlert();
 
   try {
-    await sock.sendMessage(targetAlertJid, { text: alertNotification });
+    const sent = await sock.sendMessage(targetAlertJid, {
+      text: alertNotification,
+      mentions: selfJid ? [selfJid] : []
+    });
+    // Marquer la discussion comme Non lue (pastille verte)
+    await markChatUnread(sock, targetAlertJid, sent?.key);
   } catch (err) {
     console.error('[KeywordAlert] Erreur envoi alerte:', err);
   }
