@@ -61,7 +61,15 @@ Le système `/alert` surveille tous les groupes et discussions avec une toléran
 - **Insensible aux accents** : `héros` / `heros`, `valentin` / `Valèntin`.
 - **Mots collés sans espace** : déclenche même si la personne a écrit `bonjourca va` ou `salutbonjour` !
 
-### 7. 🥷 Furtivité Zéro-Trace & Browser Spoofing
+### 7. 📲 Notifications Push Smartphone Instantanées (`/ntfy`)
+- **Sonnerie & Vibration en temps réel** : Même avec WhatsApp fermé ou téléphone verrouillé, recevez des notifications push instantanées via l'application gratuite et open-source **ntfy** (iOS/Android).
+- Relié en direct à vos alertes :
+  - 🚨 Alertes mots-clés (`importantmsg`).
+  - 🗑️ Messages supprimés et ✏️ modifiés (`antidelete`).
+  - 👁️ Vues uniques capturées (`persopingunevue`).
+- Configuration ultra-rapide avec `/ntfy <nom_du_canal>`.
+
+### 8. 🥷 Furtivité Zéro-Trace & Browser Spoofing
 - **Empreinte Officielle** : Le bot s'identifie auprès des serveurs WhatsApp comme un navigateur légitime `Google Chrome` sur `macOS` (`Mac OS / Chrome`).
 - **Comportement Humain** : Simulation d'écriture (`composing`) pendant un intervalle aléatoire (**1,5s à 3,5s**).
 - **Suppression Invisible `/program`** : À la fin de la programmation, les messages du guide pas-à-pas sont supprimés pour tous puis pour vous-même, évitant l'encart *"Ce message a été supprimé"*.
@@ -86,6 +94,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
 | **`/recap`** | `/recap` | Affiche en direct le tableau de bord des statistiques d'activité et d'interception du jour. |
+| **`/ntfy`** | `/ntfy <canal\|off>` | Active les notifications push avec sonnerie et vibration sur votre smartphone via l'application ntfy. |
 | **`/calc`** | `/calc <calcul>` | Calcule instantanément une expression mathématique (ex: `/calc 15 * 84 + 12.5`) et remplace la commande sur place. |
 | **`/rappel`** | `/rappel <texte> \| <temps>` | Définit un rappel personnel envoyé automatiquement dans `notifds` (ex: `/rappel Réunion \| +15m` ou `/rappel Sortir \| 18:30`). |
 | **`/meteo`** | `/meteo [ville]` | Affiche la météo en direct d'une ville (température, ressenti, vent) directement à la place de la commande. |

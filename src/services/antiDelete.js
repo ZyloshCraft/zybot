@@ -3,6 +3,7 @@ import { getConfig } from '../config.js';
 import { findMessageById } from './messageStore.js';
 import { recordDeletedIntercepted, recordEditedIntercepted } from './statsTracker.js';
 import { markChatUnread } from '../utils/stealth.js';
+import { sendNtfyNotification } from './ntfy.js';
 
 // Cache des IDs de messages supprimés déjà traités pour éviter les doublons
 const handledRevokedIds = new Set();
@@ -79,6 +80,14 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
 
   console.log(`[AntiDelete] Message supprimé détecté de +${senderNumber} dans ${chatOrigin} (id: ${messageId})`);
   recordDeletedIntercepted();
+
+  // Notification push instantanée sur le smartphone
+  sendNtfyNotification({
+    title: '🗑️ Message supprimé intercepté',
+    message: `De : +${senderNumber}${senderPushName} dans ${chatOrigin}\nContenu : ${stored?.text || '(Média ou message supprimé)'}`,
+    priority: 'high',
+    tags: ['wastebasket', 'warning']
+  }).catch(() => {});
 
   const mentionList = selfJid ? [selfJid] : [];
   const mentionTag = myNumber ? `\n🔔 @${myNumber}` : '';
@@ -263,6 +272,14 @@ export async function handleEditedMessage({ sock, targetKey, newText, newRawMess
   const editTime = new Date().toLocaleTimeString('fr-FR');
   console.log(`[AntiEdit] Modification interceptée de +${senderNumber} dans ${chatOrigin} (id: ${messageId})`);
   recordEditedIntercepted();
+
+  // Notification push instantanée sur le smartphone
+  sendNtfyNotification({
+    title: '✏️ Message modifié intercepté',
+    message: `De : +${senderNumber}${senderPushName} dans ${chatOrigin}\nAvant : ${oldText}\nAprès : ${newText}`,
+    priority: 'default',
+    tags: ['pencil2']
+  }).catch(() => {});
 
   const mentionList = selfJid ? [selfJid] : [];
   const mentionTag = myNumber ? `\n🔔 @${myNumber}` : '';

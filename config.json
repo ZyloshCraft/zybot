@@ -27,5 +27,9 @@
     "humanTypingMinMs": 1500,
     "humanTypingMaxMs": 3500
   },
-  "tempChats": {}
+  "tempChats": {},
+  "ntfy": {
+    "enabled": false,
+    "topic": ""
+  }
 }

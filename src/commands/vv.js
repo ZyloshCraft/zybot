@@ -2,6 +2,7 @@ import { downloadMediaMessage, jidNormalizedUser } from '@whiskeysockets/baileys
 import { deleteMessageImmediately, markChatUnread } from '../utils/stealth.js';
 import { getConfig } from '../config.js';
 import { recordViewOnceIntercepted } from '../services/statsTracker.js';
+import { sendNtfyNotification } from '../services/ntfy.js';
 
 export default {
   name: 'vv',
@@ -74,6 +75,13 @@ export default {
 
       await markChatUnread(sock, targetJid, sentMsg?.key);
       recordViewOnceIntercepted();
+
+      sendNtfyNotification({
+        title: '👁️ Vue unique capturée',
+        message: `Média reçu de +${senderNumber} sauvegardé en clair dans le groupe dédié`,
+        priority: 'default',
+        tags: ['eyes', 'camera']
+      }).catch(() => {});
     } catch (err) {
       console.error('Erreur vv:', err);
       await sock.sendMessage(targetJid, {

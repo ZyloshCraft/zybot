@@ -2,6 +2,7 @@ import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { getConfig } from '../config.js';
 import { recordKeywordAlert } from '../services/statsTracker.js';
 import { markChatUnread } from '../utils/stealth.js';
+import { sendNtfyNotification } from '../services/ntfy.js';
 
 /**
  * Nettoie et normalise une chaîne pour une comparaison insensible à la casse,
@@ -79,6 +80,14 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
 
   console.log(`[KeywordAlert] Mot-clé "${matchedWord}" détecté dans ${originName} par +${senderNumber}`);
   recordKeywordAlert();
+
+  // Envoyer une notification push sonore/vibrante sur le smartphone
+  sendNtfyNotification({
+    title: `🚨 Alerte mot-clé : "${matchedWord}"`,
+    message: `De : +${senderNumber} dans ${originName}\n"${text}"`,
+    priority: 'urgent',
+    tags: ['rotating_light', 'loudspeaker']
+  }).catch(() => {});
 
   try {
     const sent = await sock.sendMessage(targetAlertJid, {

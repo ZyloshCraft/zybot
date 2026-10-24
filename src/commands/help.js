@@ -17,6 +17,7 @@ export default {
       `• ${prefix}clear <nb> [all|me] : Supprime vos messages instantanément`,
       `• ${prefix}temp <temps|off> : Auto-destruction de vos messages (ex: 5m, 1h)`,
       `• ${prefix}recap : Statistiques du jour (messages, suppressions, alertes)`,
+      `• ${prefix}ntfy <canal|off> : Active les notifications push smartphone avec son/vibration`,
       `• ${prefix}calc <calcul> : Calculatrice rapide (ex: 25*4+10)`,
       `• ${prefix}rappel <msg> | <temps> : Rappel privé (+15m, 14:00)`,
       `• ${prefix}id : Affiche l'ID unique du groupe ou chat`,
