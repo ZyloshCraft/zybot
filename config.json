@@ -8,10 +8,11 @@
   "vacancesLog": {},
   "alerts": {
     "enabled": true,
-    "words": [
-      "important",
-      "reunion"
-    ]
+    "words": []
+  },
+  "groupAliases": {
+    "famille": "120363025182938192@g.us",
+    "travail": "120363019283746501@g.us"
   },
   "stealth": {
     "enabled": true,

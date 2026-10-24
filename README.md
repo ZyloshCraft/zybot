@@ -57,6 +57,8 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | :--- | :--- | :--- |
 | **`/poll`** | `/poll <question> \| <c1> \| <c2>` | Crée instantanément un vrai sondage natif WhatsApp dans la discussion courante. |
 | **`/tagall`** | `/tagall [message]` | *(En groupe)* Mentionne instantanément tous les membres du groupe d'un seul coup. |
+| **`/id`** | `/id` | Affiche l'ID unique WhatsApp (`@g.us`) du groupe ou de la discussion, ainsi que son alias si configuré. |
+| **`/groupe`** | `/groupe` ou `/groupe alias <nom>` | Liste tous vos groupes ou attribue un alias simple (ex: `famille`, `travail`) utilisable directement dans `/program`. |
 | **`/alert`** | `/alert [list\|add\|del\|on\|off]` | Surveille des mots-clés dans vos groupes et discussions privées. Vous envoie un ping privé dès qu'un mot est prononcé. |
 | **`/program`** | `/program` ou `/program <msg> \| <date> [\| dest]` | **Mode Guidé Interactif** : tapez juste `/program` pour être guidé pas-à-pas (date/heure, message long, destinataire). En direct : permet d'indiquer le numéro du contact en privé (ex: `0612345678`) ou envoie sur le groupe si vous êtes dans un groupe. Envoie un récapitulatif complet dans votre chat privé personnel ! Annulable avec `/stop`. |
 | **`/vacances`** | `/vacances [on\|off\|msg\|cooldown]`| Active ou configure le répondeur intelligent d'absence (anti-flood par contact). |

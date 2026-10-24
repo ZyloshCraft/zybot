@@ -1,6 +1,7 @@
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { parseScheduledTime, addScheduledMessage } from './scheduler.js';
 import { replyOrEdit, sendStealthMessage } from '../utils/stealth.js';
+import { getConfig } from '../config.js';
 
 // Stockage de l'état du wizard par utilisateur
 const activeWizards = new Map();
@@ -18,6 +19,16 @@ export function parseRecipient(input, selfJid, currentJid) {
   const trimmed = input.trim().toLowerCase();
   if (trimmed === 'moi' || trimmed === 'me' || trimmed === 'self') return selfJid;
   if (trimmed === 'ici' || trimmed === 'here') return currentJid;
+
+  // 1. Si c'est directement un identifiant de groupe WhatsApp (@g.us)
+  if (trimmed.endsWith('@g.us')) return trimmed;
+
+  // 2. Si c'est un alias de groupe enregistré (ex: 'famille', 'travail', 'potes')
+  const config = getConfig();
+  const aliases = config.groupAliases || {};
+  if (aliases[trimmed]) {
+    return aliases[trimmed];
+  }
 
   let cleaned = input.replace(/[^0-9+]/g, '');
   if (cleaned.startsWith('+')) cleaned = cleaned.slice(1);

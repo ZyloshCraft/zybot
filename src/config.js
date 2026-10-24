@@ -18,6 +18,7 @@ const DEFAULT_CONFIG = {
     enabled: true,
     words: []
   },
+  groupAliases: {},
   stealth: {
     enabled: true,
     humanTypingMinMs: 1500,
