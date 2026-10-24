@@ -1,4 +1,4 @@
-# 🤖 ZyBot — Selfbot WhatsApp Furtif & Intelligent
+# 🤖 ZyBot — Selfbot WhatsApp
 
 <p align="center">
   <img src="https://img.shields.io/badge/Node.js-v20+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
@@ -45,7 +45,7 @@ Le système `/alert` surveille tous les groupes et discussions avec une toléran
 - **Empreinte Officielle** : Le bot s'identifie auprès des serveurs WhatsApp comme un navigateur légitime `Google Chrome` sur `macOS` (`Mac OS / Chrome`).
 - **Comportement Humain** : Simulation d'écriture (`composing`) pendant un intervalle aléatoire (**1,5s à 3,5s**).
 - **Suppression Invisible `/program`** : À la fin de la programmation, les messages du guide pas-à-pas sont supprimés pour tous puis pour vous-même, évitant l'encart *"Ce message a été supprimé"*.
-- **Suppression Échelonnée `/clear`** : Délai aléatoire de 400ms à 900ms entre chaque suppression pour éviter tout blocage de débit.
+- **Suppression Échelonnée Rapide `/clear`** : Délai optimisé de 60ms à 130ms (mode `all`) et 40ms à 80ms (mode `me`) pour supprimer 10 messages en ~1 seconde sans blocage ni risque de détection.
 
 ---
 

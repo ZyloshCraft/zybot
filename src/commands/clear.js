@@ -89,9 +89,11 @@ export default {
         console.warn(`[Clear] Impossible de supprimer le message ${item.key?.id}:`, err.message);
       }
 
-      // Intervalle fluide anti-flag (400ms à 900ms)
+      // Intervalle ultra-rapide et naturel (60ms à 130ms pour 'all', 40ms à 80ms pour 'me')
+      // Supprime 10 messages en ~1 seconde sans bloquer la WebSocket ni déclencher d'anti-spam
       if (i < toDelete.length - 1) {
-        await sleep(getRandomDelay(400, 900));
+        const delay = mode === 'me' ? getRandomDelay(40, 80) : getRandomDelay(60, 130);
+        await sleep(delay);
       }
     }
 
