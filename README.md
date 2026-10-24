@@ -42,3 +42,4 @@ cd /Users/valentin/Desktop/whatsapp-bot
 npm start
 ```
 Tapez `/help` dans votre discussion personnelle pour tester !
+# zybot
