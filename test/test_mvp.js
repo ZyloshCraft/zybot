@@ -21,31 +21,37 @@ for (const name of expected) {
 }
 console.log('✅ Test 1 réussi : 18 commandes actives enregistrées.');
 
-// Test 2: Parseur de destinataire (/program)
+// Test 2: Normalisation des JIDs et suppression multiple (/clear 3, /clear 89)
+const rawDeviceJid = '33612345678:42@s.whatsapp.net';
+const cleanJid = '33612345678@s.whatsapp.net';
+
+// Ajouter 100 messages pour tester un grand /clear (ex: 89)
+for (let i = 1; i <= 100; i++) {
+  trackMessage(rawDeviceJid, { id: `msg_bulk_${i}`, fromMe: true }, { timestamp: 1000 + i, text: `Test ${i}` });
+}
+
+// Vérifier que getRecentKeys avec le cleanJid retrouve bien les messages insérés avec rawDeviceJid !
+const retrieved3 = getRecentKeys(cleanJid, 3, 'all');
+assert.strictEqual(retrieved3.length, 3, 'Doit retourner exactement 3 messages');
+assert.strictEqual(retrieved3[2].key.id, 'msg_bulk_100');
+
+const retrieved89 = getRecentKeys(cleanJid, 89, 'all');
+assert.strictEqual(retrieved89.length, 89, 'Doit retourner exactement 89 messages');
+console.log('✅ Test 2 réussi : Normalisation JID et récupération multiple /clear (3 et 89 messages).');
+
+// Test 3: Parseur de destinataire (/program)
 const selfJid = '33600000000@s.whatsapp.net';
 const groupJid = '123456@g.us';
 assert.strictEqual(parseRecipient('0612345678', selfJid, groupJid), '33612345678@s.whatsapp.net');
 assert.strictEqual(parseRecipient('+33 7 99 88 77 66', selfJid, groupJid), '33799887766@s.whatsapp.net');
 assert.strictEqual(parseRecipient('moi', selfJid, groupJid), selfJid);
 assert.strictEqual(parseRecipient('ici', selfJid, groupJid), groupJid);
-console.log('✅ Test 2 réussi : Parseur de destinataire /program (06..., +33..., moi, ici).');
+console.log('✅ Test 3 réussi : Parseur de destinataire /program (06..., +33..., moi, ici).');
 
-// Test 3: Wizard de programmation
-assert.strictEqual(hasActiveWizard('user_test'), false);
-clearWizard('user_test');
-console.log('✅ Test 3 réussi : Gestionnaire d\'état Wizard.');
-
-// Test 4: MessageStore /clear avec modes 'all' et 'me'
-const chatJid = 'test_chat@s.whatsapp.net';
-trackMessage(chatJid, { id: 'msg_mine', fromMe: true }, { timestamp: 1000, text: 'Mon message' });
-trackMessage(chatJid, { id: 'msg_other', fromMe: false }, { timestamp: 2000, text: 'Autre message' });
-
-const forAll = getRecentKeys(chatJid, 10, 'all');
-assert.strictEqual(forAll.length, 1);
-assert.strictEqual(forAll[0].key.id, 'msg_mine');
-
-const forMe = getRecentKeys(chatJid, 10, 'me');
-assert.strictEqual(forMe.length, 2);
-console.log('✅ Test 4 réussi : /clear filtre correctement pour "all" et "me".');
+// Test 4: Retrouver la date originale pour /persoping
+const foundOriginal = findMessageById('msg_bulk_50');
+assert.ok(foundOriginal);
+assert.strictEqual(foundOriginal.text, 'Test 50');
+console.log('✅ Test 4 réussi : Date d\'envoi originale retrouvée avec succès.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

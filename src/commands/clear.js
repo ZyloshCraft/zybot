@@ -1,3 +1,4 @@
+import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { getRecentKeys, removeTrackedKey } from '../services/messageStore.js';
 import { sleep, getRandomDelay, replyOrEdit } from '../utils/stealth.js';
 
@@ -8,7 +9,14 @@ export default {
     let count = 0;
     let mode = 'all'; // Défaut : 'all' (supprimer pour tout le monde)
 
-    // Déterminer count et mode
+    // Vérifier si l'utilisateur a cité un message pour délimiter la suppression
+    const msgContent = msg.message;
+    const contextInfo =
+      msgContent?.extendedTextMessage?.contextInfo ||
+      msgContent?.[Object.keys(msgContent || {})[0]]?.contextInfo;
+    const quotedId = contextInfo?.stanzaId || null;
+
+    // Parser les arguments
     for (const arg of args) {
       const lower = arg.toLowerCase();
       if (lower === 'all' || lower === 'tous' || lower === 'everyone') {
@@ -23,18 +31,22 @@ export default {
       }
     }
 
-    if (count <= 0) {
-      await replyOrEdit(sock, jid, msg, 'Usage : /clear <nombre> [all|me]');
-      return;
+    // Si aucun nombre n'est donné mais qu'un message est cité, supprimer depuis ce message
+    if (count <= 0 && quotedId) {
+      count = 100;
+    } else if (count <= 0) {
+      count = 1; // Par défaut : supprimer le dernier message
     }
 
-    if (count > 50) {
-      await replyOrEdit(sock, jid, msg, 'Limite : maximum 50 messages par /clear.');
-      return;
+    // Plafond de sécurité élargi (jusqu'à 200 messages)
+    if (count > 200) {
+      count = 200;
     }
 
-    // Récupérer les clés récentes (+1 pour inclure la commande /clear elle-même si présente)
-    const tracked = getRecentKeys(jid, count + 1, mode);
+    const normJid = jidNormalizedUser(jid);
+
+    // Récupérer les clés (+1 pour inclure la commande /clear elle-même si présente)
+    const tracked = getRecentKeys(normJid, count + 1, mode, quotedId);
 
     if (!tracked.length) {
       await replyOrEdit(
@@ -48,6 +60,7 @@ export default {
 
     // Inverser pour supprimer du plus récent au plus ancien
     const toDelete = [...tracked].reverse();
+    let deletedCount = 0;
 
     for (let i = 0; i < toDelete.length; i++) {
       const item = toDelete[i];
@@ -63,21 +76,25 @@ export default {
                 deleteMedia: false
               }
             },
-            jid
+            normJid
           );
         } else {
           // Supprimer pour tout le monde (delete revoke)
-          await sock.sendMessage(jid, { delete: item.key });
+          await sock.sendMessage(normJid, { delete: item.key });
         }
-        removeTrackedKey(jid, item.key.id);
+
+        removeTrackedKey(normJid, item.key.id);
+        deletedCount++;
       } catch (err) {
-        console.warn(`[Clear] Impossible de supprimer le message ${item.key.id}:`, err.message);
+        console.warn(`[Clear] Impossible de supprimer le message ${item.key?.id}:`, err.message);
       }
 
-      // Intervalle aléatoire anti-flag entre 800ms et 1600ms
+      // Intervalle fluide anti-flag (400ms à 900ms)
       if (i < toDelete.length - 1) {
-        await sleep(getRandomDelay(800, 1600));
+        await sleep(getRandomDelay(400, 900));
       }
     }
+
+    console.log(`[Clear] ${deletedCount} messages supprimés avec succès en mode "${mode}" dans ${normJid}`);
   }
 };
