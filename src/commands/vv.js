@@ -1,16 +1,19 @@
 import { downloadMediaMessage, jidNormalizedUser } from '@whiskeysockets/baileys';
 import { deleteMessageImmediately } from '../utils/stealth.js';
+import { getConfig } from '../config.js';
 
 export default {
   name: 'vv',
   aliases: ['antivv', 'viewonce'],
-  description: 'Sauvegarde discrètement une vue unique en privé (zéro trace dans la discussion)',
+  description: 'Sauvegarde discrètement une vue unique en privé ou dans le groupe dédié',
   async execute({ sock, msg, jid }) {
     // 1. Supprimer immédiatement la commande /vv de la discussion pour ne laisser AUCUNE trace
     await deleteMessageImmediately(sock, jid, msg.key);
 
     const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
-    if (!selfJid) return;
+    const config = getConfig();
+    const targetJid = config.hub?.viewOnce || selfJid;
+    if (!targetJid) return;
 
     const msgContent = msg.message;
     const contextInfo =
@@ -19,7 +22,7 @@ export default {
 
     const quoted = contextInfo?.quotedMessage;
     if (!quoted) {
-      await sock.sendMessage(selfJid, {
+      await sock.sendMessage(targetJid, {
         text: '⚠️ Erreur /vv : Vous devez répondre à un média à vue unique.'
       });
       return;
@@ -31,7 +34,7 @@ export default {
     const isVideo = Boolean(viewOnceWrapped.videoMessage);
 
     if (!isImage && !isVideo) {
-      await sock.sendMessage(selfJid, {
+      await sock.sendMessage(targetJid, {
         text: '⚠️ Le message ciblé avec /vv n\'était pas une photo ou vidéo à vue unique.'
       });
       return;
@@ -50,19 +53,19 @@ export default {
       const senderNumber = (contextInfo.participant || contextInfo.remoteJid || 'Inconnu').split('@')[0];
 
       if (isImage) {
-        await sock.sendMessage(selfJid, {
+        await sock.sendMessage(targetJid, {
           image: buffer,
           caption: `🔓 *Photo vue unique capturée*\n• De : +${senderNumber}`
         });
       } else {
-        await sock.sendMessage(selfJid, {
+        await sock.sendMessage(targetJid, {
           video: buffer,
           caption: `🔓 *Vidéo vue unique capturée*\n• De : +${senderNumber}`
         });
       }
     } catch (err) {
       console.error('Erreur vv:', err);
-      await sock.sendMessage(selfJid, {
+      await sock.sendMessage(targetJid, {
         text: `❌ Erreur lors de la capture de la vue unique : ${err.message}`
       });
     }

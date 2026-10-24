@@ -19,14 +19,19 @@ ZyBot intègre un ensemble de protections actives pour garantir une invisibilit�
    - Le bot s'identifie auprès des serveurs WhatsApp comme un navigateur légitime `Google Chrome` sur `macOS` (`Mac OS / Chrome`), remplaçant l'empreinte automatique par défaut de Baileys.
 2. **Simulation du Comportement Humain (Presence & Typing)** :
    - Avant chaque envoi automatisé, le bot émet l'état *"En train d'écrire..."* (`composing`) ou *"Enregistre un audio..."* (`recording`) pendant un intervalle aléatoire (**jitter de 1,5s à 3,5s**).
-3. **Mode Zéro-Trace Intelligent** :
-   - **En discussion privée (DMs / chat perso)** : Vos commandes et réponses **ne sont jamais supprimées**, vous permettant de conserver vos notes et données.
-   - **En groupe public** : Les commandes et réponses s'auto-détruisent pour tout le monde après 5 secondes pour ne laisser aucune preuve de bot aux autres membres.
-   - **Capture de Vue-Unique (`/vv`)** : La commande est immédiatement détruite dans la discussion source. Le média est transféré en clair et de façon permanente dans votre discussion personnelle.
-4. **Anti-Spam & Cooldown (Mode Vacances)** :
+3. **Hub Communautaire Dédié & Préservation Totale** :
+   - Au lieu d'encombrer votre chat personnel, ZyBot achemine chaque catégorie d'événement vers vos groupes de gestion privés dédiés :
+     - 🧪 **Groupe Test (`testbot`)** : `120363412992633770@g.us`
+     - 🚨 **Groupe Alertes (`importantmsg`)** : `120363432686901629@g.us`
+     - 🔒 **Groupe Vue-Unique & Persoping (`persopingunevue`)** : `120363430665427462@g.us`
+     - 📢 **Groupe Notifications Système (`notifds`)** : `120363413901804206@g.us`
+   - **Règle d'or : Dans tous ces groupes du Hub et en privé, les messages ne s'effacent JAMAIS.**
+4. **Nettoyage Absolu du Setup `/program`** :
+   - À la fin du guide pas-à-pas, tous les messages de configuration sont supprimés pour tous puis pour vous-même, évitant l'apparition des mentions *"Ce message a été supprimé"*. Seul le message final subsiste !
+5. **Anti-Spam & Cooldown (Mode Vacances)** :
    - Réponse automatique limitée à **1 fois toutes les 2 heures par contact**, avec exclusion automatique des groupes, newsletters et statuts éphémères.
-5. **Suppression Échelonnée (`/clear`)** :
-   - Suppression fluide avec un intervalle aléatoire de 800ms à 1600ms entre chaque message pour éviter tout blocage de débit (rate-limiting).
+6. **Suppression Échelonnée (`/clear`)** :
+   - Suppression fluide avec un intervalle aléatoire de 400ms à 900ms entre chaque message pour éviter tout blocage de débit (rate-limiting).
 
 ---
 

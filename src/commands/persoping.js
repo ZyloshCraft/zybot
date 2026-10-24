@@ -1,6 +1,7 @@
 import { generateForwardMessageContent, generateWAMessageFromContent, jidNormalizedUser } from '@whiskeysockets/baileys';
 import { replyOrEditTemporary, replyOrEdit } from '../utils/stealth.js';
 import { findMessageById } from '../services/messageStore.js';
+import { getConfig } from '../config.js';
 
 export default {
   name: 'persoping',
@@ -19,8 +20,11 @@ export default {
     }
 
     const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
-    if (!selfJid) {
-      await replyOrEditTemporary(sock, jid, msg, 'Erreur : JID personnel introuvable', 5000);
+    const config = getConfig();
+    const targetPersoJid = config.hub?.persoping || selfJid;
+
+    if (!targetPersoJid) {
+      await replyOrEditTemporary(sock, jid, msg, 'Erreur : destination introuvable', 5000);
       return;
     }
 
@@ -66,8 +70,8 @@ export default {
     ].join('\n');
 
     try {
-      // 1. Envoyer les infos détaillées dans votre chat privé
-      await sock.sendMessage(selfJid, { text: metaHeader });
+      // 1. Envoyer les infos détaillées dans le groupe dédié (ou chat privé)
+      await sock.sendMessage(targetPersoJid, { text: metaHeader });
 
       // 2. Transférer le message cité original
       const forwardContent = generateForwardMessageContent(
@@ -82,11 +86,11 @@ export default {
         true
       );
 
-      const forwardWaMsg = generateWAMessageFromContent(selfJid, forwardContent, {});
-      await sock.relayMessage(selfJid, forwardWaMsg.message, { messageId: forwardWaMsg.key.id });
+      const forwardWaMsg = generateWAMessageFromContent(targetPersoJid, forwardContent, {});
+      await sock.relayMessage(targetPersoJid, forwardWaMsg.message, { messageId: forwardWaMsg.key.id });
 
-      // 3. Modifier la commande en "Sauvegardé en privé", puis la supprimer après 5 secondes pour tout le monde
-      await replyOrEditTemporary(sock, jid, msg, 'Sauvegardé en privé', 5000);
+      // 3. Modifier la commande en "Sauvegardé en privé", puis la supprimer après 5 secondes pour tout le monde (sauf hub/privé)
+      await replyOrEditTemporary(sock, jid, msg, 'Sauvegardé', 5000);
     } catch (err) {
       console.error('Erreur persoping:', err);
 
@@ -99,10 +103,10 @@ export default {
           quotedMessage.videoMessage?.caption;
 
         if (textFallback) {
-          await sock.sendMessage(selfJid, {
+          await sock.sendMessage(targetPersoJid, {
             text: `Contenu du message :\n> ${textFallback}`
           });
-          await replyOrEditTemporary(sock, jid, msg, 'Sauvegardé en privé', 5000);
+          await replyOrEditTemporary(sock, jid, msg, 'Sauvegardé', 5000);
           return;
         }
       } catch (fbErr) {}

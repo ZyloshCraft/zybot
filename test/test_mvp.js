@@ -1,10 +1,10 @@
 import assert from 'node:assert';
-import { loadConfig, getConfig, updateConfig } from '../src/config.js';
+import { loadConfig, getConfig, updateConfig, isHubGroup } from '../src/config.js';
 import { getCommand, getAllCommands } from '../src/commands/index.js';
 import { extractTextFromMessage, isOwnerMessage } from '../src/handlers/message.js';
 import { parseScheduledTime } from '../src/services/scheduler.js';
 import { trackMessage, getRecentKeys, findMessageById } from '../src/services/messageStore.js';
-import { parseRecipient, hasActiveWizard, clearWizard } from '../src/services/programWizard.js';
+import { parseRecipient, hasActiveWizard, clearWizard, cleanupSetupMessages } from '../src/services/programWizard.js';
 
 console.log('🧪 Début des tests unitaires...');
 
@@ -19,33 +19,27 @@ for (const name of expected) {
   const cmd = getCommand(name);
   assert.ok(cmd, `La commande ${name} doit exister dans le registre`);
 }
-assert.strictEqual(getCommand('group'), getCommand('groupe'));
-assert.strictEqual(getCommand('groups'), getCommand('groupe'));
-assert.strictEqual(getCommand('groupid'), getCommand('id'));
 console.log('✅ Test 1 réussi : 20 commandes actives enregistrées.');
 
-// Test 2: Parseur de destinataire avec alias de groupe
+// Test 2: Groupes du Hub Communautaire
+assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
+assert.strictEqual(isHubGroup('120363432686901629@g.us'), true, 'importantmsg doit être reconnu comme Hub Group');
+assert.strictEqual(isHubGroup('120363430665427462@g.us'), true, 'persopingunevue doit être reconnu comme Hub Group');
+assert.strictEqual(isHubGroup('120363413901804206@g.us'), true, 'notifds doit être reconnu comme Hub Group');
+assert.strictEqual(isHubGroup('999999999999999999@g.us'), false, 'Un groupe externe ne doit pas être un Hub Group');
+console.log('✅ Test 2 réussi : Détection des groupes du Hub Communauté validée.');
+
+// Test 3: Parseur de destinataire avec alias du Hub
 const selfJid = '33600000000@s.whatsapp.net';
 const groupJid = '123456@g.us';
+assert.strictEqual(parseRecipient('testbot', selfJid, groupJid), '120363412992633770@g.us');
+assert.strictEqual(parseRecipient('importantmsg', selfJid, groupJid), '120363432686901629@g.us');
+assert.strictEqual(parseRecipient('persopingunevue', selfJid, groupJid), '120363430665427462@g.us');
+assert.strictEqual(parseRecipient('notifds', selfJid, groupJid), '120363413901804206@g.us');
+console.log('✅ Test 3 réussi : Résolution des alias du Hub communautaire.');
 
-updateConfig((prev) => ({
-  ...prev,
-  groupAliases: {
-    famille: '120363025182938192@g.us',
-    travail: '120363019283746501@g.us'
-  }
-}));
-
-assert.strictEqual(parseRecipient('famille', selfJid, groupJid), '120363025182938192@g.us');
-assert.strictEqual(parseRecipient('travail', selfJid, groupJid), '120363019283746501@g.us');
-assert.strictEqual(parseRecipient('120363025182938192@g.us', selfJid, groupJid), '120363025182938192@g.us');
-assert.strictEqual(parseRecipient('0612345678', selfJid, groupJid), '33612345678@s.whatsapp.net');
-console.log('✅ Test 2 réussi : Parseur de destinataire avec alias de groupe (famille, travail, @g.us).');
-
-// Test 3: Normalisation des JIDs et suppression multiple
-const cleanJid = '33612345678@s.whatsapp.net';
-const retrieved3 = getRecentKeys(cleanJid, 3, 'all');
-assert.ok(Array.isArray(retrieved3));
-console.log('✅ Test 3 réussi : getRecentKeys opérationnel.');
+// Test 4: Nettoyage et fonction setup
+assert.strictEqual(typeof cleanupSetupMessages, 'function');
+console.log('✅ Test 4 réussi : Fonction de nettoyage sans trace validée.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

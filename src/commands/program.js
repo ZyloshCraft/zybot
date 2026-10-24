@@ -7,6 +7,7 @@ import {
 } from '../services/scheduler.js';
 import { startProgramWizard, parseRecipient } from '../services/programWizard.js';
 import { replyOrEdit } from '../utils/stealth.js';
+import { getConfig } from '../config.js';
 
 export default {
   name: 'program',
@@ -155,8 +156,11 @@ export default {
       `✅ Message programmé pour le ${formattedTarget} vers *${destDisplay}*`
     );
 
-    // 2. Notification détaillée envoyée dans le chat privé (Moi)
-    if (selfJid) {
+    // 2. Notification détaillée envoyée dans le groupe dédié (notifds) ou en privé (Moi)
+    const config = getConfig();
+    const targetNotif = config.hub?.systemNotifs || selfJid;
+
+    if (targetNotif) {
       const recap = [
         '⏰ *NOUVEAU MESSAGE PROGRAMMÉ*',
         '━━━━━━━━━━━━━━━━━━━━',
@@ -170,9 +174,9 @@ export default {
       ].join('\n');
 
       try {
-        await sock.sendMessage(selfJid, { text: recap });
+        await sock.sendMessage(targetNotif, { text: recap });
       } catch (err) {
-        console.error('[program] Erreur notification privée:', err);
+        console.error('[program] Erreur notification hub notif:', err);
       }
     }
   }

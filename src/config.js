@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { jidNormalizedUser } from '@whiskeysockets/baileys';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +19,19 @@ const DEFAULT_CONFIG = {
     enabled: true,
     words: []
   },
-  groupAliases: {},
+  groupAliases: {
+    testbot: '120363412992633770@g.us',
+    importantmsg: '120363432686901629@g.us',
+    persopingunevue: '120363430665427462@g.us',
+    notifds: '120363413901804206@g.us'
+  },
+  hub: {
+    alerts: '120363432686901629@g.us',
+    persoping: '120363430665427462@g.us',
+    viewOnce: '120363430665427462@g.us',
+    systemNotifs: '120363413901804206@g.us',
+    test: '120363412992633770@g.us'
+  },
   stealth: {
     enabled: true,
     humanTypingMinMs: 1500,
@@ -65,4 +78,30 @@ export function saveConfig(config) {
   } catch (err) {
     console.error('Erreur lors de la sauvegarde de config.json:', err);
   }
+}
+
+/**
+ * Vérifie si une discussion correspond à un des groupes du Hub Communauté de gestion
+ * Dans ces groupes, les messages ne doivent JAMAIS être auto-supprimés !
+ */
+export function isHubGroup(rawJid) {
+  if (!rawJid) return false;
+  const normJid = jidNormalizedUser(rawJid);
+  const cfg = getConfig();
+
+  // Vérifier dans les groupes du hub
+  if (cfg.hub) {
+    for (const val of Object.values(cfg.hub)) {
+      if (val && jidNormalizedUser(val) === normJid) return true;
+    }
+  }
+
+  // Vérifier dans les alias de groupe
+  if (cfg.groupAliases) {
+    for (const val of Object.values(cfg.groupAliases)) {
+      if (val && jidNormalizedUser(val) === normJid) return true;
+    }
+  }
+
+  return false;
 }

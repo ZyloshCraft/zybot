@@ -1,4 +1,4 @@
-import { getConfig } from '../config.js';
+import { getConfig, isHubGroup } from '../config.js';
 
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -48,26 +48,29 @@ export async function replyOrEdit(sock, jid, msg, text) {
 
 /**
  * Affiche une réponse en modifiant le message de commande.
- * RÈGLE DE FURTIVITÉ :
+ * RÈGLE DE FURTIVITÉ & GESTION HUB :
  * - En discussion privée (DM ou chat perso), les messages NE sont JAMAIS supprimés.
- * - En groupe public, le message est automatiquement supprimé après ttlMs (défaut 5s) pour ne laisser aucune preuve.
+ * - Dans les groupes du Hub de gestion (testbot, notifds, persopingunevue, importantmsg), les messages NE sont JAMAIS supprimés.
+ * - Dans les groupes publics normaux avec des tiers, le message est automatiquement supprimé après ttlMs (défaut 5s).
  */
 export async function replyOrEditTemporary(sock, jid, msg, text, ttlMs = 5000) {
   const isGroup = Boolean(jid && jid.endsWith('@g.us'));
+  const isHub = isHubGroup(jid);
 
-  // Modifier le message avec le texte
-  await replyOrEdit(sock, jid, msg, text);
-
-  // Suppression temporaire UNIQUEMENT dans les groupes publics
-  if (isGroup) {
-    setTimeout(async () => {
-      try {
-        await sock.sendMessage(jid, { delete: msg.key });
-      } catch (err) {
-        console.warn('[AutoDelete] Échec de la suppression automatique en groupe:', err.message);
-      }
-    }, ttlMs);
+  // Pas de suppression en privé NI dans les groupes du hub communautaire
+  if (!isGroup || isHub) {
+    return await replyOrEdit(sock, jid, msg, text);
   }
+
+  // Suppression temporaire UNIQUEMENT dans les groupes tiers
+  await replyOrEdit(sock, jid, msg, text);
+  setTimeout(async () => {
+    try {
+      await sock.sendMessage(jid, { delete: msg.key });
+    } catch (err) {
+      console.warn('[AutoDelete] Échec suppression groupe:', err.message);
+    }
+  }, ttlMs);
 }
 
 /**

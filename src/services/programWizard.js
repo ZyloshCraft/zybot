@@ -1,6 +1,6 @@
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { parseScheduledTime, addScheduledMessage } from './scheduler.js';
-import { replyOrEdit, sendStealthMessage } from '../utils/stealth.js';
+import { replyOrEdit, sendStealthMessage, sleep } from '../utils/stealth.js';
 import { getConfig } from '../config.js';
 
 // Stockage de l'état du wizard par utilisateur
@@ -23,7 +23,7 @@ export function parseRecipient(input, selfJid, currentJid) {
   // 1. Si c'est directement un identifiant de groupe WhatsApp (@g.us)
   if (trimmed.endsWith('@g.us')) return trimmed;
 
-  // 2. Si c'est un alias de groupe enregistré (ex: 'famille', 'travail', 'potes')
+  // 2. Si c'est un alias de groupe enregistré (ex: 'famille', 'travail', 'notifds', 'testbot')
   const config = getConfig();
   const aliases = config.groupAliases || {};
   if (aliases[trimmed]) {
@@ -42,13 +42,17 @@ export function parseRecipient(input, selfJid, currentJid) {
 }
 
 export async function startProgramWizard({ sock, msg, jid, userId }) {
+  const setupKeys = [];
+  if (msg?.key) setupKeys.push(msg.key);
+
   activeWizards.set(userId, {
     step: 1,
     chatOrigin: jid,
     targetDate: null,
     formattedDate: '',
     messageText: '',
-    targetJid: null
+    targetJid: null,
+    setupKeys
   });
 
   const promptText = [
@@ -63,7 +67,10 @@ export async function startProgramWizard({ sock, msg, jid, userId }) {
     '💡 _(Tapez `/stop` à tout moment pour annuler)_'
   ].join('\n');
 
-  await replyOrEdit(sock, jid, msg, promptText);
+  const sent = await replyOrEdit(sock, jid, msg, promptText);
+  if (sent?.key && !setupKeys.some((k) => k.id === sent.key.id)) {
+    setupKeys.push(sent.key);
+  }
 }
 
 export async function handleWizardStep({ sock, msg, jid, text, userId }) {
@@ -72,10 +79,16 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
 
   const trimmed = text.trim();
 
-  // Commande d'annulation
+  // Ajouter le message de réponse de l'utilisateur à la liste des messages à nettoyer
+  if (msg?.key) {
+    wizard.setupKeys.push(msg.key);
+  }
+
+  // Commande d'annulation (/stop)
   if (trimmed.toLowerCase() === '/stop' || trimmed.toLowerCase() === 'stop' || trimmed.toLowerCase() === 'annuler') {
     clearWizard(userId);
-    await replyOrEdit(sock, jid, msg, '❌ Programmation assistée annulée.');
+    await cleanupSetupMessages(sock, jid, wizard.setupKeys);
+    await sendStealthMessage(sock, jid, { text: '❌ Programmation assistée annulée.' });
     return true;
   }
 
@@ -86,7 +99,7 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
   if (wizard.step === 1) {
     const targetDate = parseScheduledTime(trimmed);
     if (!targetDate || isNaN(targetDate.getTime())) {
-      await sendStealthMessage(
+      const errSent = await sendStealthMessage(
         sock,
         jid,
         {
@@ -94,11 +107,12 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
         },
         { quoted: msg }
       );
+      if (errSent?.key) wizard.setupKeys.push(errSent.key);
       return true;
     }
 
     if (targetDate.getTime() <= Date.now()) {
-      await sendStealthMessage(
+      const errSent = await sendStealthMessage(
         sock,
         jid,
         {
@@ -106,6 +120,7 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
         },
         { quoted: msg }
       );
+      if (errSent?.key) wizard.setupKeys.push(errSent.key);
       return true;
     }
 
@@ -121,7 +136,7 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
     wizard.formattedDate = formattedTarget;
     wizard.step = 2;
 
-    await sendStealthMessage(
+    const p2 = await sendStealthMessage(
       sock,
       jid,
       {
@@ -135,13 +150,15 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
       },
       { quoted: msg }
     );
+    if (p2?.key) wizard.setupKeys.push(p2.key);
     return true;
   }
 
   // --- ÉTAPE 2 : Réception du message ---
   if (wizard.step === 2) {
     if (!trimmed) {
-      await sendStealthMessage(sock, jid, { text: '⚠️ Veuillez saisir un texte pour le message.' }, { quoted: msg });
+      const errSent = await sendStealthMessage(sock, jid, { text: '⚠️ Veuillez saisir un texte pour le message.' }, { quoted: msg });
+      if (errSent?.key) wizard.setupKeys.push(errSent.key);
       return true;
     }
 
@@ -156,7 +173,7 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
 
     // Si on a démarré en privé : on demande à qui envoyer
     wizard.step = 3;
-    await sendStealthMessage(
+    const p3 = await sendStealthMessage(
       sock,
       jid,
       {
@@ -165,12 +182,13 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
           'À qui souhaitez-vous envoyer ce message ?',
           '',
           '• Entrez le *numéro* (ex: `0612345678` ou `+33612345678`)',
-          '• Tapez `ici` pour cette discussion',
-          '• Tapez `moi` pour votre chat personnel'
+          '• Ou le *nom d\'un groupe* (ex: `testbot`, `notifds`, `travail`)',
+          '• Tapez `ici` pour cette discussion, ou `moi` pour votre chat personnel'
         ].join('\n')
       },
       { quoted: msg }
     );
+    if (p3?.key) wizard.setupKeys.push(p3.key);
     return true;
   }
 
@@ -178,14 +196,15 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
   if (wizard.step === 3) {
     const target = parseRecipient(trimmed, selfJid, wizard.chatOrigin);
     if (!target) {
-      await sendStealthMessage(
+      const errSent = await sendStealthMessage(
         sock,
         jid,
         {
-          text: '⚠️ Numéro ou destinataire invalide. Entrez un numéro (ex: `0612345678`), `ici` ou `moi`.'
+          text: '⚠️ Destinataire non reconnu. Entrez un numéro, un alias de groupe (`testbot`, `notifds`...), `ici` ou `moi`.'
         },
         { quoted: msg }
       );
+      if (errSent?.key) wizard.setupKeys.push(errSent.key);
       return true;
     }
 
@@ -198,10 +217,42 @@ export async function handleWizardStep({ sock, msg, jid, text, userId }) {
 }
 
 /**
- * Enregistre le message programmé et envoie la confirmation complète dans le chat privé
+ * Supprime tous les messages ayant servi au setup (pour tous puis pour moi, évitant le libellé "Ce message a été supprimé")
+ */
+export async function cleanupSetupMessages(sock, jid, setupKeys = []) {
+  if (!setupKeys || !setupKeys.length) return;
+
+  for (const k of setupKeys) {
+    try {
+      // 1. Supprimer pour tout le monde
+      await sock.sendMessage(jid, { delete: k });
+      await sleep(250);
+
+      // 2. Supprimer pour soi-même pour effacer la trace "Ce message a été supprimé"
+      const ts = Math.floor(Date.now() / 1000);
+      await sock.chatModify(
+        {
+          deleteForMe: {
+            timestamp: ts,
+            key: k,
+            deleteMedia: false
+          }
+        },
+        jid
+      );
+    } catch (e) {
+      // Ignorer si déjà supprimé
+    }
+  }
+}
+
+/**
+ * Enregistre le message programmé, nettoie le setup et envoie le récapitulatif dans le hub
  */
 export async function finalizeScheduling({ sock, msg, jid, wizard, userId, selfJid }) {
   clearWizard(userId);
+
+  const config = getConfig();
 
   const item = addScheduledMessage({
     jid: wizard.targetJid,
@@ -210,14 +261,22 @@ export async function finalizeScheduling({ sock, msg, jid, wizard, userId, selfJ
     formattedDate: wizard.formattedDate
   });
 
+  // Nettoyer tous les messages d'échange du setup
+  await cleanupSetupMessages(sock, jid, wizard.setupKeys);
+
   // Déterminer le nom d'affichage de la destination
   let destDisplay = '';
   if (wizard.targetJid.endsWith('@g.us')) {
-    try {
-      const meta = await sock.groupMetadata(wizard.targetJid);
-      destDisplay = meta?.subject ? `Groupe "${meta.subject}"` : 'Ce groupe';
-    } catch (e) {
-      destDisplay = 'Groupe';
+    const aliasFound = Object.entries(config.groupAliases || {}).find(([a, id]) => id === wizard.targetJid);
+    if (aliasFound) {
+      destDisplay = `Groupe "${aliasFound[0]}"`;
+    } else {
+      try {
+        const meta = await sock.groupMetadata(wizard.targetJid);
+        destDisplay = meta?.subject ? `Groupe "${meta.subject}"` : 'Groupe';
+      } catch (e) {
+        destDisplay = 'Groupe';
+      }
     }
   } else if (wizard.targetJid === selfJid) {
     destDisplay = 'Votre chat personnel (Moi)';
@@ -226,16 +285,16 @@ export async function finalizeScheduling({ sock, msg, jid, wizard, userId, selfJ
     destDisplay = `+${num}`;
   }
 
-  // 1. Confirmation dans la discussion courante
-  await replyOrEdit(
+  // 1. Message de confirmation propre dans la discussion où a eu lieu la programmation
+  await sendStealthMessage(
     sock,
     jid,
-    msg,
-    `✅ Message programmé pour le ${wizard.formattedDate} vers *${destDisplay}*`
+    { text: `✅ Message programmé pour le ${wizard.formattedDate} vers *${destDisplay}*` }
   );
 
-  // 2. Notification détaillée dans le chat privé personnel de l'utilisateur (s'il existe)
-  if (selfJid) {
+  // 2. Récapitulatif détaillé envoyé dans le groupe de notification système (notifds) ou en DM
+  const targetNotifJid = config.hub?.systemNotifs || selfJid;
+  if (targetNotifJid) {
     const recap = [
       '⏰ *NOUVEAU MESSAGE PROGRAMMÉ*',
       '━━━━━━━━━━━━━━━━━━━━',
@@ -249,9 +308,9 @@ export async function finalizeScheduling({ sock, msg, jid, wizard, userId, selfJ
     ].join('\n');
 
     try {
-      await sock.sendMessage(selfJid, { text: recap });
+      await sock.sendMessage(targetNotifJid, { text: recap });
     } catch (err) {
-      console.error('[finalizeScheduling] Erreur envoi récap privé:', err);
+      console.error('[finalizeScheduling] Erreur envoi récap hub notif:', err);
     }
   }
 }

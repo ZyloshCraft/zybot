@@ -13,11 +13,12 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
 
   if (!text) return;
 
-  const myUserJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
-  if (!myUserJid) return;
+  const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
+  const targetAlertJid = config.hub?.alerts || selfJid;
+  if (!targetAlertJid) return;
 
-  // Ne pas alerter sur les messages envoyés dans son propre chat "Note to self"
-  if (jid === myUserJid) {
+  // Ne pas alerter si le message vient du groupe d'alerte lui-même ou du chat personnel
+  if (jid === targetAlertJid || jid === selfJid) {
     return;
   }
 
@@ -53,7 +54,7 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
   console.log(`[KeywordAlert] Mot-clé "${matchedWord}" détecté dans ${originName} par +${senderNumber}`);
 
   try {
-    await sock.sendMessage(myUserJid, { text: alertNotification });
+    await sock.sendMessage(targetAlertJid, { text: alertNotification });
   } catch (err) {
     console.error('[KeywordAlert] Erreur envoi alerte:', err);
   }

@@ -1,11 +1,12 @@
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { addScheduledMessage, parseScheduledTime } from '../services/scheduler.js';
 import { replyOrEdit } from '../utils/stealth.js';
+import { getConfig } from '../config.js';
 
 export default {
   name: 'rappel',
   aliases: ['remind', 'reminder'],
-  description: 'Définit un rappel personnel envoyé directement dans votre chat privé',
+  description: 'Définit un rappel envoyé dans votre chat privé ou groupe de notifications',
   async execute({ sock, msg, jid, args }) {
     const rawInput = args.join(' ').trim();
     if (!rawInput) {
@@ -14,8 +15,10 @@ export default {
     }
 
     const selfJid = sock.user?.id ? jidNormalizedUser(sock.user.id) : null;
-    if (!selfJid) {
-      await replyOrEdit(sock, jid, msg, 'Erreur : chat personnel introuvable');
+    const config = getConfig();
+    const destinationJid = config.hub?.systemNotifs || selfJid;
+    if (!destinationJid) {
+      await replyOrEdit(sock, jid, msg, 'Erreur : chat de notification introuvable');
       return;
     }
 
@@ -60,7 +63,7 @@ export default {
     });
 
     addScheduledMessage({
-      jid: selfJid, // Toujours envoyé dans votre chat privé personnel
+      jid: destinationJid, // Envoyé dans votre groupe notifds ou chat privé
       message: `⏰ *RAPPEL :* ${messageText}`,
       targetTimestamp: targetDate.getTime(),
       formattedDate: formattedTarget
