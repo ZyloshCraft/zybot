@@ -1,6 +1,7 @@
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { replyOrEdit } from '../utils/stealth.js';
 import { getConfig, updateConfig } from '../config.js';
+import { notifySystem } from '../services/notifier.js';
 
 export default {
   name: 'groupe',
@@ -49,6 +50,9 @@ export default {
         }
       }));
 
+      // Notifier le groupe de notifications système (notifds)
+      await notifySystem(sock, `✅ Alias : ${aliasName} ${targetJid}`);
+
       await replyOrEdit(
         sock,
         jid,
@@ -73,6 +77,9 @@ export default {
         ...prev,
         groupAliases: updated
       }));
+
+      // Notifier le groupe de notifications système (notifds)
+      await notifySystem(sock, `🗑️ Alias : ${aliasName} supprimé`);
 
       await replyOrEdit(sock, jid, msg, `🗑️ Alias *"${aliasName}"* supprimé.`);
       return;

@@ -10,8 +10,8 @@ const STORE_FILE = path.resolve(__dirname, '../../message_history.json');
 const MAX_HISTORY_PER_CHAT = 500;
 
 // Maps in-memory
-const chatHistories = new Map(); // normalizedJid -> Array<{ key, timestamp, fromMe, text }>
-const messagesById = new Map();  // id -> { key, timestamp, fromMe, jid, text }
+const chatHistories = new Map(); // normalizedJid -> Array<{ key, timestamp, fromMe, text, sender, pushName }>
+const messagesById = new Map();  // id -> { key, timestamp, fromMe, jid, text, sender, pushName, rawMessage }
 
 let saveTimeout = null;
 
@@ -40,8 +40,15 @@ export function saveMessageHistory() {
   try {
     const obj = {};
     for (const [jid, list] of chatHistories.entries()) {
-      // Sauvegarder jusqu'à 300 messages par discussion
-      obj[jid] = list.slice(-300);
+      // Sauvegarder jusqu'à 300 messages par discussion (sans les objets bruts lourds)
+      obj[jid] = list.slice(-300).map((item) => ({
+        key: item.key,
+        fromMe: item.fromMe,
+        timestamp: item.timestamp,
+        text: item.text || '',
+        sender: item.sender,
+        pushName: item.pushName
+      }));
     }
     fs.writeFileSync(STORE_FILE, JSON.stringify(obj, null, 2), 'utf-8');
   } catch (err) {
@@ -79,7 +86,10 @@ export function trackMessage(rawJid, key, metadata = {}) {
     },
     fromMe: Boolean(key.fromMe),
     timestamp: metadata.timestamp || Date.now(),
-    text: metadata.text || ''
+    text: metadata.text || '',
+    sender: metadata.sender ? jidNormalizedUser(metadata.sender) : (key.participant ? jidNormalizedUser(key.participant) : normJid),
+    pushName: metadata.pushName || '',
+    rawMessage: metadata.rawMessage || null
   };
 
   messagesById.set(key.id, item);

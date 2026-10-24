@@ -1,10 +1,11 @@
 import { getConfig, updateConfig } from '../config.js';
 import { replyOrEdit } from '../utils/stealth.js';
+import { notifySystem } from '../services/notifier.js';
 
 export default {
   name: 'alert',
   aliases: ['alerte'],
-  description: 'Gère les alertes de mots-clés dans les groupes',
+  description: 'Gère les alertes de mots-clés dans les groupes et chats',
   async execute({ sock, msg, jid, args }) {
     const config = getConfig();
     const alerts = config.alerts || { enabled: true, words: [] };
@@ -33,6 +34,7 @@ export default {
         ...prev,
         alerts: { ...prev.alerts, enabled: true }
       }));
+      await notifySystem(sock, '✅ Alertes mots-clés : activées');
       await replyOrEdit(sock, jid, msg, 'Alertes activées');
       return;
     }
@@ -42,6 +44,7 @@ export default {
         ...prev,
         alerts: { ...prev.alerts, enabled: false }
       }));
+      await notifySystem(sock, '🗑️ Alertes mots-clés : désactivées');
       await replyOrEdit(sock, jid, msg, 'Alertes désactivées');
       return;
     }
@@ -64,6 +67,7 @@ export default {
         ...prev,
         alerts: { ...prev.alerts, words: [...existing, word] }
       }));
+      await notifySystem(sock, `✅ Mot-clé : ${word}`);
       await replyOrEdit(sock, jid, msg, `Mot-clé ajouté : ${word}`);
       return;
     }
@@ -88,6 +92,7 @@ export default {
         ...prev,
         alerts: { ...prev.alerts, words: filtered }
       }));
+      await notifySystem(sock, `🗑️ Mot-clé : ${word} supprimé`);
       await replyOrEdit(sock, jid, msg, `Mot-clé retiré : ${word}`);
       return;
     }
@@ -98,6 +103,7 @@ export default {
         ...prev,
         alerts: { ...prev.alerts, words: [] }
       }));
+      await notifySystem(sock, '🗑️ Mots-clés : tous les mots-clés ont été supprimés');
       await replyOrEdit(sock, jid, msg, 'Tous les mots-clés ont été effacés');
       return;
     }

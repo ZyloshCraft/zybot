@@ -1,10 +1,10 @@
-import { normalizeMessageContent } from '@whiskeysockets/baileys';
+import { normalizeMessageContent, WAMessageStubType } from '@whiskeysockets/baileys';
 import { getConfig } from '../config.js';
 import { getCommand } from '../commands/index.js';
-import { handleAutoReply } from './autoReply.js';
 import { handleKeywordAlert } from './keywordAlert.js';
 import { trackMessage } from '../services/messageStore.js';
 import { hasActiveWizard, handleWizardStep } from '../services/programWizard.js';
+import { handleRevokedMessage } from '../services/antiDelete.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique)
@@ -18,6 +18,8 @@ export function extractTextFromMessage(message) {
     normalized.imageMessage?.caption ||
     normalized.videoMessage?.caption ||
     normalized.documentMessage?.caption ||
+    normalized.buttonsResponseMessage?.selectedDisplayText ||
+    normalized.templateButtonReplyMessage?.selectedId ||
     ''
   );
 }
@@ -47,7 +49,34 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
 
   for (const msg of messages) {
     try {
-      // Ignorer les messages vides ou d'état interne
+      // 1. Détection des suppressions de message (Anti-Delete)
+      const protocolMessage = msg.message?.protocolMessage;
+      if (protocolMessage && (protocolMessage.type === 0 || protocolMessage.type === 14)) {
+        const revokedKey = {
+          remoteJid: protocolMessage.key?.remoteJid || msg.key.remoteJid,
+          id: protocolMessage.key?.id,
+          participant: protocolMessage.key?.participant || msg.key.participant,
+          fromMe: protocolMessage.key?.fromMe
+        };
+        await handleRevokedMessage({
+          sock,
+          revokedKey,
+          revokerKey: msg.key,
+          timestamp: msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now()
+        });
+        continue;
+      }
+
+      if (msg.messageStubType === WAMessageStubType.REVOKE || msg.messageStubType === 68) {
+        await handleRevokedMessage({
+          sock,
+          revokedKey: msg.key,
+          timestamp: msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now()
+        });
+        continue;
+      }
+
+      // Ignorer les messages sans contenu ou autres stubs WhatsApp internes
       if (!msg.message || msg.messageStubType) continue;
 
       const jid = msg.key.remoteJid;
@@ -56,11 +85,14 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
       const text = extractTextFromMessage(msg.message).trim();
       const isOwner = isOwnerMessage(sock, msg);
 
-      // Mémoriser tous les messages (pour /clear et /persoping date exacte)
+      // Mémoriser tous les messages (pour Anti-Delete, /clear et /persoping date exacte)
       trackMessage(jid, msg.key, {
         timestamp: msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now(),
         fromMe: msg.key.fromMe,
-        text
+        text,
+        sender: msg.key.participant || msg.key.remoteJid,
+        pushName: msg.pushName,
+        rawMessage: msg.message
       });
 
       // Gestion de l'assistant pas-à-pas (ex: /program en mode guidé)
@@ -84,15 +116,9 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         }
       }
 
-      // Traitement des messages reçus d'autres personnes
+      // Traitement des messages reçus d'autres personnes : Détection des alertes mots-clés
       if (!msg.key.fromMe) {
-        // 1. Détection des alertes mots-clés (partout : groupes ET discussions privées)
         await handleKeywordAlert({ sock, msg, jid, text });
-
-        // 2. Auto-répondeur (mode vacances) en messages privés uniquement
-        if (!jid.endsWith('@g.us')) {
-          await handleAutoReply({ sock, msg, jid });
-        }
       }
     } catch (err) {
       console.error('[Handler] Erreur lors du traitement d\'un message:', err);

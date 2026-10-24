@@ -4,12 +4,14 @@ import makeWASocket, {
   DisconnectReason,
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
-  Browsers
+  Browsers,
+  WAMessageStubType
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcodeTerminal from 'qrcode-terminal';
 import { handleMessagesUpsert } from './handlers/message.js';
 import { trackMessage, saveMessageHistory } from './services/messageStore.js';
+import { handleRevokedMessage } from './services/antiDelete.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,7 +71,10 @@ export async function createWhatsAppClient() {
         if (m.key) {
           trackMessage(m.key.remoteJid, m.key, {
             timestamp: m.messageTimestamp ? Number(m.messageTimestamp) * 1000 : Date.now(),
-            fromMe: m.key.fromMe
+            fromMe: m.key.fromMe,
+            sender: m.key.participant || m.key.remoteJid,
+            pushName: m.pushName,
+            rawMessage: m.message
           });
         }
       }
@@ -113,6 +118,23 @@ export async function createWhatsAppClient() {
       console.log(`🛡️  Protection anti-détection : Active`);
       console.log(`💬 Envoyez /help dans votre chat privé pour tester le bot.`);
       console.log('=============================================================\n');
+    }
+  });
+
+  // Gestion des messages supprimés / révoqués (Anti-Delete)
+  sock.ev.on('messages.update', async (updates) => {
+    if (!updates || !updates.length) return;
+    for (const update of updates) {
+      if (
+        update.update?.messageStubType === WAMessageStubType.REVOKE ||
+        update.update?.message === null
+      ) {
+        await handleRevokedMessage({
+          sock,
+          revokedKey: update.key,
+          timestamp: Date.now()
+        });
+      }
     }
   });
 

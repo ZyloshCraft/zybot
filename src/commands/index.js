@@ -1,7 +1,6 @@
 import botCmd from './bot.js';
 import helpCmd from './help.js';
 import persopingCmd from './persoping.js';
-import vacancesCmd from './vacances.js';
 import programCmd from './program.js';
 import alertCmd from './alert.js';
 import translateCmd from './translate.js';
@@ -10,12 +9,10 @@ import tagallCmd from './tagall.js';
 import pollCmd from './poll.js';
 import vvCmd from './vv.js';
 import rebootCmd from './reboot.js';
-import vocalCmd from './vocal.js';
 import editCmd from './edit.js';
 import calcCmd from './calc.js';
 import rappelCmd from './rappel.js';
 import meteoCmd from './meteo.js';
-import cryptoCmd from './crypto.js';
 import idCmd from './id.js';
 import groupeCmd from './groupe.js';
 
@@ -33,7 +30,6 @@ function registerCommand(cmd) {
 registerCommand(botCmd);
 registerCommand(helpCmd);
 registerCommand(persopingCmd);
-registerCommand(vacancesCmd);
 registerCommand(programCmd);
 registerCommand(alertCmd);
 registerCommand(translateCmd);
@@ -42,12 +38,10 @@ registerCommand(tagallCmd);
 registerCommand(pollCmd);
 registerCommand(vvCmd);
 registerCommand(rebootCmd);
-registerCommand(vocalCmd);
 registerCommand(editCmd);
 registerCommand(calcCmd);
 registerCommand(rappelCmd);
 registerCommand(meteoCmd);
-registerCommand(cryptoCmd);
 registerCommand(idCmd);
 registerCommand(groupeCmd);
 
