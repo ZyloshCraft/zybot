@@ -99,9 +99,17 @@ export async function createWhatsAppClient() {
     if (connection === 'close') {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const reason = lastDisconnect?.error?.message || statusCode || 'Inconnu';
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+      const isConnectionReplaced = statusCode === DisconnectReason.connectionReplaced;
+      const isLoggedOut = statusCode === DisconnectReason.loggedOut;
+      const shouldReconnect = !isLoggedOut && !isConnectionReplaced;
 
       console.log(`⚠️ Connexion interrompue. Raison: ${reason} (code: ${statusCode})`);
+
+      if (isConnectionReplaced) {
+        console.log('⚠️ Conflit de session (code 440: connectionReplaced) : Une autre instance de ZyBot ou une session a pris la connexion.');
+        console.log('🛑 Arrêt immédiat de cette instance pour éviter une boucle infinie de conflit.');
+        process.exit(0);
+      }
 
       if (shouldReconnect) {
         console.log('⏳ Tentative de reconnexion automatique dans 3 secondes...');

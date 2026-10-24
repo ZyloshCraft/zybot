@@ -13,14 +13,21 @@ export default {
         await sock.sendMessage(jid, { delete: msg.key });
       } catch (e) {}
 
-      console.log('🔄 Relance du processus pour application des modifications (/reboot)...');
-      const child = spawn(process.argv[0], process.argv.slice(1), {
-        cwd: process.cwd(),
-        detached: true,
-        stdio: 'inherit'
-      });
-      child.unref();
-      process.exit(0);
-    }, 1500);
+      console.log('🔄 Fermeture propre de la session pour redémarrage (/reboot)...');
+      try {
+        sock.end();
+      } catch (e) {}
+
+      // Petite pause pour laisser les sockets réseau se libérer
+      setTimeout(() => {
+        const child = spawn(process.argv[0], process.argv.slice(1), {
+          cwd: process.cwd(),
+          detached: true,
+          stdio: 'inherit'
+        });
+        child.unref();
+        process.exit(0);
+      }, 500);
+    }, 1200);
   }
 };
