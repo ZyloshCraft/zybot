@@ -2,6 +2,7 @@
   "prefix": "/",
   "alerts": {
     "enabled": true,
+    "strict": true,
     "words": [
       "val",
       "valentin"

@@ -21,6 +21,35 @@ export function normalizeTextForSearch(str) {
 }
 
 /**
+ * Vérifie si un mot-clé est présent dans le texte.
+ * En mode strict (par défaut), vérifie les limites de mot (mot isolé/entier) pour éviter
+ * les faux positifs comme "valise" ou "vallée" pour le mot-clé "val".
+ * @param {string} text - Message brut
+ * @param {string} keyword - Mot-clé recherché
+ * @param {boolean} [strict=true] - Si true, empêche les mots rattachés (ex: vallée pour val)
+ * @returns {boolean}
+ */
+export function isKeywordMatched(text, keyword, strict = true) {
+  if (!text || !keyword) return false;
+
+  const normText = normalizeTextForSearch(text);
+  const normKw = normalizeTextForSearch(keyword);
+  if (!normKw) return false;
+
+  if (strict) {
+    // Mode strict : délimité par début/fin de chaîne ou caractères non-alphanumériques (ponctuation, espaces, symboles)
+    const escaped = normKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}([^\\p{L}\\p{N}]|$)`, 'iu');
+    return regex.test(normText);
+  }
+
+  // Mode souple : simple inclusion de sous-chaîne
+  const lowerRawText = text.toLowerCase();
+  const lowerW = keyword.toLowerCase().trim();
+  return lowerRawText.includes(lowerW) || normText.includes(normKw);
+}
+
+/**
  * Détecte les mots-clés surveillés dans tous les messages (groupes et privés)
  * et alerte le propriétaire discrètement dans le groupe dédié (importantmsg).
  */
@@ -41,16 +70,10 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
     return;
   }
 
-  const lowerRawText = text.toLowerCase();
-  const normalizedText = normalizeTextForSearch(text);
+  // Le mode strict est activé par défaut pour éviter les faux positifs (ex: "valise" ou "vallée" pour "val")
+  const isStrict = config.alerts.strict !== false;
 
-  // Recherche souple : insensible à la casse, aux accents, au formatage ou aux mots collés (ex: "bonjourca va")
-  const matchedWord = config.alerts.words.find((w) => {
-    if (!w) return false;
-    const lowerW = w.toLowerCase().trim();
-    const normW = normalizeTextForSearch(w);
-    return lowerRawText.includes(lowerW) || normalizedText.includes(normW);
-  });
+  const matchedWord = config.alerts.words.find((w) => isKeywordMatched(text, w, isStrict));
 
   if (!matchedWord) {
     return;

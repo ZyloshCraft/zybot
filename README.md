@@ -54,12 +54,13 @@ Dès qu'un élément persistant est ajouté ou supprimé de la configuration, un
 - `✅ Mode temporaire : activé (<temps>) pour <jid>` / `🗑️ Mode temporaire : désactivé`
 - Récapitulatif complet de chaque message programmé avec `/program` ou `/rappel`.
 
-### 6. 🚨 Détection Intelligente & Tolérante des Mots-Clés
-Le système `/alert` surveille tous les groupes et discussions avec une tolérance absolue :
-- **Insensible à la casse** : `bonjour`, `Bonjour`, `bonJour`, `BONJOUR`.
-- **Insensible au formatage** : `*bonjour*` (gras), `_bonjour_` (italique), `~bonjour~` (barré).
-- **Insensible aux accents** : `héros` / `heros`, `valentin` / `Valèntin`.
-- **Mots collés sans espace** : déclenche même si la personne a écrit `bonjourca va` ou `salutbonjour` !
+### 6. 🚨 Détection Intelligente & Mode Strict Anti-Spam
+Le système `/alert` surveille tous les groupes et discussions avec une protection anti-spam avancée :
+- **Mode Strict Anti-Faux Positifs (Activé par défaut)** : Les mots courts comme `val` ne se déclenchent **QUE** s'ils sont isolés (ex: `salut val`, `hey @val`, `*Val*`). Les mots rattachés comme `valise`, `vallée`, `cheval` ou `valllllll` sont automatiquement ignorés !
+- **Insensible à la casse** : `val`, `Val`, `VAL`.
+- **Insensible au formatage** : `*val*` (gras), `_val_` (italique), `~val~` (barré).
+- **Insensible aux accents** : `héros` / `heros`, `Valèntin` / `valentin`.
+- **Contrôle rapide** : Activez ou désactivez le mode strict avec `/alert strict on` ou `/alert strict off`.
 
 ### 7. 📲 Notifications Push Smartphone Instantanées (`/ntfy`)
 - **Sonnerie & Vibration en temps réel** : Même avec WhatsApp fermé ou téléphone verrouillé, recevez des notifications push instantanées via l'application gratuite et open-source **ntfy** (iOS/Android).
@@ -115,7 +116,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | :--- | :--- | :--- |
 | **`/update`** | `/update` ou `/update [on\|off]` | Vérifie les commits GitHub, effectue le `git pull`, met à jour les dépendances et redémarre instantanément. |
 | **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
-| **`/bot`** | `/bot` | Affiche l'uptime, l'utilisation RAM, la latence et la version Node.js. |
+| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.10), l'uptime, l'utilisation RAM, la latence et Node.js. |
 | **`/help`** | `/help` | Affiche le menu d'aide condensé. |
 
 ---

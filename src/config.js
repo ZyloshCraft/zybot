@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = {
   prefix: '/',
   alerts: {
     enabled: true,
+    strict: true,
     words: []
   },
   groupAliases: {

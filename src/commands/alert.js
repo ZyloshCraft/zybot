@@ -8,14 +8,17 @@ export default {
   description: 'Gère les alertes de mots-clés dans les groupes et chats',
   async execute({ sock, msg, jid, args }) {
     const config = getConfig();
-    const alerts = config.alerts || { enabled: true, words: [] };
+    const alerts = config.alerts || { enabled: true, strict: true, words: [] };
     const sub = args[0]?.toLowerCase();
 
     // 1. Lister les mots-clés (/alert list ou sans argument)
     if (!sub || sub === 'list') {
       const words = alerts.words || [];
+      const isStrict = alerts.strict !== false;
       const lines = [
-        `Alertes mots-clés : ${alerts.enabled ? 'Actif' : 'Inactif'}`
+        `🚨 *Alertes mots-clés :* ${alerts.enabled ? 'Actif' : 'Inactif'}`,
+        `🎯 *Mode strict :* ${isStrict ? 'Actif (mot entier uniquement)' : 'Inactif (sous-chaîne large)'}`,
+        '━━━━━━━━━━━━━━━━━━━━'
       ];
 
       if (words.length === 0) {
@@ -23,6 +26,9 @@ export default {
       } else {
         words.forEach((w, i) => lines.push(`${i + 1}. ${w}`));
       }
+
+      lines.push('━━━━━━━━━━━━━━━━━━━━');
+      lines.push('💡 Astuce : `/alert strict on` pour bloquer les faux positifs (ex: "valise" pour "val").');
 
       await replyOrEdit(sock, jid, msg, lines.join('\n'));
       return;
@@ -49,7 +55,35 @@ export default {
       return;
     }
 
-    // 3. Ajouter
+    // 3. Gestion du mode strict : /alert strict [on|off]
+    if (sub === 'strict') {
+      const opt = args[1]?.toLowerCase();
+      if (opt === 'off' || opt === 'false' || opt === 'souple') {
+        updateConfig((prev) => ({
+          ...prev,
+          alerts: { ...prev.alerts, strict: false }
+        }));
+        await notifySystem(sock, '⚠️ Mode strict mots-clés : désactivé (sous-chaînes autorisées)');
+        await replyOrEdit(sock, jid, msg, '⚠️ Mode strict désactivé : les mots-clés matcheront aussi à l\'intérieur d\'autres mots.');
+        return;
+      }
+
+      if (opt === 'on' || opt === 'true' || opt === 'actif') {
+        updateConfig((prev) => ({
+          ...prev,
+          alerts: { ...prev.alerts, strict: true }
+        }));
+        await notifySystem(sock, '✅ Mode strict mots-clés : activé (mots entiers uniquement)');
+        await replyOrEdit(sock, jid, msg, '✅ Mode strict activé : les mots rattachés (ex: "valise" ou "vallée" pour "val") ne déclencheront plus d\'alerte !');
+        return;
+      }
+
+      const isStrict = alerts.strict !== false;
+      await replyOrEdit(sock, jid, msg, `Mode strict actuel : *${isStrict ? 'Actif' : 'Inactif'}*\nUsage : \`/alert strict on\` ou \`/alert strict off\``);
+      return;
+    }
+
+    // 4. Ajouter
     if (sub === 'add') {
       const word = args.slice(1).join(' ').trim().toLowerCase();
       if (!word) {
@@ -72,7 +106,7 @@ export default {
       return;
     }
 
-    // 4. Supprimer
+    // 5. Supprimer
     if (sub === 'del' || sub === 'remove' || sub === 'rm') {
       const word = args.slice(1).join(' ').trim().toLowerCase();
       if (!word) {
@@ -97,7 +131,7 @@ export default {
       return;
     }
 
-    // 5. Clear
+    // 6. Clear
     if (sub === 'clear') {
       updateConfig((prev) => ({
         ...prev,
@@ -108,6 +142,6 @@ export default {
       return;
     }
 
-    await replyOrEdit(sock, jid, msg, 'Usage : /alert [list|add|del|on|off]');
+    await replyOrEdit(sock, jid, msg, 'Usage : /alert [list|add|del|strict|on|off]');
   }
 };
