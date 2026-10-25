@@ -47,7 +47,8 @@ const DEFAULT_CONFIG = {
     importantmsg: '120363432686901629@g.us',
     persopingunevue: '120363430665427462@g.us',
     notifds: '120363413901804206@g.us',
-    antidelete: '120363430044075107@g.us'
+    antidelete: '120363430044075107@g.us',
+    admintaverne: '120363424594930135@g.us'
   },
   hub: {
     alerts: '120363432686901629@g.us',
@@ -55,7 +56,8 @@ const DEFAULT_CONFIG = {
     viewOnce: '120363430665427462@g.us',
     systemNotifs: '120363413901804206@g.us',
     antiDelete: '120363430044075107@g.us',
-    test: '120363412992633770@g.us'
+    test: '120363412992633770@g.us',
+    admintaverne: '120363424594930135@g.us'
   },
   stealth: {
     enabled: true,

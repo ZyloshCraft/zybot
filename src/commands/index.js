@@ -26,6 +26,9 @@ import exportCmd from './export.js';
 import stickerCmd from './sticker.js';
 import dlCmd from './dl.js';
 import texteCmd from './texte.js';
+import resumeCmd from './resume.js';
+import warnCmd from './warn.js';
+import banCmd from './ban.js';
 
 const commands = new Map();
 
@@ -66,6 +69,9 @@ registerCommand(exportCmd);
 registerCommand(stickerCmd);
 registerCommand(dlCmd);
 registerCommand(texteCmd);
+registerCommand(resumeCmd);
+registerCommand(warnCmd);
+registerCommand(banCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

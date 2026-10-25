@@ -11,16 +11,18 @@ import { getTodayStats, recordMessageSent, recordPrivateMessageReceived, formatR
 import { getBotVersion } from '../src/commands/bot.js';
 import { isDndActive } from '../src/services/ntfy.js';
 import { trackStatus, getStatusesForUser } from '../src/services/statusStore.js';
+import { addWarn, getWarns, clearWarns } from '../src/services/warnStore.js';
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 28 commandes actives et de la version v1.21
+// Test 1: Vérification des 31 commandes actives et de la version v1.22
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'tagall', 'poll',
   'vv', 'reboot', 'edit', 'calc', 'rappel',
   'meteo', 'id', 'groupe', 'temp', 'recap', 'ntfy', 'update',
-  'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte'
+  'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
+  'resume', 'warn', 'ban'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -30,19 +32,23 @@ for (const name of expected) {
 assert.ok(getCommand('s'), 'L\'alias "s" pour sticker doit exister');
 assert.ok(getCommand('vocal'), 'L\'alias "vocal" pour texte doit exister');
 assert.ok(getCommand('telecharger'), 'L\'alias "telecharger" pour dl doit exister');
+assert.ok(getCommand('av'), 'L\'alias "av" pour warn doit exister');
+assert.ok(getCommand('kick'), 'L\'alias "kick" pour ban doit exister');
+assert.ok(getCommand('summary'), 'L\'alias "summary" pour resume doit exister');
 assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être supprimé');
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.21'), `La version doit être v1.21 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 28 commandes actives enregistrées, version ${currentVersion} validée.`);
+assert.ok(currentVersion.includes('1.22'), `La version doit être v1.22 (obtenu: ${currentVersion})`);
+console.log(`✅ Test 1 réussi : 31 commandes actives enregistrées, version ${currentVersion} validée.`);
 
-// Test 2: Groupes du Hub Communautaire (y compris antidelete)
+// Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
 assert.strictEqual(isHubGroup('120363432686901629@g.us'), true, 'importantmsg doit être reconnu comme Hub Group');
 assert.strictEqual(isHubGroup('120363430665427462@g.us'), true, 'persopingunevue doit être reconnu comme Hub Group');
 assert.strictEqual(isHubGroup('120363413901804206@g.us'), true, 'notifds doit être reconnu comme Hub Group');
 assert.strictEqual(isHubGroup('120363430044075107@g.us'), true, 'antidelete doit être reconnu comme Hub Group');
+assert.strictEqual(isHubGroup('120363424594930135@g.us'), true, 'admintaverne doit être reconnu comme Hub Group');
 assert.strictEqual(isHubGroup('999999999999999999@g.us'), false, 'Un groupe externe ne doit pas être un Hub Group');
 console.log('✅ Test 2 réussi : Détection des groupes du Hub Communauté validée.');
 
@@ -139,5 +145,19 @@ const exported = getChatMessages(exportChatJid, 10);
 assert.ok(exported.length >= 2, 'getChatMessages doit retourner les messages de la conversation');
 assert.strictEqual(exported[exported.length - 1].text, 'Deuxième message test');
 console.log('✅ Test 8 réussi : Extraction d\'historique /export validée.');
+
+// Test 9: Système d'avertissements (warnStore)
+const testTarget = '33611223344';
+addWarn(testTarget, { groupJid: '120363424594930135@g.us', groupName: 'Taverne', reason: 'Spam vocal', admin: 'Valentin' });
+addWarn(testTarget, { groupJid: '120363424594930135@g.us', groupName: 'Taverne', reason: 'Insultes', admin: 'Valentin' });
+const userWarns = getWarns(testTarget);
+assert.strictEqual(userWarns.length, 2, 'L\'utilisateur doit avoir 2 warns');
+assert.strictEqual(userWarns[0].reason, 'Spam vocal');
+assert.strictEqual(userWarns[1].reason, 'Insultes');
+
+const cleared = clearWarns(testTarget);
+assert.strictEqual(cleared, 2, '2 warns doivent avoir été effacés');
+assert.strictEqual(getWarns(testTarget).length, 0, 'L\'utilisateur ne doit plus avoir de warns');
+console.log('✅ Test 9 réussi : Gestion du stockage des warns (ajout, liste, suppression) validée.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

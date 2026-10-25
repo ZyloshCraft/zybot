@@ -27,6 +27,7 @@ Au lieu d'encombrer votre chat personnel, ZyBot achemine chaque catégorie d'év
 - 🔒 **Groupe Vue-Unique & Persoping (`persopingunevue`)** : `120363430665427462@g.us`
 - 📢 **Groupe Notifications Système (`notifds`)** : `120363413901804206@g.us`
 - 🗑️ **Groupe Anti-Delete & Anti-Edit (`antidelete`)** : `120363430044075107@g.us`
+- 🛡️ **Groupe Administration & Modération (`admintaverne`)** : `120363424594930135@g.us`
 
 > **Règle d'or : Dans tous ces groupes du Hub ainsi qu'en message privé, les messages ne s'effacent JAMAIS.**
 
@@ -119,6 +120,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 ### 🛠️ Utilitaires & Productivité
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
+| **`/resume`** | `/resume [nb]` | Génère un résumé synthétique par IA (Gemini 3.5 Flash Lite) des derniers échanges en mode ultra-économe en tokens. |
 | **`/whois`** | `/whois [@contact\|numéro]` | Génère une fiche profil complète dans `notifds` (Photo HD, bio, type de compte personnel/business, groupes en commun, pays). |
 | **`/dnd`** | `/dnd [on\|off\|2h\|23h 06h]` | Mode Ne Pas Déranger : coupe le son des notifications push ntfy la nuit (défaut 23h-06h) ou temporairement. |
 | **`/recap`** | `/recap` | Affiche en direct le tableau de bord des statistiques d'activité et d'interception du jour. |
@@ -127,6 +129,14 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | **`/rappel`** | `/rappel <texte> \| <temps>` | Définit un rappel personnel envoyé automatiquement dans `notifds` (ex: `/rappel Réunion \| +15m` ou `/rappel Sortir \| 18:30`). |
 | **`/meteo`** | `/meteo [ville]` | Affiche la météo en direct d'une ville (température, ressenti, vent) directement à la place de la commande. |
 | **`/translate`** | `/translate [lang] [texte]` | Traduit le texte ou le message cité directement à la place de la commande (ex: `/translate en Bonjour`, `/translate es`). |
+
+### 🛡️ Modération & Administration de Groupe (Admins & Propriétaire)
+| Commande | Syntaxe | Description |
+| :--- | :--- | :--- |
+| **`/ban`** | `/ban <membre> [raison]` | Expulse un membre du groupe, lui envoie un message privé (DM) explicatif, et consigne la sanction dans `admintaverne` et `notifds`. |
+| **`/warn`** | `/warn <membre> [raison]` | *(Alias: `/av`)* Avertit un membre, mémorise la sanction à long terme, et transmet le dossier complet dans le groupe `admintaverne`. |
+| **`/warn list`** | `/warn list [membre]` | *(Alias: `/av list`)* Liste tous les membres ayant des avertissements ou affiche l'historique complet d'une personne avec raisons et dates. |
+| **`/warn del`** | `/warn del <membre>` | *(Alias: `/av del`)* Efface tous les avertissements d'un membre et notifie les salons d'administration. |
 
 ### 👥 Gestion de Groupes & Automatisation
 | Commande | Syntaxe | Description |
@@ -143,8 +153,8 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | :--- | :--- | :--- |
 | **`/update`** | `/update` ou `/update [on\|off]` | Vérifie les commits GitHub, effectue le `git pull`, met à jour les dépendances et redémarre instantanément. |
 | **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
-| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.21), l'uptime, l'utilisation RAM, la latence et Node.js. |
-| **`/help`** | `/help` | Affiche le menu d'aide condensé (28 commandes). |
+| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.22), l'uptime, l'utilisation RAM, la latence et Node.js. |
+| **`/help`** | `/help` | Affiche le menu d'aide condensé (31 commandes). |
 
 ---
 

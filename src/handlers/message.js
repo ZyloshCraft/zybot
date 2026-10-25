@@ -156,17 +156,40 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         if (handled) continue;
       }
 
-      // Si le message commence par le préfixe et provient du propriétaire
-      if (text.startsWith(prefix) && isOwner) {
+      // Exécution des commandes (préfixe)
+      if (text.startsWith(prefix)) {
         const parts = text.slice(prefix.length).trim().split(/\s+/);
         const commandName = parts[0];
         const args = parts.slice(1);
 
         const command = getCommand(commandName);
         if (command) {
-          console.log(`[Commande] Exécution de ${prefix}${commandName} par le propriétaire`);
-          await command.execute({ sock, msg, jid, args, restartClient });
-          continue;
+          // 1. Le propriétaire a un accès total à toutes les commandes
+          if (isOwner) {
+            console.log(`[Commande] Exécution de ${prefix}${commandName} par le propriétaire`);
+            await command.execute({ sock, msg, jid, args, restartClient, isOwner: true, isAdmin: true });
+            continue;
+          }
+
+          // 2. Les administrateurs de groupe ont accès aux commandes de modération (adminOnly)
+          if (command.adminOnly && jid.endsWith('@g.us')) {
+            const senderJid = msg.key.participant || msg.key.remoteJid;
+            let isGroupAdmin = false;
+            try {
+              const meta = await sock.groupMetadata(jid);
+              const senderClean = senderJid ? senderJid.split('@')[0].split(':')[0] : '';
+              const participant = meta.participants?.find((p) => p.id.split('@')[0].split(':')[0] === senderClean);
+              isGroupAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin';
+            } catch (err) {
+              console.warn('[AdminCheck] Erreur vérification admin:', err.message);
+            }
+
+            if (isGroupAdmin) {
+              console.log(`[Commande] Exécution de la commande admin ${prefix}${commandName} par un admin de groupe (+${senderJid.split('@')[0]})`);
+              await command.execute({ sock, msg, jid, args, restartClient, isOwner: false, isAdmin: true });
+              continue;
+            }
+          }
         }
       }
 
