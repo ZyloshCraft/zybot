@@ -49,14 +49,47 @@ export async function convertOggToWav(audioBuffer) {
 }
 
 /**
+ * Récupère les clés API configurées (depuis config.json ou les fichiers .env possibles)
+ */
+function getSpeechKeys() {
+  const possiblePaths = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(os.homedir(), '.env'),
+    path.resolve(os.homedir(), 'zybot/.env')
+  ];
+
+  for (const p of possiblePaths) {
+    try {
+      if (fs.existsSync(p)) {
+        const raw = fs.readFileSync(p, 'utf-8');
+        for (const line of raw.split('\n')) {
+          const m = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+          if (m) {
+            const k = m[1];
+            const v = (m[2] || '').trim().replace(/^['"]|['"]$/g, '');
+            if (v && !process.env[k]) {
+              process.env[k] = v;
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  const config = getConfig();
+  return {
+    groqKey: config.speech?.groqApiKey || process.env.GROQ_API_KEY,
+    geminiKey: config.speech?.geminiApiKey || process.env.GEMINI_API_KEY
+  };
+}
+
+/**
  * Transcrit un fichier audio WAV en texte
  * @param {string} wavPath - Chemin vers le fichier WAV
  * @returns {Promise<string>}
  */
 export async function transcribeAudioFile(wavPath) {
-  const config = getConfig();
-  const groqKey = config.speech?.groqApiKey || process.env.GROQ_API_KEY;
-  const geminiKey = config.speech?.geminiApiKey || process.env.GEMINI_API_KEY;
+  const { groqKey, geminiKey } = getSpeechKeys();
 
   // 1. Transcription ultra-rapide via Groq Whisper (gratuit, ~0.3 seconde)
   if (groqKey) {
