@@ -70,17 +70,23 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
     return;
   }
 
-  // Le mode strict est activé par défaut pour éviter les faux positifs (ex: "valise" ou "vallée" pour "val")
-  const isStrict = config.alerts.strict !== false;
+  const senderJid = msg.key.participant || msg.key.remoteJid || 'Inconnu';
+  const senderNumber = senderJid.split('@')[0].split(':')[0];
 
+  // 1. Vérification de la Blacklist anti-troll (ignore les personnes bloquées)
+  const blacklist = (config.alerts?.blacklist || []).map((n) => String(n).replace(/[^0-9]/g, ''));
+  if (blacklist.some((blocked) => blocked && senderNumber.includes(blocked))) {
+    return;
+  }
+
+  // 2. Mode strict activé par défaut (évite les faux positifs comme "valise" ou "vallée" pour "val")
+  const isStrict = config.alerts.strict !== false;
   const matchedWord = config.alerts.words.find((w) => isKeywordMatched(text, w, isStrict));
 
   if (!matchedWord) {
     return;
   }
 
-  const senderJid = msg.key.participant || msg.key.remoteJid || 'Inconnu';
-  const senderNumber = senderJid.split('@')[0].split(':')[0];
   const myNumber = selfJid ? selfJid.split('@')[0].split(':')[0] : null;
 
   let originName = `Discussion privée (+${senderNumber})`;
@@ -104,7 +110,7 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
   console.log(`[KeywordAlert] Mot-clé "${matchedWord}" détecté dans ${originName} par +${senderNumber}`);
   recordKeywordAlert();
 
-  // Envoyer une notification push sonore/vibrante sur le smartphone
+  // Envoyer une notification push sonore/vibrante sur le smartphone (si DND inactif)
   sendNtfyNotification({
     title: `🚨 Alerte mot-clé : "${matchedWord}"`,
     message: `De : +${senderNumber} dans ${originName}\n"${text}"`,

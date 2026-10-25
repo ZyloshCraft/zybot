@@ -19,6 +19,9 @@ import tempCmd from './temp.js';
 import recapCmd from './recap.js';
 import ntfyCmd from './ntfy.js';
 import updateCmd from './update.js';
+import dndCmd from './dnd.js';
+import whoisCmd from './whois.js';
+import statutCmd from './statut.js';
 
 const commands = new Map();
 
@@ -52,6 +55,9 @@ registerCommand(tempCmd);
 registerCommand(recapCmd);
 registerCommand(ntfyCmd);
 registerCommand(updateCmd);
+registerCommand(dndCmd);
+registerCommand(whoisCmd);
+registerCommand(statutCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

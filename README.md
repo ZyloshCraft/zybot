@@ -54,15 +54,35 @@ Dès qu'un élément persistant est ajouté ou supprimé de la configuration, un
 - `✅ Mode temporaire : activé (<temps>) pour <jid>` / `🗑️ Mode temporaire : désactivé`
 - Récapitulatif complet de chaque message programmé avec `/program` ou `/rappel`.
 
-### 6. 🚨 Détection Intelligente & Mode Strict Anti-Spam
+### 6. 🚨 Détection Intelligente, Mode Strict & Blacklist Anti-Troll
 Le système `/alert` surveille tous les groupes et discussions avec une protection anti-spam avancée :
 - **Mode Strict Anti-Faux Positifs (Activé par défaut)** : Les mots courts comme `val` ne se déclenchent **QUE** s'ils sont isolés (ex: `salut val`, `hey @val`, `*Val*`). Les mots rattachés comme `valise`, `vallée`, `cheval` ou `valllllll` sont automatiquement ignorés !
+- **🚫 Blacklist Anti-Troll (`/alert ignore <numéro>`)** : Si un plaisantin s'amuse à spammer votre mot-clé, ignorez-le définitivement d'une seule commande. Vous pouvez aussi répondre à son message avec `/alert ignore`. Ses messages ne déclencheront plus jamais d'alerte. Retrait facile avec `/alert unignore <numéro>`.
 - **Insensible à la casse** : `val`, `Val`, `VAL`.
 - **Insensible au formatage** : `*val*` (gras), `_val_` (italique), `~val~` (barré).
 - **Insensible aux accents** : `héros` / `heros`, `Valèntin` / `valentin`.
 - **Contrôle rapide** : Activez ou désactivez le mode strict avec `/alert strict on` ou `/alert strict off`.
 
-### 7. 📲 Notifications Push Smartphone Instantanées (`/ntfy`)
+### 7. 🌙 Mode Ne Pas Déranger (DND) pour Alertes Push (`/dnd`)
+- **Silence Nocturne Automatique (23h00 - 06h00 par défaut)** : Les notifications push `ntfy` sur smartphone sont automatiquement mises en sourdine chaque nuit pour préserver votre sommeil.
+- **DND Temporaire** : Coupez les notifications pour une durée déterminée avec `/dnd 2h`, `/dnd 30m`, etc.
+- **Personnalisation des Horaires** : Réglez votre propre créneau en tapant simplement `/dnd 22:30 07:00` ou `/dnd 23h 06h`.
+
+### 8. 🕵️‍♂️ Dossier Profil Complet & OSINT WhatsApp (`/whois`)
+Générez instantanément une fiche d'information approfondie sur n'importe quel contact :
+- **Photo de profil en Haute Définition (HD)** récupérée et envoyée dans votre hub `notifds`.
+- **Bio / Statut WhatsApp** et historique.
+- **Groupes en commun avec vous** (nombre total et liste des groupes partagés).
+- **Type de compte** (Personnel ou WhatsApp Business avec description, email pro, site web et catégorie).
+- **Pays estimé** et indicatif téléphonique.
+- **Rôle dans le groupe courant** (SuperAdmin, Admin, Membre).
+
+### 9. 📸 Archivage & Téléchargement des Statuts / Stories (`/statut`)
+- **Archivage Furtif Continu** : Le bot intercepte et met en mémoire les statuts (photos, vidéos, textes) publiés par vos contacts sans envoyer d'accusé de lecture.
+- **Inspection Rapide** : Tapez `/statut` pour voir qui a publié des statuts récemment.
+- **Extraction & Téléchargement** : Tapez `/statut <numéro_ou_mention>` (ou répondez au message de quelqu'un avec `/statut`) pour recevoir toutes ses stories en haute qualité directement dans votre hub `notifds` !
+
+### 10. 📲 Notifications Push Smartphone Instantanées (`/ntfy`)
 - **Sonnerie & Vibration en temps réel** : Même avec WhatsApp fermé ou téléphone verrouillé, recevez des notifications push instantanées via l'application gratuite et open-source **ntfy** (iOS/Android).
 - Relié en direct à vos alertes :
   - 🚨 Alertes mots-clés (`importantmsg`).
@@ -86,6 +106,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
 | **`/vv`** | *(En réponse)* `/vv` | Capture discrètement une photo ou vidéo à vue unique (View Once 1️⃣) et la transmet en clair dans le groupe `persopingunevue`. Zéro trace dans le chat ! |
+| **`/statut`** | `/statut [numéro]` | Archive et télécharge les stories/statuts WhatsApp récents d'un contact (photos, vidéos, textes) directement dans votre hub `notifds`. |
 | **`/persoping`** | *(En réponse)* `/persoping` | Transfère le message ciblé dans `persopingunevue` avec sa **date/heure d'envoi originale**, son auteur, son origine et son ID. |
 | **`/clear`** | `/clear <nb> [all\|me]` | Supprime vos derniers messages instantanément (~1s pour 10 messages). `all` = pour tous (revoke), `me` = pour vous seul. |
 | **`/temp`** | `/temp <temps\|off>` | Active l'auto-destruction de tous vos futurs messages dans cette discussion (ex: `/temp 30s`, `/temp 5m`, `/temp 1h`, `/temp off`). |
@@ -94,6 +115,8 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 ### 🛠️ Utilitaires & Productivité
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
+| **`/whois`** | `/whois [@contact\|numéro]` | Génère une fiche profil complète dans `notifds` (Photo HD, bio, type de compte personnel/business, groupes en commun, pays). |
+| **`/dnd`** | `/dnd [on\|off\|2h\|23h 06h]` | Mode Ne Pas Déranger : coupe le son des notifications push ntfy la nuit (défaut 23h-06h) ou temporairement. |
 | **`/recap`** | `/recap` | Affiche en direct le tableau de bord des statistiques d'activité et d'interception du jour. |
 | **`/ntfy`** | `/ntfy <canal\|off>` | Active les notifications push avec sonnerie et vibration sur votre smartphone via l'application ntfy. |
 | **`/calc`** | `/calc <calcul>` | Calcule instantanément une expression mathématique (ex: `/calc 15 * 84 + 12.5`) et remplace la commande sur place. |
@@ -108,7 +131,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | **`/tagall`** | `/tagall [message]` | *(En groupe)* Mentionne instantanément tous les membres du groupe d'un seul coup. |
 | **`/id`** | `/id` | Affiche l'ID unique WhatsApp (`@g.us`) du groupe ou de la discussion, ainsi que son alias si configuré. |
 | **`/groupe`** | `/groupe` ou `/groupe alias <nom> [id]` | Liste tous vos groupes ou attribue un alias court (ex: `testbot`, `travail`) utilisable dans `/program`. |
-| **`/alert`** | `/alert [list\|add\|del\|on\|off]` | Surveille des mots-clés dans vos groupes et discussions privées. Vous alerte discrètement dans `importantmsg`. |
+| **`/alert`** | `/alert [list\|add\|del\|ignore\|on\|off]` | Surveille des mots-clés dans vos discussions et permet d'ignorer des trolls avec `/alert ignore <numéro>`. Alerte dans `importantmsg`. |
 | **`/program`** | `/program` ou direct : `<msg> \| <date> [\| dest]` | **Mode Guidé Interactif** : tapez juste `/program` pour être guidé pas-à-pas (date/heure, message, destinataire/alias). Annulable avec `/stop`. Supprime les messages de setup sans trace ! |
 
 ### ⚙️ Système & Maintenance
@@ -116,8 +139,8 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | :--- | :--- | :--- |
 | **`/update`** | `/update` ou `/update [on\|off]` | Vérifie les commits GitHub, effectue le `git pull`, met à jour les dépendances et redémarre instantanément. |
 | **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
-| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.10), l'uptime, l'utilisation RAM, la latence et Node.js. |
-| **`/help`** | `/help` | Affiche le menu d'aide condensé. |
+| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.20), l'uptime, l'utilisation RAM, la latence et Node.js. |
+| **`/help`** | `/help` | Affiche le menu d'aide condensé (24 commandes). |
 
 ---
 

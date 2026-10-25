@@ -9,15 +9,18 @@ import { parseRecipient, hasActiveWizard, clearWizard, cleanupSetupMessages } fr
 import { parseTempDuration } from '../src/commands/temp.js';
 import { getTodayStats, recordMessageSent, recordPrivateMessageReceived, formatRecapText } from '../src/services/statsTracker.js';
 import { getBotVersion } from '../src/commands/bot.js';
+import { isDndActive } from '../src/services/ntfy.js';
+import { trackStatus, getStatusesForUser } from '../src/services/statusStore.js';
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 21 commandes actives et de la version v1.10
+// Test 1: Vérification des 24 commandes actives et de la version v1.20
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'tagall', 'poll',
   'vv', 'reboot', 'edit', 'calc', 'rappel',
-  'meteo', 'id', 'groupe', 'temp', 'recap', 'ntfy', 'update'
+  'meteo', 'id', 'groupe', 'temp', 'recap', 'ntfy', 'update',
+  'dnd', 'whois', 'statut'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -28,8 +31,8 @@ assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé
 assert.strictEqual(getCommand('vocal'), undefined, 'vocal doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.10'), `La version doit être v1.10 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 21 commandes actives enregistrées, version ${currentVersion} validée.`);
+assert.ok(currentVersion.includes('1.20'), `La version doit être v1.20 (obtenu: ${currentVersion})`);
+console.log(`✅ Test 1 réussi : 24 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -94,5 +97,35 @@ assert.strictEqual(stored.text, 'Texte avant édition');
 stored.text = 'Texte après édition secrète';
 assert.strictEqual(findMessageById(testMsgId)?.text, 'Texte après édition secrète');
 console.log('✅ Test 5 réussi : Mémorisation et capture des modifications Anti-Edit validée.');
+
+// Test 6: Mode Ne Pas Déranger (DND) de nuit (23:00 - 06:00 par défaut)
+const nightDate1 = new Date('2026-10-25T23:30:00');
+const nightDate2 = new Date('2026-10-25T02:15:00');
+const nightDate3 = new Date('2026-10-25T05:59:00');
+const dayDate1 = new Date('2026-10-25T06:01:00');
+const dayDate2 = new Date('2026-10-25T14:30:00');
+const dayDate3 = new Date('2026-10-25T22:59:00');
+
+assert.strictEqual(isDndActive(nightDate1), true, '23:30 doit être silencieux (DND)');
+assert.strictEqual(isDndActive(nightDate2), true, '02:15 doit être silencieux (DND)');
+assert.strictEqual(isDndActive(nightDate3), true, '05:59 doit être silencieux (DND)');
+assert.strictEqual(isDndActive(dayDate1), false, '06:01 doit être actif');
+assert.strictEqual(isDndActive(dayDate2), false, '14:30 doit être actif');
+assert.strictEqual(isDndActive(dayDate3), false, '22:59 doit être actif');
+console.log('✅ Test 6 réussi : Algorithme DND (23h-06h traversant minuit) validé.');
+
+// Test 7: Archivage des Statuts / Stories WhatsApp
+const testSender = '33699887766@s.whatsapp.net';
+trackStatus({
+  key: { remoteJid: 'status@broadcast', participant: testSender, id: 'ST_001' },
+  messageTimestamp: Math.floor(Date.now() / 1000),
+  pushName: 'Alice',
+  message: { imageMessage: { caption: 'Super journée à la plage !' } }
+});
+const aliceStatuses = getStatusesForUser('33699887766');
+assert.strictEqual(aliceStatuses.length, 1, 'Alice doit avoir 1 statut archivé');
+assert.strictEqual(aliceStatuses[0].type, 'image');
+assert.strictEqual(aliceStatuses[0].caption, 'Super journée à la plage !');
+console.log('✅ Test 7 réussi : Système d\'archivage de statuts validé.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

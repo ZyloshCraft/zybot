@@ -26,7 +26,10 @@ export default {
       `• ${prefix}meteo [ville] : Météo en direct`,
       `• ${prefix}poll <question> | <opt1> | <opt2> : Crée un sondage`,
       `• ${prefix}tagall [msg] : Mentionne tout le groupe`,
-      `• ${prefix}alert [list|add|del|on|off] : Alertes mots-clés`,
+      `• ${prefix}alert [list|add|del|ignore] : Alertes mots-clés & blacklist troll`,
+      `• ${prefix}dnd [on|off|2h|23h 06h] : Mode Ne Pas Déranger (silence la nuit)`,
+      `• ${prefix}whois [@contact|numéro] : Dossier profil complet (Photo HD, bio, groupes)`,
+      `• ${prefix}statut [numéro] : Archive les stories/statuts d'un contact`,
       `• ${prefix}program : Assistant guidé (ou direct: <msg> | <date> [| groupe])`,
       `• ${prefix}reboot : Redémarre le bot`,
       `• ${prefix}bot : Statut et performances`

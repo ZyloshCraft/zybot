@@ -8,16 +8,25 @@ export default {
   description: 'Gère les alertes de mots-clés dans les groupes et chats',
   async execute({ sock, msg, jid, args }) {
     const config = getConfig();
-    const alerts = config.alerts || { enabled: true, strict: true, words: [] };
+    const alerts = config.alerts || { enabled: true, strict: true, words: [], blacklist: [] };
     const sub = args[0]?.toLowerCase();
+
+    // Vérifier si un message est cité pour en extraire le numéro
+    const msgContent = msg.message;
+    const contextInfo =
+      msgContent?.extendedTextMessage?.contextInfo ||
+      msgContent?.[Object.keys(msgContent || {})[0]]?.contextInfo;
+    const quotedSender = contextInfo?.participant || contextInfo?.remoteJid;
 
     // 1. Lister les mots-clés (/alert list ou sans argument)
     if (!sub || sub === 'list') {
       const words = alerts.words || [];
+      const blacklist = alerts.blacklist || [];
       const isStrict = alerts.strict !== false;
       const lines = [
         `🚨 *Alertes mots-clés :* ${alerts.enabled ? 'Actif' : 'Inactif'}`,
         `🎯 *Mode strict :* ${isStrict ? 'Actif (mot entier uniquement)' : 'Inactif (sous-chaîne large)'}`,
+        `🚫 *Blacklist anti-troll :* ${blacklist.length} personne(s) ignorée(s)`,
         '━━━━━━━━━━━━━━━━━━━━'
       ];
 
@@ -27,8 +36,14 @@ export default {
         words.forEach((w, i) => lines.push(`${i + 1}. ${w}`));
       }
 
+      if (blacklist.length > 0) {
+        lines.push('━━━━━━━━━━━━━━━━━━━━');
+        lines.push('🚫 *Numéros ignorés :*');
+        blacklist.forEach((b, i) => lines.push(`• +${b}`));
+      }
+
       lines.push('━━━━━━━━━━━━━━━━━━━━');
-      lines.push('💡 Astuce : `/alert strict on` pour bloquer les faux positifs (ex: "valise" pour "val").');
+      lines.push('💡 Astuce : `/alert ignore <numéro>` pour bloquer un troll qui spamme.');
 
       await replyOrEdit(sock, jid, msg, lines.join('\n'));
       return;
@@ -83,7 +98,86 @@ export default {
       return;
     }
 
-    // 4. Ajouter
+    // 4. Blacklist anti-troll : /alert ignore <numéro> ou /alert blacklist <add|del|list>
+    if (sub === 'ignore' || sub === 'blacklist' || sub === 'block') {
+      const action = args[1]?.toLowerCase();
+      let targetNumber = args[2] || (action && action !== 'add' && action !== 'del' && action !== 'list' ? args[1] : null);
+
+      // Si un message est cité, utiliser l'expéditeur du message cité
+      if (!targetNumber && quotedSender) {
+        targetNumber = quotedSender.split('@')[0].split(':')[0];
+      }
+
+      const currentBlacklist = (alerts.blacklist || []).map((n) => String(n).replace(/[^0-9]/g, ''));
+
+      // Lister
+      if (action === 'list' || (!targetNumber && sub === 'blacklist')) {
+        if (!currentBlacklist.length) {
+          await replyOrEdit(sock, jid, msg, '🚫 Aucun numéro dans la blacklist anti-troll.');
+        } else {
+          const listLines = ['🚫 *Blacklist Alertes (Personnes ignorées) :*'];
+          currentBlacklist.forEach((b, i) => listLines.push(`${i + 1}. +${b}`));
+          await replyOrEdit(sock, jid, msg, listLines.join('\n'));
+        }
+        return;
+      }
+
+      // Nettoyer le numéro
+      const cleanNum = targetNumber ? targetNumber.replace(/[^0-9]/g, '') : null;
+      if (!cleanNum || cleanNum.length < 5) {
+        await replyOrEdit(sock, jid, msg, 'Usage : Répondez au message d\'un troll avec `/alert ignore`, ou tapez `/alert ignore <numéro>` (ex: `/alert ignore 33612345678`).');
+        return;
+      }
+
+      const isDel = action === 'del' || action === 'remove' || action === 'rm' || sub === 'unignore';
+
+      if (isDel) {
+        const filtered = currentBlacklist.filter((b) => b !== cleanNum);
+        updateConfig((prev) => ({
+          ...prev,
+          alerts: { ...prev.alerts, blacklist: filtered }
+        }));
+        await notifySystem(sock, `🗑️ Numéro retiré de la blacklist alertes : +${cleanNum}`);
+        await replyOrEdit(sock, jid, msg, `✅ Le numéro +${cleanNum} a été retiré de la blacklist.`);
+        return;
+      }
+
+      if (currentBlacklist.includes(cleanNum)) {
+        await replyOrEdit(sock, jid, msg, `Le numéro +${cleanNum} est déjà dans la blacklist.`);
+        return;
+      }
+
+      updateConfig((prev) => ({
+        ...prev,
+        alerts: { ...prev.alerts, blacklist: [...currentBlacklist, cleanNum] }
+      }));
+      await notifySystem(sock, `✅ Numéro ajouté à la blacklist alertes : +${cleanNum}`);
+      await replyOrEdit(sock, jid, msg, `🚫 Le numéro +${cleanNum} a été ajouté à la blacklist anti-troll ! Ses messages ne déclencheront plus jamais d'alerte.`);
+      return;
+    }
+
+    if (sub === 'unignore') {
+      let targetNumber = args[1];
+      if (!targetNumber && quotedSender) {
+        targetNumber = quotedSender.split('@')[0].split(':')[0];
+      }
+      const cleanNum = targetNumber ? targetNumber.replace(/[^0-9]/g, '') : null;
+      if (!cleanNum) {
+        await replyOrEdit(sock, jid, msg, 'Usage : `/alert unignore <numéro>` ou en réponse à un message.');
+        return;
+      }
+      const currentBlacklist = (alerts.blacklist || []).map((n) => String(n).replace(/[^0-9]/g, ''));
+      const filtered = currentBlacklist.filter((b) => b !== cleanNum);
+      updateConfig((prev) => ({
+        ...prev,
+        alerts: { ...prev.alerts, blacklist: filtered }
+      }));
+      await notifySystem(sock, `🗑️ Numéro retiré de la blacklist alertes : +${cleanNum}`);
+      await replyOrEdit(sock, jid, msg, `✅ Le numéro +${cleanNum} a été retiré de la blacklist.`);
+      return;
+    }
+
+    // 5. Ajouter un mot
     if (sub === 'add') {
       const word = args.slice(1).join(' ').trim().toLowerCase();
       if (!word) {
@@ -106,7 +200,7 @@ export default {
       return;
     }
 
-    // 5. Supprimer
+    // 6. Supprimer un mot
     if (sub === 'del' || sub === 'remove' || sub === 'rm') {
       const word = args.slice(1).join(' ').trim().toLowerCase();
       if (!word) {
@@ -131,7 +225,7 @@ export default {
       return;
     }
 
-    // 6. Clear
+    // 7. Clear
     if (sub === 'clear') {
       updateConfig((prev) => ({
         ...prev,
@@ -142,6 +236,6 @@ export default {
       return;
     }
 
-    await replyOrEdit(sock, jid, msg, 'Usage : /alert [list|add|del|strict|on|off]');
+    await replyOrEdit(sock, jid, msg, 'Usage : /alert [list|add|del|strict|ignore|unignore|on|off]');
   }
 };

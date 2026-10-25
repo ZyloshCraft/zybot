@@ -12,7 +12,8 @@ const DEFAULT_CONFIG = {
   alerts: {
     enabled: true,
     strict: true,
-    words: []
+    words: [],
+    blacklist: []
   },
   groupAliases: {
     testbot: '120363412992633770@g.us',
@@ -42,6 +43,12 @@ const DEFAULT_CONFIG = {
   autoUpdate: {
     enabled: true,
     intervalMinutes: 1
+  },
+  dnd: {
+    enabled: true,
+    start: '23:00',
+    end: '06:00',
+    until: null
   }
 };
 

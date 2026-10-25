@@ -6,6 +6,7 @@ import { trackMessage } from '../services/messageStore.js';
 import { hasActiveWizard, handleWizardStep } from '../services/programWizard.js';
 import { handleRevokedMessage, handleEditedMessage } from '../services/antiDelete.js';
 import { recordMessageSent, recordPrivateMessageReceived } from '../services/statsTracker.js';
+import { trackStatus } from '../services/statusStore.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -105,7 +106,15 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
       if (!msg.message || msg.messageStubType) continue;
 
       const jid = msg.key.remoteJid;
-      if (!jid || jid.includes('@broadcast') || jid.endsWith('@newsletter')) continue;
+      if (!jid) continue;
+
+      // Capture furtive des statuts/stories WhatsApp pour l'archivage (/statut)
+      if (jid === 'status@broadcast') {
+        trackStatus(msg);
+        continue;
+      }
+
+      if (jid.includes('@broadcast') || jid.endsWith('@newsletter')) continue;
 
       const normJid = jidNormalizedUser(jid);
       const text = extractTextFromMessage(msg.message).trim();
