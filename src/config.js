@@ -6,6 +6,24 @@ import { jidNormalizedUser } from '@whiskeysockets/baileys';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
+const ENV_PATH = path.resolve(__dirname, '../.env');
+
+// Charger automatiquement les variables de .env s'il existe
+try {
+  if (fs.existsSync(ENV_PATH)) {
+    const envRaw = fs.readFileSync(ENV_PATH, 'utf-8');
+    for (const line of envRaw.split('\n')) {
+      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (match) {
+        const key = match[1];
+        let val = (match[2] || '').trim().replace(/^['"]|['"]$/g, '');
+        if (!process.env[key] && val) {
+          process.env[key] = val;
+        }
+      }
+    }
+  }
+} catch {}
 
 const DEFAULT_CONFIG = {
   prefix: '/',

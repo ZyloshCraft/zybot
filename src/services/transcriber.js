@@ -84,7 +84,7 @@ export async function transcribeAudioFile(wavPath) {
   // 2. Transcription via Gemini API si clé configurée
   if (geminiKey) {
     const audioBase64 = fs.readFileSync(wavPath).toString('base64');
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`;
 
     const res = await fetch(url, {
       method: 'POST',
