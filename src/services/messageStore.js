@@ -172,6 +172,19 @@ export function removeTrackedKey(rawJid, messageId) {
 }
 
 /**
+ * Récupère les messages récents d'une discussion pour l'export (/export)
+ * @param {string} rawJid
+ * @param {number} limit
+ * @returns {Array}
+ */
+export function getChatMessages(rawJid, limit = 50) {
+  if (!rawJid) return [];
+  const normJid = jidNormalizedUser(rawJid);
+  const list = chatHistories.get(normJid) || chatHistories.get(rawJid) || [];
+  return list.slice(-limit);
+}
+
+/**
  * Retrouve un message par son ID (stanzaId)
  */
 export function findMessageById(messageId) {

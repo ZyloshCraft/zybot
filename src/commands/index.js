@@ -22,6 +22,10 @@ import updateCmd from './update.js';
 import dndCmd from './dnd.js';
 import whoisCmd from './whois.js';
 import statutCmd from './statut.js';
+import exportCmd from './export.js';
+import stickerCmd from './sticker.js';
+import dlCmd from './dl.js';
+import texteCmd from './texte.js';
 
 const commands = new Map();
 
@@ -58,6 +62,10 @@ registerCommand(updateCmd);
 registerCommand(dndCmd);
 registerCommand(whoisCmd);
 registerCommand(statutCmd);
+registerCommand(exportCmd);
+registerCommand(stickerCmd);
+registerCommand(dlCmd);
+registerCommand(texteCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

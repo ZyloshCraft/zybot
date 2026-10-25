@@ -49,6 +49,10 @@ const DEFAULT_CONFIG = {
     start: '23:00',
     end: '06:00',
     until: null
+  },
+  speech: {
+    groqApiKey: '',
+    geminiApiKey: ''
   }
 };
 

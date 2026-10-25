@@ -4,7 +4,7 @@ import { getCommand, getAllCommands } from '../src/commands/index.js';
 import { extractTextFromMessage, isOwnerMessage } from '../src/handlers/message.js';
 import { normalizeTextForSearch, isKeywordMatched } from '../src/handlers/keywordAlert.js';
 import { parseScheduledTime } from '../src/services/scheduler.js';
-import { trackMessage, getRecentKeys, findMessageById } from '../src/services/messageStore.js';
+import { trackMessage, getRecentKeys, findMessageById, getChatMessages } from '../src/services/messageStore.js';
 import { parseRecipient, hasActiveWizard, clearWizard, cleanupSetupMessages } from '../src/services/programWizard.js';
 import { parseTempDuration } from '../src/commands/temp.js';
 import { getTodayStats, recordMessageSent, recordPrivateMessageReceived, formatRecapText } from '../src/services/statsTracker.js';
@@ -14,25 +14,28 @@ import { trackStatus, getStatusesForUser } from '../src/services/statusStore.js'
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 24 commandes actives et de la version v1.20
+// Test 1: Vérification des 28 commandes actives et de la version v1.21
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'tagall', 'poll',
   'vv', 'reboot', 'edit', 'calc', 'rappel',
   'meteo', 'id', 'groupe', 'temp', 'recap', 'ntfy', 'update',
-  'dnd', 'whois', 'statut'
+  'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
   assert.ok(cmd, `La commande ${name} doit exister dans le registre`);
 }
+// Vérification des alias
+assert.ok(getCommand('s'), 'L\'alias "s" pour sticker doit exister');
+assert.ok(getCommand('vocal'), 'L\'alias "vocal" pour texte doit exister');
+assert.ok(getCommand('telecharger'), 'L\'alias "telecharger" pour dl doit exister');
 assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être supprimé');
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
-assert.strictEqual(getCommand('vocal'), undefined, 'vocal doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.20'), `La version doit être v1.20 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 24 commandes actives enregistrées, version ${currentVersion} validée.`);
+assert.ok(currentVersion.includes('1.21'), `La version doit être v1.21 (obtenu: ${currentVersion})`);
+console.log(`✅ Test 1 réussi : 28 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -127,5 +130,14 @@ assert.strictEqual(aliceStatuses.length, 1, 'Alice doit avoir 1 statut archivé'
 assert.strictEqual(aliceStatuses[0].type, 'image');
 assert.strictEqual(aliceStatuses[0].caption, 'Super journée à la plage !');
 console.log('✅ Test 7 réussi : Système d\'archivage de statuts validé.');
+
+// Test 8: Extraction des messages pour la commande /export
+const exportChatJid = '999888777@s.whatsapp.net';
+trackMessage(exportChatJid, { id: 'EXP_01', remoteJid: exportChatJid, fromMe: false }, { text: 'Premier message test', sender: exportChatJid });
+trackMessage(exportChatJid, { id: 'EXP_02', remoteJid: exportChatJid, fromMe: true }, { text: 'Deuxième message test' });
+const exported = getChatMessages(exportChatJid, 10);
+assert.ok(exported.length >= 2, 'getChatMessages doit retourner les messages de la conversation');
+assert.strictEqual(exported[exported.length - 1].text, 'Deuxième message test');
+console.log('✅ Test 8 réussi : Extraction d\'historique /export validée.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

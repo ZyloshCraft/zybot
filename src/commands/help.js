@@ -11,6 +11,10 @@ export default {
     const text = [
       '🤖 *ZyBot — Commandes disponibles :*',
       `• ${prefix}translate [lang] [texte] : Traduction instantanée`,
+      `• ${prefix}s : Convertit une image ou vidéo en sticker WhatsApp`,
+      `• ${prefix}dl <lien> : Télécharge une vidéo TikTok, Insta, Twitter, YouTube`,
+      `• ${prefix}texte : Transcrit une note vocale citée en texte écrit`,
+      `• ${prefix}export [nb] : Archive la discussion en fichier texte dans notifds`,
       `• ${prefix}persoping : Sauvegarde message cité avec date/heure`,
       `• ${prefix}vv : Capture vue unique en clair en privé`,
       `• ${prefix}edit <nouveau texte> : Modifie votre message cité`,

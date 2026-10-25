@@ -105,6 +105,10 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 ### 🥷 Furtivité, Nettoyage & Médias
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
+| **`/s`** | *(En réponse ou légende)* `/s` | Convertit instantanément n'importe quelle photo ou courte vidéo en **vrai sticker WhatsApp officiel**. |
+| **`/dl`** | `/dl <lien>` | Télécharge et envoie directement une vidéo TikTok (sans filigrane), Twitter/X, Instagram ou YouTube. |
+| **`/texte`** | *(En réponse)* `/texte` | Transcrit une note vocale audio reçue en texte écrit clair sans avoir besoin de l'écouter. |
+| **`/export`** | `/export [nb]` | Exporte les N derniers messages du chat sous forme d'archive texte propre transmise dans `notifds`. |
 | **`/vv`** | *(En réponse)* `/vv` | Capture discrètement une photo ou vidéo à vue unique (View Once 1️⃣) et la transmet en clair dans le groupe `persopingunevue`. Zéro trace dans le chat ! |
 | **`/statut`** | `/statut [numéro]` | Archive et télécharge les stories/statuts WhatsApp récents d'un contact (photos, vidéos, textes) directement dans votre hub `notifds`. |
 | **`/persoping`** | *(En réponse)* `/persoping` | Transfère le message ciblé dans `persopingunevue` avec sa **date/heure d'envoi originale**, son auteur, son origine et son ID. |
@@ -139,8 +143,8 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | :--- | :--- | :--- |
 | **`/update`** | `/update` ou `/update [on\|off]` | Vérifie les commits GitHub, effectue le `git pull`, met à jour les dépendances et redémarre instantanément. |
 | **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
-| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.20), l'uptime, l'utilisation RAM, la latence et Node.js. |
-| **`/help`** | `/help` | Affiche le menu d'aide condensé (24 commandes). |
+| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.21), l'uptime, l'utilisation RAM, la latence et Node.js. |
+| **`/help`** | `/help` | Affiche le menu d'aide condensé (28 commandes). |
 
 ---
 
