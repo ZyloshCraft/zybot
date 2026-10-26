@@ -42,9 +42,10 @@ async function downloadWithYtDlp(url) {
   const outputPath = path.join(tempDir, `ytdl_${Date.now()}_${Math.random().toString(36).substring(2)}.mp4`);
 
   return new Promise((resolve, reject) => {
-    // Limiter la taille à 50Mo pour WhatsApp et forcer MP4
+    // Limiter la taille à 50Mo pour WhatsApp, forcer MP4 et contourner SABR YouTube
     const args = [
       url,
+      '--extractor-args', 'youtube:player_client=ios,android,web',
       '-f', 'best[filesize<50M]/bestvideo[filesize<40M]+bestaudio/best',
       '-o', outputPath,
       '--merge-output-format', 'mp4',
@@ -75,7 +76,11 @@ async function downloadWithYtDlp(url) {
         try {
           if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
         } catch {}
-        reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}`));
+        if (stderr.includes('SABR') || stderr.includes('The page needs to be reloaded') || stderr.includes('12482')) {
+          reject(new Error("La version de yt-dlp sur votre Pi est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
+        } else {
+          reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}`));
+        }
       }
     });
 
@@ -176,6 +181,7 @@ export async function downloadAudioTrack(queryOrUrl) {
   return new Promise((resolve, reject) => {
     const args = [
       target,
+      '--extractor-args', 'youtube:player_client=ios,android,web',
       '-x',
       '--audio-format', 'mp3',
       '--audio-quality', '0',
@@ -232,7 +238,11 @@ export async function downloadAudioTrack(queryOrUrl) {
         try {
           if (foundPath && fs.existsSync(foundPath)) fs.unlinkSync(foundPath);
         } catch {}
-        reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}. Vérifiez que yt-dlp et ffmpeg sont bien installés sur votre machine (\`sudo apt install yt-dlp ffmpeg\`).`));
+        if (stderr.includes('SABR') || stderr.includes('The page needs to be reloaded') || stderr.includes('12482')) {
+          reject(new Error("La version de yt-dlp sur votre Pi est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
+        } else {
+          reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}. Vérifiez que yt-dlp et ffmpeg sont bien installés sur votre machine (\`sudo apt install yt-dlp ffmpeg\`).`));
+        }
       }
     });
 
