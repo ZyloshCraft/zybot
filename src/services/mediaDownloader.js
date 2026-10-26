@@ -48,7 +48,8 @@ function getYtDlpBinary() {
  */
 async function downloadWithYtDlp(url, onProgress = null) {
   const tempDir = os.tmpdir();
-  const outputPath = path.join(tempDir, `ytdl_${Date.now()}_${Math.random().toString(36).substring(2)}.mp4`);
+  const filePrefix = `ytdl_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  const outputPath = path.join(tempDir, `${filePrefix}.%(ext)s`);
   const bin = getYtDlpBinary();
 
   return new Promise((resolve, reject) => {
@@ -56,23 +57,29 @@ async function downloadWithYtDlp(url, onProgress = null) {
     const args = [
       url,
       '--extractor-args', 'youtube:player_client=ios,android,web',
+      '--no-simulate',
       '-f', 'best[filesize<50M]/bestvideo[filesize<40M]+bestaudio/best',
       '-o', outputPath,
       '--merge-output-format', 'mp4',
       '--no-playlist',
       '--max-filesize', '50M',
+      '--print', '%(title)s',
       '--progress'
     ];
 
     const proc = spawn(bin, args);
 
+    let stdout = '';
     let stderr = '';
+
     proc.stderr.on('data', (d) => {
       stderr += d.toString();
     });
 
     proc.stdout.on('data', (d) => {
       const str = d.toString();
+      stdout += str;
+
       if (onProgress) {
         // [download]  45.2% of ~  25.40MiB at    3.20MiB/s
         const match = str.match(/\[download\]\s+([0-9.]+)%\s+of\s+~?\s*([0-9.]+[A-Za-z]+)(?:\s+at\s+([0-9.]+[A-Za-z/]+))?/i);
@@ -87,27 +94,44 @@ async function downloadWithYtDlp(url, onProgress = null) {
     });
 
     proc.on('close', (code) => {
-      if (code === 0 && fs.existsSync(outputPath)) {
+      let foundPath = null;
+      try {
+        const files = fs.readdirSync(tempDir);
+        // Chercher un .mp4 en priorité, sinon n'importe quel fichier complet généré
+        const mp4Match = files.find((f) => f.startsWith(filePrefix) && f.endsWith('.mp4'));
+        if (mp4Match) {
+          foundPath = path.join(tempDir, mp4Match);
+        } else {
+          const anyMatch = files.find((f) => f.startsWith(filePrefix) && !f.endsWith('.part') && !f.endsWith('.ytdl'));
+          if (anyMatch) foundPath = path.join(tempDir, anyMatch);
+        }
+      } catch {}
+
+      if (code === 0 && foundPath && fs.existsSync(foundPath)) {
         try {
-          const buffer = fs.readFileSync(outputPath);
-          resolve({ buffer, title: 'Média téléchargé' });
+          const buffer = fs.readFileSync(foundPath);
+          const lines = stdout.trim().split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('['));
+          const title = lines[0] || 'Vidéo téléchargée';
+          resolve({ buffer, title });
         } catch (err) {
           reject(err);
         } finally {
           try {
-            if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+            if (foundPath && fs.existsSync(foundPath)) fs.unlinkSync(foundPath);
           } catch {}
         }
       } else {
         console.error('[YtDlp Video Error] Code:', code, 'Stderr:', stderr);
         try {
-          if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+          if (foundPath && fs.existsSync(foundPath)) fs.unlinkSync(foundPath);
         } catch {}
 
         if (stderr.includes('ffmpeg') || stderr.includes('ffprobe')) {
           reject(new Error("FFmpeg est manquant sur votre Pi. Installez-le avec :\n`sudo apt update && sudo apt install -y ffmpeg`"));
-        } else if (stderr.includes('The page needs to be reloaded')) {
+        } else if (code !== 0 && stderr.includes('The page needs to be reloaded')) {
           reject(new Error("La version de yt-dlp utilisée est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
+        } else if (code === 0 && !foundPath) {
+          reject(new Error("Le fichier vidéo n'a pas été trouvé sur le disque après téléchargement."));
         } else {
           reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}`));
         }
@@ -176,10 +200,12 @@ export async function downloadSocialMedia(rawUrl, onProgress = null) {
   }
 
   // 2. yt-dlp si disponible
+  let ytdlpError = null;
   try {
     return await downloadWithYtDlp(url, onProgress);
   } catch (err) {
-    // yt-dlp non installé ou indisponible, continuer
+    ytdlpError = err;
+    console.warn('[Downloader] yt-dlp a échoué, essai fallback OpenGraph:', err.message);
   }
 
   // 3. Fallback OpenGraph
@@ -193,6 +219,7 @@ export async function downloadSocialMedia(rawUrl, onProgress = null) {
       title
     };
   } catch (err) {
+    if (ytdlpError) throw ytdlpError;
     throw new Error('Impossible d\'extraire ce média automatiquement. Vérifiez que le lien est public.');
   }
 }
