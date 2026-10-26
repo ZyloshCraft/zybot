@@ -33,6 +33,14 @@ async function downloadTikTok(url) {
 }
 
 /**
+ * Récupère le binaire yt-dlp prioritaire (/usr/local/bin en premier si présent)
+ */
+function getYtDlpBinary() {
+  if (fs.existsSync('/usr/local/bin/yt-dlp')) return '/usr/local/bin/yt-dlp';
+  return 'yt-dlp';
+}
+
+/**
  * Télécharge une vidéo via yt-dlp si le binaire est disponible
  * @param {string} url
  * @returns {Promise<{ buffer: Buffer, title: string }>}
@@ -40,6 +48,7 @@ async function downloadTikTok(url) {
 async function downloadWithYtDlp(url) {
   const tempDir = os.tmpdir();
   const outputPath = path.join(tempDir, `ytdl_${Date.now()}_${Math.random().toString(36).substring(2)}.mp4`);
+  const bin = getYtDlpBinary();
 
   return new Promise((resolve, reject) => {
     // Limiter la taille à 50Mo pour WhatsApp, forcer MP4 et contourner SABR YouTube
@@ -53,7 +62,7 @@ async function downloadWithYtDlp(url) {
       '--max-filesize', '50M'
     ];
 
-    const proc = spawn('yt-dlp', args);
+    const proc = spawn(bin, args);
 
     let stderr = '';
     proc.stderr.on('data', (d) => {
@@ -73,11 +82,15 @@ async function downloadWithYtDlp(url) {
           } catch {}
         }
       } else {
+        console.error('[YtDlp Video Error] Code:', code, 'Stderr:', stderr);
         try {
           if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
         } catch {}
-        if (stderr.includes('SABR') || stderr.includes('The page needs to be reloaded') || stderr.includes('12482')) {
-          reject(new Error("La version de yt-dlp sur votre Pi est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
+
+        if (stderr.includes('ffmpeg') || stderr.includes('ffprobe')) {
+          reject(new Error("FFmpeg est manquant sur votre Pi. Installez-le avec :\n`sudo apt update && sudo apt install -y ffmpeg`"));
+        } else if (stderr.includes('The page needs to be reloaded')) {
+          reject(new Error("La version de yt-dlp utilisée est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
         } else {
           reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}`));
         }
@@ -177,6 +190,7 @@ export async function downloadAudioTrack(queryOrUrl) {
   const tempDir = os.tmpdir();
   const filePrefix = `music_${Date.now()}_${Math.random().toString(36).substring(2)}`;
   const outputPath = path.join(tempDir, `${filePrefix}.%(ext)s`);
+  const bin = getYtDlpBinary();
 
   return new Promise((resolve, reject) => {
     const args = [
@@ -193,7 +207,7 @@ export async function downloadAudioTrack(queryOrUrl) {
       '--print', '%(duration_string)s'
     ];
 
-    const proc = spawn('yt-dlp', args);
+    const proc = spawn(bin, args);
 
     let stdout = '';
     let stderr = '';
@@ -235,11 +249,15 @@ export async function downloadAudioTrack(queryOrUrl) {
           } catch {}
         }
       } else {
+        console.error('[YtDlp Audio Error] Code:', code, 'Stderr:', stderr);
         try {
           if (foundPath && fs.existsSync(foundPath)) fs.unlinkSync(foundPath);
         } catch {}
-        if (stderr.includes('SABR') || stderr.includes('The page needs to be reloaded') || stderr.includes('12482')) {
-          reject(new Error("La version de yt-dlp sur votre Pi est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
+
+        if (stderr.includes('ffmpeg') || stderr.includes('ffprobe')) {
+          reject(new Error("FFmpeg est manquant sur votre Pi (indispensable pour convertir l'audio en MP3). Installez-le avec :\n`sudo apt update && sudo apt install -y ffmpeg`"));
+        } else if (stderr.includes('The page needs to be reloaded')) {
+          reject(new Error("La version de yt-dlp utilisée est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
         } else {
           reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}. Vérifiez que yt-dlp et ffmpeg sont bien installés sur votre machine (\`sudo apt install yt-dlp ffmpeg\`).`));
         }
@@ -247,7 +265,7 @@ export async function downloadAudioTrack(queryOrUrl) {
     });
 
     proc.on('error', (err) => {
-      reject(new Error(`Impossible d'exécuter yt-dlp : ${err.message}. Installez yt-dlp avec \`sudo apt install yt-dlp\` ou \`pip install yt-dlp\`.`));
+      reject(new Error(`Impossible d'exécuter yt-dlp (${bin}) : ${err.message}. Installez yt-dlp avec \`sudo apt install yt-dlp\` ou \`pip install yt-dlp\`.`));
     });
   });
 }
