@@ -103,59 +103,44 @@ Générez instantanément une fiche d'information approfondie sur n'importe quel
 
 Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniquement par vous-même).
 
-### 🥷 Furtivité, Nettoyage & Médias
+### ✨ Outils & Médias du Quotidien
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
 | **`/s`** | *(En réponse ou légende)* `/s` | Convertit instantanément n'importe quelle photo ou courte vidéo en **vrai sticker WhatsApp officiel**. |
-| **`/dl`** | `/dl <lien>` | Télécharge et envoie directement une vidéo TikTok (sans filigrane), Twitter/X, Instagram ou YouTube. |
-| **`/texte`** | *(En réponse)* `/texte` | Transcrit une note vocale audio reçue en texte écrit clair sans avoir besoin de l'écouter. |
+| **`/dl`** | `/dl <lien>` | *(Alias: `/telecharger`)* Télécharge et envoie directement une vidéo TikTok (sans filigrane), Twitter/X, Instagram ou YouTube. |
+| **`/texte`** | *(En réponse)* `/texte` | *(Alias: `/transcrire`, `/transcribe`)* Transcrit une note vocale audio reçue en texte écrit clair. |
+| **`/resume`** | `/resume [nb]` | *(Alias: `/summary`)* Génère un résumé synthétique par IA (défaut: 50 messages, max: 200) économe en tokens. |
 | **`/export`** | `/export [nb]` | Exporte les N derniers messages du chat sous forme d'archive texte propre transmise dans `notifds`. |
-| **`/vv`** | *(En réponse)* `/vv` | Capture discrètement une photo ou vidéo à vue unique (View Once 1️⃣) et la transmet en clair dans le groupe `persopingunevue`. Zéro trace dans le chat ! |
-| **`/statut`** | `/statut [numéro]` | Archive et télécharge les stories/statuts WhatsApp récents d'un contact (photos, vidéos, textes) directement dans votre hub `notifds`. |
-| **`/persoping`** | *(En réponse)* `/persoping` | Transfère le message ciblé dans `persopingunevue` avec sa **date/heure d'envoi originale**, son auteur, son origine et son ID. |
-| **`/clear`** | `/clear <nb> [all\|me]` | Supprime vos derniers messages instantanément (~1s pour 10 messages). `all` = pour tous (revoke), `me` = pour vous seul. |
+| **`/persoping`** | *(En réponse)* `/persoping` | *(Alias: `/save`)* Transfère le message ciblé dans `persopingunevue` avec sa **date/heure d'envoi originale**, son auteur et son ID. |
+| **`/vv`** | *(En réponse)* `/vv` | Capture discrètement une photo ou vidéo à vue unique (View Once 1️⃣) et la transmet en clair dans le groupe `persopingunevue`. |
+| **`/statut`** | `/statut [cible\|id@lid]` | Archive et télécharge les stories/statuts WhatsApp récents d'un contact ou identifiant LID directement dans `notifds`. |
+| **`/whois`** | `/whois [@contact\|numéro]` | Fiche profil complète dans `notifds` (Photo HD, bio, type de compte personnel/business, groupes en commun, pays). |
 | **`/temp`** | `/temp <temps\|off>` | Active l'auto-destruction de tous vos futurs messages dans cette discussion (ex: `/temp 30s`, `/temp 5m`, `/temp 1h`, `/temp off`). |
+| **`/clear`** | `/clear <nb> [all\|me]` | Supprime vos derniers messages instantanément (~1s pour 10 messages). `all` = pour tous (revoke), `me` = pour vous seul. |
 | **`/edit`** | *(En réponse)* `/edit <texte>` | Modifie directement l'un de vos messages récents sans passer par les menus de l'application. |
-
-### 🛠️ Utilitaires & Productivité
-| Commande | Syntaxe | Description |
-| :--- | :--- | :--- |
-| **`/resume`** | `/resume [nb]` | Génère un résumé synthétique par IA (Gemini 3.5 Flash Lite) des derniers échanges en mode ultra-économe en tokens. |
-| **`/whois`** | `/whois [@contact\|numéro]` | Génère une fiche profil complète dans `notifds` (Photo HD, bio, type de compte personnel/business, groupes en commun, pays). |
-| **`/dnd`** | `/dnd [on\|off\|2h\|23h 06h]` | Mode Ne Pas Déranger : coupe le son des notifications push ntfy la nuit (défaut 23h-06h) ou temporairement. |
-| **`/recap`** | `/recap` | Affiche en direct le tableau de bord des statistiques d'activité et d'interception du jour. |
-| **`/ntfy`** | `/ntfy <canal\|off>` | Active les notifications push avec sonnerie et vibration sur votre smartphone via l'application ntfy. |
-| **`/calc`** | `/calc <calcul>` | Calcule instantanément une expression mathématique (ex: `/calc 15 * 84 + 12.5`) et remplace la commande sur place. |
-| **`/rappel`** | `/rappel <texte> \| <temps>` | Définit un rappel personnel envoyé automatiquement dans `notifds` (ex: `/rappel Réunion \| +15m` ou `/rappel Sortir \| 18:30`). |
-| **`/meteo`** | `/meteo [ville]` | Affiche la météo en direct d'une ville (température, ressenti, vent) directement à la place de la commande. |
 | **`/translate`** | `/translate [lang] [texte]` | Traduit le texte ou le message cité directement à la place de la commande (ex: `/translate en Bonjour`, `/translate es`). |
+| **`/calc`** | `/calc <calcul>` | Calcule instantanément une expression mathématique (ex: `/calc 15 * 84 + 12.5`) et remplace la commande sur place. |
+| **`/meteo`** | `/meteo [ville]` | Affiche la météo en direct d'une ville directement à la place de la commande. |
 
-### 🛡️ Modération & Administration de Groupe (Admins & Propriétaire)
+### ⚙️ Administration, Modération & Gestion du Bot
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
-| **`/ban`** | `/ban <membre> [raison]` | Expulse un membre du groupe, lui envoie un message privé (DM) explicatif, et consigne la sanction dans `admintaverne` et `notifds`. |
 | **`/warn`** | `/warn <membre> [raison]` | *(Alias: `/av`)* Avertit un membre, mémorise la sanction à long terme, et transmet le dossier complet dans le groupe `admintaverne`. |
 | **`/warn list`** | `/warn list [membre]` | *(Alias: `/av list`)* Liste tous les membres ayant des avertissements ou affiche l'historique complet d'une personne avec raisons et dates. |
 | **`/warn del`** | `/warn del <membre>` | *(Alias: `/av del`)* Efface tous les avertissements d'un membre et notifie les salons d'administration. |
-| **`/antinsfw`** | `/antinsfw [on\|off]` | Active/désactive le filtre automatique Anti-NSFW par IA (Freepik) dans vos groupes administrés. |
-
-### 👥 Gestion de Groupes & Automatisation
-| Commande | Syntaxe | Description |
-| :--- | :--- | :--- |
-| **`/poll`** | `/poll <question> \| <c1> \| <c2>` | Crée instantanément un vrai sondage natif WhatsApp dans la discussion courante. |
-| **`/tagall`** | `/tagall [message]` | *(En groupe)* Mentionne instantanément tous les membres du groupe d'un seul coup. |
-| **`/id`** | `/id` | Affiche l'ID unique WhatsApp (`@g.us`) du groupe ou de la discussion, ainsi que son alias si configuré. |
+| **`/antinsfw`** | `/antinsfw [check\|on\|off]` | Filtre et scanne les images par IA (Freepik) dans vos groupes administrés. `/nsfw check` teste une photo sans risque. |
+| **`/alias`** | `/alias [list\|add\|del]` | *(Alias: `/aliases`)* Liste, ajoute ou supprime vos alias courts de groupes WhatsApp. |
 | **`/groupe`** | `/groupe` ou `/groupe alias <nom> [id]` | Liste tous vos groupes ou attribue un alias court (ex: `testbot`, `travail`) utilisable dans `/program`. |
+| **`/id`** | `/id` | Affiche l'ID unique WhatsApp (`@g.us`) du groupe ou de la discussion, ainsi que son alias si configuré. |
+| **`/program`** | `/program` ou direct : `<msg> \| <date> [\| dest]` | **Mode Guidé Interactif** : programmation de message différé sans trace ! |
 | **`/alert`** | `/alert [list\|add\|del\|ignore\|on\|off]` | Surveille des mots-clés dans vos discussions et permet d'ignorer des trolls avec `/alert ignore <numéro>`. Alerte dans `importantmsg`. |
-| **`/program`** | `/program` ou direct : `<msg> \| <date> [\| dest]` | **Mode Guidé Interactif** : tapez juste `/program` pour être guidé pas-à-pas (date/heure, message, destinataire/alias). Annulable avec `/stop`. Supprime les messages de setup sans trace ! |
-
-### ⚙️ Système & Maintenance
-| Commande | Syntaxe | Description |
-| :--- | :--- | :--- |
-| **`/update`** | `/update` ou `/update [on\|off]` | Vérifie les commits GitHub, effectue le `git pull`, met à jour les dépendances et redémarre instantanément. |
+| **`/dnd`** | `/dnd [on\|off\|2h\|23h 06h]` | Mode Ne Pas Déranger : coupe le son des notifications push ntfy la nuit (défaut 23h-06h) ou temporairement. |
+| **`/recap`** | `/recap` | Affiche en direct le tableau de bord des statistiques d'activité et d'interception du jour. |
+| **`/ntfy`** | `/ntfy <canal\|off>` | Active les notifications push avec sonnerie et vibration sur votre smartphone via l'application ntfy. |
+| **`/update`** | `/update [force\|on\|off]` | Vérifie les commits GitHub, effectue le `git pull` résilient et redémarre instantanément. `/update force` réaligne le Pi. |
 | **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
-| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.23), l'uptime, l'utilisation RAM, la latence et Node.js. |
-| **`/help`** | `/help` | Affiche le menu d'aide condensé (32 commandes). |
+| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.24), l'uptime, l'utilisation RAM, la latence et Node.js. |
+| **`/help`** | `/help` | Affiche le menu d'aide organisé (29 commandes). |
 
 ---
 

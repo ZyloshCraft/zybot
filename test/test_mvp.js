@@ -15,14 +15,13 @@ import { addWarn, getWarns, clearWarns } from '../src/services/warnStore.js';
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 32 commandes actives et de la version v1.23
+// Test 1: Vérification des 29 commandes actives et de la version v1.24
 const expected = [
   'bot', 'help', 'persoping', 'program',
-  'alert', 'translate', 'clear', 'tagall', 'poll',
-  'vv', 'reboot', 'edit', 'calc', 'rappel',
-  'meteo', 'id', 'groupe', 'temp', 'recap', 'ntfy', 'update',
+  'alert', 'translate', 'clear', 'vv', 'reboot', 'edit', 'calc',
+  'meteo', 'id', 'groupe', 'alias', 'temp', 'recap', 'ntfy', 'update',
   'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
-  'resume', 'warn', 'ban', 'antinsfw'
+  'resume', 'warn', 'antinsfw'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -31,17 +30,26 @@ for (const name of expected) {
 // Vérification des alias
 assert.ok(getCommand('s'), 'L\'alias "s" pour sticker doit exister');
 assert.ok(getCommand('vocal'), 'L\'alias "vocal" pour texte doit exister');
+assert.ok(getCommand('transcrire'), 'L\'alias "transcrire" pour texte doit exister');
+assert.ok(getCommand('transcribe'), 'L\'alias "transcribe" pour texte doit exister');
+assert.ok(getCommand('save'), 'L\'alias "save" pour persoping doit exister');
 assert.ok(getCommand('telecharger'), 'L\'alias "telecharger" pour dl doit exister');
 assert.ok(getCommand('av'), 'L\'alias "av" pour warn doit exister');
-assert.ok(getCommand('kick'), 'L\'alias "kick" pour ban doit exister');
+assert.ok(getCommand('aliases'), 'L\'alias "aliases" pour alias doit exister');
 assert.ok(getCommand('summary'), 'L\'alias "summary" pour resume doit exister');
 assert.ok(getCommand('nsfw'), 'L\'alias "nsfw" pour antinsfw doit exister');
+
+// Vérification stricte des commandes supprimées
+assert.strictEqual(getCommand('rappel'), undefined, 'rappel doit être supprimé');
+assert.strictEqual(getCommand('poll'), undefined, 'poll doit être supprimé');
+assert.strictEqual(getCommand('tagall'), undefined, 'tagall doit être supprimé');
+assert.strictEqual(getCommand('ban'), undefined, 'ban doit être supprimé');
 assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être supprimé');
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.23'), `La version doit être v1.23 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 32 commandes actives enregistrées, version ${currentVersion} validée.`);
+assert.ok(currentVersion.includes('1.24'), `La version doit être v1.24 (obtenu: ${currentVersion})`);
+console.log(`✅ Test 1 réussi : 29 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -136,7 +144,20 @@ const aliceStatuses = getStatusesForUser('33699887766');
 assert.strictEqual(aliceStatuses.length, 1, 'Alice doit avoir 1 statut archivé');
 assert.strictEqual(aliceStatuses[0].type, 'image');
 assert.strictEqual(aliceStatuses[0].caption, 'Super journée à la plage !');
-console.log('✅ Test 7 réussi : Système d\'archivage de statuts validé.');
+
+// Test de recherche de statut via un identifiant LID (ex: 18081946574907@lid)
+const lidSender = '18081946574907@lid';
+trackStatus({
+  key: { remoteJid: 'status@broadcast', participant: lidSender, id: 'ST_LID_01' },
+  messageTimestamp: Math.floor(Date.now() / 1000),
+  pushName: 'Valentin',
+  message: { conversation: 'Statut texte LID' }
+});
+const lidStatuses1 = getStatusesForUser('18081946574907@lid');
+assert.strictEqual(lidStatuses1.length, 1, 'Recherche par LID complet doit trouver le statut');
+const lidStatuses2 = getStatusesForUser('18081946574907');
+assert.strictEqual(lidStatuses2.length, 1, 'Recherche par numéro LID seul doit trouver le statut');
+console.log('✅ Test 7 réussi : Système d\'archivage de statuts (numéros classiques et LIDs) validé.');
 
 // Test 8: Extraction des messages pour la commande /export
 const exportChatJid = '999888777@s.whatsapp.net';

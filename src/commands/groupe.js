@@ -12,18 +12,28 @@ export default {
     const aliases = config.groupAliases || {};
     const sub = args[0]?.toLowerCase();
 
-    // 1. DÉFINIR UN ALIAS : /groupe alias <nom> [id_groupe]
+    // 1. DÉFINIR OU LISTER LES ALIAS : /groupe alias [list|<nom>] [id_groupe]
     if (sub === 'alias' || sub === 'set' || sub === 'add') {
       const aliasName = args[1]?.toLowerCase().trim();
       let targetJid = args[2]?.trim();
 
-      if (!aliasName) {
-        await replyOrEdit(
-          sock,
-          jid,
-          msg,
-          'Usage : `/groupe alias <nom>` (dans le groupe) ou `/groupe alias <nom> <id_du_groupe>`'
-        );
+      if (!aliasName || aliasName === 'list') {
+        const aliasEntries = Object.entries(aliases);
+        if (!aliasEntries.length) {
+          await replyOrEdit(sock, jid, msg, '📭 Aucun alias de groupe enregistré. Tapez `/groupe alias <nom>` dans un groupe.');
+          return;
+        }
+
+        const lines = [
+          `🏷️ *ALIAS DE GROUPES ACTUELS (${aliasEntries.length})*`,
+          '━━━━━━━━━━━━━━━━━━━━'
+        ];
+        aliasEntries.forEach(([name, id], index) => {
+          lines.push(`${index + 1}. *${name}* ➔ \`${id}\``);
+        });
+        lines.push('━━━━━━━━━━━━━━━━━━━━');
+        lines.push('💡 Pour ajouter : `/groupe alias <nom>` (dans le groupe)');
+        await replyOrEdit(sock, jid, msg, lines.join('\n'));
         return;
       }
 

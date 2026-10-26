@@ -51,7 +51,7 @@ export default {
       }
     }
 
-    // 2. Extraire la cible
+    // 2. Extraire la cible (numéro, LID, mention ou citation)
     let target = args[0];
     const msgContent = msg.message;
     const contextInfo =
@@ -64,25 +64,33 @@ export default {
       target = contextInfo.mentionedJid[0];
     }
 
-    const cleanNumber = target.replace(/[^0-9]/g, '');
-    if (!cleanNumber || cleanNumber.length < 5) {
-      await replyOrEdit(sock, jid, msg, 'Usage : `/statut <numéro_ou_mention>` ou répondez au message de quelqu\'un avec `/statut`.');
+    if (!target) {
+      await replyOrEdit(sock, jid, msg, 'Usage : `/statut <numéro|id@lid|mention>` ou répondez au message de quelqu\'un avec `/statut`.');
       return;
     }
 
-    const userStatuses = getStatusesForUser(cleanNumber);
+    const cleanInput = target.trim();
+    const digitsOnly = cleanInput.replace(/[^0-9]/g, '');
+    if (!digitsOnly || digitsOnly.length < 5) {
+      await replyOrEdit(sock, jid, msg, 'Usage : `/statut <numéro|id@lid|mention>` (ex: `/statut 33612345678` ou `/statut 18081946574907@lid`).');
+      return;
+    }
+
+    const userStatuses = getStatusesForUser(cleanInput);
+    const displayTarget = cleanInput.includes('@lid') ? cleanInput : `+${digitsOnly}`;
+
     if (!userStatuses || userStatuses.length === 0) {
       await replyOrEdit(
         sock,
         jid,
         msg,
-        `⚠️ Aucun statut trouvé pour +${cleanNumber}.\nLe bot doit être en ligne au moment où le contact publie son statut pour pouvoir l'intercepter et l'archiver.`
+        `⚠️ Aucun statut trouvé pour ${displayTarget}.\nLe bot doit être en ligne au moment où le contact publie son statut pour pouvoir l'intercepter et l'archiver.`
       );
       return;
     }
 
     const targetHub = config.hub?.systemNotifs || jid;
-    await replyOrEdit(sock, jid, msg, `⏳ Envoi de ${userStatuses.length} statut(s) de +${cleanNumber} vers votre hub système...`);
+    await replyOrEdit(sock, jid, msg, `⏳ Envoi de ${userStatuses.length} statut(s) de ${displayTarget} vers votre hub système...`);
 
     let successCount = 0;
 

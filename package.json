@@ -1,6 +1,6 @@
 {
   "name": "zybot",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "description": "ZyBot - WhatsApp Selfbot with Baileys & Zero-Trace Stealth Engine",
   "type": "module",
   "main": "src/index.js",

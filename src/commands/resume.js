@@ -20,12 +20,12 @@ export default {
       return;
     }
 
-    // Limiter strictement à 30 messages par défaut (et 50 max) pour minimiser la consommation de tokens
-    let count = 30;
+    // Nombre de messages analysés : 50 par défaut, jusqu'à 200 max
+    let count = 50;
     if (args[0]) {
       const parsed = parseInt(args[0], 10);
       if (!isNaN(parsed) && parsed > 5) {
-        count = Math.min(parsed, 50);
+        count = Math.min(parsed, 200);
       }
     }
 
@@ -83,7 +83,7 @@ Résume en français cette discussion en 3 à 5 puces courtes et directes. Mets 
             }
           ],
           generationConfig: {
-            maxOutputTokens: 280,
+            maxOutputTokens: 380,
             temperature: 0.3
           }
         })

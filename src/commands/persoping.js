@@ -5,6 +5,7 @@ import { getConfig } from '../config.js';
 
 export default {
   name: 'persoping',
+  aliases: ['save'],
   description: 'Copie le message cité en privé (suppression automatique de la trace après 5s)',
   async execute({ sock, msg, jid }) {
     const msgContent = msg.message;

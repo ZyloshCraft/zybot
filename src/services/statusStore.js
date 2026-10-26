@@ -77,14 +77,37 @@ export function trackStatus(msg) {
 }
 
 /**
- * Récupère les statuts archivés pour un numéro donné
- * @param {string} numberOrJid
+ * Récupère les statuts archivés pour un numéro ou un identifiant (JID / LID) donné
+ * @param {string} numberOrJid - ex: '33612345678', '18081946574907@lid', '18081946574907'
  * @returns {Array}
  */
 export function getStatusesForUser(numberOrJid) {
   if (!numberOrJid) return [];
-  const cleanNumber = numberOrJid.replace(/[^0-9]/g, '');
-  return statusMap.get(cleanNumber) || [];
+  const rawClean = String(numberOrJid).trim().toLowerCase();
+  const digitsOnly = rawClean.replace(/[^0-9]/g, '');
+
+  // 1. Recherche directe par clé numérique dans statusMap
+  if (digitsOnly && statusMap.has(digitsOnly)) {
+    return statusMap.get(digitsOnly);
+  }
+
+  // 2. Recherche par JID / LID complet ou partiel
+  for (const [key, list] of statusMap.entries()) {
+    if (digitsOnly && (key === digitsOnly || key.includes(digitsOnly) || digitsOnly.includes(key))) {
+      return list;
+    }
+    const match = list.some((item) => {
+      const sender = (item.sender || '').toLowerCase();
+      return (
+        sender === rawClean ||
+        (digitsOnly && sender.includes(digitsOnly)) ||
+        (item.key?.participant && item.key.participant.toLowerCase().includes(rawClean))
+      );
+    });
+    if (match) return list;
+  }
+
+  return [];
 }
 
 /**

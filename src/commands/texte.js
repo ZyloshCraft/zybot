@@ -6,7 +6,7 @@ import { getConfig } from '../config.js';
 
 export default {
   name: 'texte',
-  aliases: ['transcribe', 'transcription', 'vocal'],
+  aliases: ['transcrire', 'transcribe', 'transcription', 'vocal'],
   description: 'Transcrit une note vocale WhatsApp en texte écrit sans l\'écouter',
   async execute({ sock, msg, jid, args }) {
     const rawContent = msg.message;
