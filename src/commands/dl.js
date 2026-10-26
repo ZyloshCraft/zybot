@@ -37,8 +37,33 @@ export default {
 
     await replyOrEdit(sock, jid, msg, '⏳ Téléchargement et traitement du média en cours...');
 
+    let lastUpdate = 0;
+    let lastPercent = 0;
+
+    const onProgress = async (prog) => {
+      const now = Date.now();
+      // Anti-flag : maximum une mise à jour toutes les 3,5 secondes et au moins 15% de progression
+      // (seulement 3 à 4 modifications de message au total sur les gros téléchargements)
+      if (now - lastUpdate >= 3500 && (prog.percent - lastPercent >= 15 || prog.percent >= 99)) {
+        lastUpdate = now;
+        lastPercent = prog.percent;
+
+        const filled = Math.min(10, Math.max(0, Math.round((prog.percent / 100) * 10)));
+        const empty = 10 - filled;
+        const bar = '█'.repeat(filled) + '░'.repeat(empty);
+
+        let statusText = `⏳ *Téléchargement vidéo en cours...*\n[${bar}] *${Math.round(prog.percent)}%*`;
+        if (prog.speed) statusText += ` • ${prog.speed}`;
+        if (prog.total) statusText += ` (${prog.total})`;
+
+        try {
+          await replyOrEdit(sock, jid, msg, statusText);
+        } catch {}
+      }
+    };
+
     try {
-      const { buffer, title, author } = await downloadSocialMedia(url);
+      const { buffer, title, author } = await downloadSocialMedia(url, onProgress);
 
       if (!buffer || buffer.length === 0) {
         await replyOrEdit(sock, jid, msg, '❌ Le fichier vidéo téléchargé est vide ou indisponible.');

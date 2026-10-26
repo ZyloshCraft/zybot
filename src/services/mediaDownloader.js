@@ -43,9 +43,10 @@ function getYtDlpBinary() {
 /**
  * Télécharge une vidéo via yt-dlp si le binaire est disponible
  * @param {string} url
+ * @param {Function} [onProgress]
  * @returns {Promise<{ buffer: Buffer, title: string }>}
  */
-async function downloadWithYtDlp(url) {
+async function downloadWithYtDlp(url, onProgress = null) {
   const tempDir = os.tmpdir();
   const outputPath = path.join(tempDir, `ytdl_${Date.now()}_${Math.random().toString(36).substring(2)}.mp4`);
   const bin = getYtDlpBinary();
@@ -59,7 +60,8 @@ async function downloadWithYtDlp(url) {
       '-o', outputPath,
       '--merge-output-format', 'mp4',
       '--no-playlist',
-      '--max-filesize', '50M'
+      '--max-filesize', '50M',
+      '--progress'
     ];
 
     const proc = spawn(bin, args);
@@ -67,6 +69,21 @@ async function downloadWithYtDlp(url) {
     let stderr = '';
     proc.stderr.on('data', (d) => {
       stderr += d.toString();
+    });
+
+    proc.stdout.on('data', (d) => {
+      const str = d.toString();
+      if (onProgress) {
+        // [download]  45.2% of ~  25.40MiB at    3.20MiB/s
+        const match = str.match(/\[download\]\s+([0-9.]+)%\s+of\s+~?\s*([0-9.]+[A-Za-z]+)(?:\s+at\s+([0-9.]+[A-Za-z/]+))?/i);
+        if (match) {
+          onProgress({
+            percent: parseFloat(match[1]),
+            total: match[2],
+            speed: match[3] || ''
+          });
+        }
+      }
     });
 
     proc.on('close', (code) => {
@@ -135,9 +152,10 @@ async function extractOpenGraphVideo(url) {
 /**
  * Téléchargeur universel de média (TikTok, Instagram, Twitter, YouTube Shorts, etc.)
  * @param {string} rawUrl
+ * @param {Function} [onProgress]
  * @returns {Promise<{ buffer: Buffer, title: string, author?: string }>}
  */
-export async function downloadSocialMedia(rawUrl) {
+export async function downloadSocialMedia(rawUrl, onProgress = null) {
   const url = rawUrl.trim();
 
   // 1. TikTok
@@ -159,7 +177,7 @@ export async function downloadSocialMedia(rawUrl) {
 
   // 2. yt-dlp si disponible
   try {
-    return await downloadWithYtDlp(url);
+    return await downloadWithYtDlp(url, onProgress);
   } catch (err) {
     // yt-dlp non installé ou indisponible, continuer
   }
@@ -196,6 +214,7 @@ export async function downloadAudioTrack(queryOrUrl) {
     const args = [
       target,
       '--extractor-args', 'youtube:player_client=ios,android,web',
+      '--no-simulate',
       '-x',
       '--audio-format', 'mp3',
       '--audio-quality', '0',
@@ -256,8 +275,10 @@ export async function downloadAudioTrack(queryOrUrl) {
 
         if (stderr.includes('ffmpeg') || stderr.includes('ffprobe')) {
           reject(new Error("FFmpeg est manquant sur votre Pi (indispensable pour convertir l'audio en MP3). Installez-le avec :\n`sudo apt update && sudo apt install -y ffmpeg`"));
-        } else if (stderr.includes('The page needs to be reloaded')) {
+        } else if (code !== 0 && stderr.includes('The page needs to be reloaded')) {
           reject(new Error("La version de yt-dlp utilisée est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
+        } else if (code === 0 && !foundPath) {
+          reject(new Error("Le fichier audio MP3 n'a pas pu être extrait. Vérifiez que ffmpeg est bien installé (`sudo apt install ffmpeg`)."));
         } else {
           reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}. Vérifiez que yt-dlp et ffmpeg sont bien installés sur votre machine (\`sudo apt install yt-dlp ffmpeg\`).`));
         }
