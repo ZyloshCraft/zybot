@@ -1,5 +1,6 @@
 import { getConfig } from '../config.js';
 import { replyOrEdit } from '../utils/stealth.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 // Table indicative des indicatifs téléphoniques les plus courants
 const COUNTRY_CODES = {
@@ -119,8 +120,8 @@ export default {
     // E. Rôle dans le groupe actuel si exécuté dans un groupe
     if (jid.endsWith('@g.us')) {
       try {
-        const groupMeta = await sock.groupMetadata(jid);
-        const participant = groupMeta.participants?.find((p) => p.id.split('@')[0].split(':')[0] === rawNumber);
+        const groupMeta = await getCachedGroupMetadata(sock, jid);
+        const participant = groupMeta?.participants?.find((p) => p.id.split('@')[0].split(':')[0] === rawNumber);
         if (participant) {
           if (participant.admin === 'superadmin') groupRole = '👑 Créateur / SuperAdmin';
           else if (participant.admin === 'admin') groupRole = '⭐ Administrateur';

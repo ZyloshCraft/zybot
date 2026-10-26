@@ -89,10 +89,13 @@ export default {
         console.warn(`[Clear] Impossible de supprimer le message ${item.key?.id}:`, err.message);
       }
 
-      // Intervalle ultra-rapide et naturel (60ms à 130ms pour 'all', 40ms à 80ms pour 'me')
-      // Supprime 10 messages en ~1 seconde sans bloquer la WebSocket ni déclencher d'anti-spam
+      // Rythme naturel et indétectable (anti-burst) :
+      // 220ms à 380ms par suppression, avec une pause de respiration naturelle tous les 10 messages
       if (i < toDelete.length - 1) {
-        const delay = mode === 'me' ? getRandomDelay(40, 80) : getRandomDelay(60, 130);
+        let delay = mode === 'me' ? getRandomDelay(150, 250) : getRandomDelay(220, 380);
+        if (deletedCount > 0 && deletedCount % 10 === 0) {
+          delay += getRandomDelay(500, 900); // Micro-pause de respiration humaine
+        }
         await sleep(delay);
       }
     }

@@ -2,6 +2,7 @@ import { getConfig } from '../config.js';
 import { replyOrEdit } from '../utils/stealth.js';
 import { addWarn, getWarns, getAllWarnedUsers, clearWarns } from '../services/warnStore.js';
 import { sendNtfyNotification } from '../services/ntfy.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 export default {
   name: 'warn',
@@ -120,14 +121,12 @@ export default {
 
       if (adminTaverneJid) {
         await sock.sendMessage(adminTaverneJid, {
-          text: logText,
-          mentions: [`${targetNum}@s.whatsapp.net`]
+          text: logText
         });
       }
       if (config.hub?.systemNotifs && config.hub.systemNotifs !== adminTaverneJid) {
         await sock.sendMessage(config.hub.systemNotifs, {
-          text: logText,
-          mentions: [`${targetNum}@s.whatsapp.net`]
+          text: logText
         });
       }
       return;
@@ -170,12 +169,12 @@ export default {
     // Récupérer la raison
     const reason = args.slice(reasonIndex).join(' ').trim() || 'Non spécifiée';
 
-    // Récupérer le nom du groupe
+    // Récupérer le nom du groupe (avec cache furtif)
     let groupName = 'Discussion';
     if (jid.endsWith('@g.us')) {
       try {
-        const meta = await sock.groupMetadata(jid);
-        groupName = meta.subject || jid;
+        const meta = await getCachedGroupMetadata(sock, jid);
+        groupName = meta?.subject || jid;
       } catch {
         groupName = jid;
       }
@@ -228,12 +227,11 @@ export default {
       `━━━━━━━━━━━━━━━━━━━━`
     ].join('\n');
 
-    // 1. Envoyer dans le groupe admintaverne
+    // 1. Envoyer dans le groupe admintaverne (sans fausse mention externe)
     const adminTaverneJid = config.hub?.admintaverne || config.groupAliases?.admintaverne || '120363424594930135@g.us';
     try {
       await sock.sendMessage(adminTaverneJid, {
-        text: adminLogText,
-        mentions: [`${targetNum}@s.whatsapp.net`]
+        text: adminLogText
       });
     } catch (err) {
       console.error('[Warn] Erreur envoi dans admintaverne:', err.message);
@@ -243,8 +241,7 @@ export default {
     if (config.hub?.systemNotifs && config.hub.systemNotifs !== adminTaverneJid) {
       try {
         await sock.sendMessage(config.hub.systemNotifs, {
-          text: adminLogText,
-          mentions: [`${targetNum}@s.whatsapp.net`]
+          text: adminLogText
         });
       } catch (err) {}
     }

@@ -12,6 +12,7 @@ import { getBotVersion } from '../src/commands/bot.js';
 import { isDndActive } from '../src/services/ntfy.js';
 import { trackStatus, getStatusesForUser } from '../src/services/statusStore.js';
 import { addWarn, getWarns, clearWarns } from '../src/services/warnStore.js';
+import { getCachedGroupMetadata, invalidateGroupMetadataCache } from '../src/utils/groupCache.js';
 
 console.log('🧪 Début des tests unitaires...');
 
@@ -181,5 +182,23 @@ const cleared = clearWarns(testTarget);
 assert.strictEqual(cleared, 2, '2 warns doivent avoir été effacés');
 assert.strictEqual(getWarns(testTarget).length, 0, 'L\'utilisateur ne doit plus avoir de warns');
 console.log('✅ Test 9 réussi : Gestion du stockage des warns (ajout, liste, suppression) validée.');
+
+// Test 10: Cache furtif des métadonnées de groupe (anti-spam IQ Stanzas)
+let fakeNetworkCalls = 0;
+const mockSock = {
+  groupMetadata: async (jid) => {
+    fakeNetworkCalls++;
+    return { id: jid, subject: 'Groupe Secret', participants: [] };
+  }
+};
+invalidateGroupMetadataCache('test_group@g.us');
+const meta1 = await getCachedGroupMetadata(mockSock, 'test_group@g.us');
+assert.strictEqual(meta1.subject, 'Groupe Secret');
+assert.strictEqual(fakeNetworkCalls, 1, 'Premier appel doit interroger le réseau');
+
+const meta2 = await getCachedGroupMetadata(mockSock, 'test_group@g.us');
+assert.strictEqual(meta2.subject, 'Groupe Secret');
+assert.strictEqual(fakeNetworkCalls, 1, 'Deuxième appel consécutif doit provenir du cache (0 appel réseau)');
+console.log('✅ Test 10 réussi : Cache furtif de métadonnées groupe (anti-flag IQ stanzas) validé.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

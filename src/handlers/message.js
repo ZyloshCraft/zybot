@@ -8,6 +8,7 @@ import { handleRevokedMessage, handleEditedMessage } from '../services/antiDelet
 import { recordMessageSent, recordPrivateMessageReceived } from '../services/statsTracker.js';
 import { trackStatus } from '../services/statusStore.js';
 import { handleGroupNsfwScan } from './nsfwInterceptor.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -177,9 +178,9 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
             const senderJid = msg.key.participant || msg.key.remoteJid;
             let isGroupAdmin = false;
             try {
-              const meta = await sock.groupMetadata(jid);
+              const meta = await getCachedGroupMetadata(sock, jid);
               const senderClean = senderJid ? senderJid.split('@')[0].split(':')[0] : '';
-              const participant = meta.participants?.find((p) => p.id.split('@')[0].split(':')[0] === senderClean);
+              const participant = meta?.participants?.find((p) => p.id.split('@')[0].split(':')[0] === senderClean);
               isGroupAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin';
             } catch (err) {
               console.warn('[AdminCheck] Erreur vérification admin:', err.message);

@@ -2,9 +2,7 @@ import { downloadMediaMessage, normalizeMessageContent } from '@whiskeysockets/b
 import { getConfig } from '../config.js';
 import { checkImageNsfw } from '../services/nsfwDetector.js';
 import { sendNtfyNotification } from '../services/ntfy.js';
-
-// Cache des métadonnées des groupes pour éviter de surcharger WhatsApp (TTL: 5 minutes)
-const groupAdminCache = new Map();
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 /**
  * Vérifie si le bot est administrateur dans le groupe
@@ -13,24 +11,16 @@ const groupAdminCache = new Map();
  * @returns {Promise<{ isBotAdmin: boolean, groupName: string }>}
  */
 async function checkBotAdminStatus(sock, jid) {
-  const now = Date.now();
-  const cached = groupAdminCache.get(jid);
-  if (cached && now - cached.timestamp < 300000) {
-    return cached;
-  }
-
   try {
-    const meta = await sock.groupMetadata(jid);
+    const meta = await getCachedGroupMetadata(sock, jid);
     const myNumber = sock.user?.id ? sock.user.id.split(':')[0] : null;
-    const botPart = meta.participants?.find((p) => p.id.includes(myNumber));
+    const botPart = meta?.participants?.find((p) => p.id.includes(myNumber));
     const isBotAdmin = botPart?.admin === 'admin' || botPart?.admin === 'superadmin';
-    const groupName = meta.subject || jid;
+    const groupName = meta?.subject || jid;
 
-    const result = { isBotAdmin, groupName, timestamp: now };
-    groupAdminCache.set(jid, result);
-    return result;
+    return { isBotAdmin, groupName };
   } catch (err) {
-    return { isBotAdmin: false, groupName: jid, timestamp: now };
+    return { isBotAdmin: false, groupName: jid };
   }
 }
 

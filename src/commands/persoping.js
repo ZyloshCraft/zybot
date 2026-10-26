@@ -2,6 +2,7 @@ import { generateForwardMessageContent, generateWAMessageFromContent, jidNormali
 import { replyOrEditTemporary, replyOrEdit, markChatUnread } from '../utils/stealth.js';
 import { findMessageById } from '../services/messageStore.js';
 import { getConfig } from '../config.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 export default {
   name: 'persoping',
@@ -54,7 +55,7 @@ export default {
     let originName = 'Discussion privée';
     if (jid.endsWith('@g.us')) {
       try {
-        const meta = await sock.groupMetadata(jid);
+        const meta = await getCachedGroupMetadata(sock, jid);
         originName = meta?.subject ? `Groupe "${meta.subject}"` : 'Groupe';
       } catch (e) {
         originName = 'Groupe';

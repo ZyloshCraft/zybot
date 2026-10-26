@@ -8,6 +8,7 @@ import {
 import { startProgramWizard, parseRecipient } from '../services/programWizard.js';
 import { replyOrEdit } from '../utils/stealth.js';
 import { getConfig } from '../config.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 export default {
   name: 'program',
@@ -137,7 +138,7 @@ export default {
     let destDisplay = '';
     if (targetJid.endsWith('@g.us')) {
       try {
-        const meta = await sock.groupMetadata(targetJid);
+        const meta = await getCachedGroupMetadata(sock, targetJid);
         destDisplay = meta?.subject ? `Groupe "${meta.subject}"` : 'Ce groupe';
       } catch (e) {
         destDisplay = 'Groupe';

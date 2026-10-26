@@ -1,6 +1,7 @@
 import { getConfig } from '../config.js';
 import { replyOrEdit } from '../utils/stealth.js';
 import { getChatMessages } from '../services/messageStore.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 export default {
   name: 'export',
@@ -33,8 +34,8 @@ export default {
     let chatName = jid;
     if (jid.endsWith('@g.us')) {
       try {
-        const meta = await sock.groupMetadata(jid);
-        chatName = meta.subject || jid;
+        const meta = await getCachedGroupMetadata(sock, jid);
+        chatName = meta?.subject || jid;
       } catch {
         chatName = jid;
       }

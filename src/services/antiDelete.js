@@ -4,6 +4,7 @@ import { findMessageById } from './messageStore.js';
 import { recordDeletedIntercepted, recordEditedIntercepted } from './statsTracker.js';
 import { markChatUnread } from '../utils/stealth.js';
 import { sendNtfyNotification } from './ntfy.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 // Cache des IDs de messages supprimés déjà traités pour éviter les doublons
 const handledRevokedIds = new Set();
@@ -59,17 +60,12 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
   // Déterminer le nom de la discussion
   let chatOrigin = `Discussion privée (+${senderNumber})`;
   if (chatJid.endsWith('@g.us')) {
-    if (groupNameCache.has(chatJid)) {
-      chatOrigin = `Groupe "${groupNameCache.get(chatJid)}"`;
-    } else {
-      try {
-        const meta = await sock.groupMetadata(chatJid);
-        const subject = meta?.subject || chatJid;
-        groupNameCache.set(chatJid, subject);
-        chatOrigin = `Groupe "${subject}"`;
-      } catch (e) {
-        chatOrigin = `Groupe (${chatJid})`;
-      }
+    try {
+      const meta = await getCachedGroupMetadata(sock, chatJid);
+      const subject = meta?.subject || chatJid;
+      chatOrigin = `Groupe "${subject}"`;
+    } catch (e) {
+      chatOrigin = `Groupe (${chatJid})`;
     }
   }
 
@@ -255,17 +251,12 @@ export async function handleEditedMessage({ sock, targetKey, newText, newRawMess
 
   let chatOrigin = `Discussion privée (+${senderNumber})`;
   if (chatJid.endsWith('@g.us')) {
-    if (groupNameCache.has(chatJid)) {
-      chatOrigin = `Groupe "${groupNameCache.get(chatJid)}"`;
-    } else {
-      try {
-        const meta = await sock.groupMetadata(chatJid);
-        const subject = meta?.subject || chatJid;
-        groupNameCache.set(chatJid, subject);
-        chatOrigin = `Groupe "${subject}"`;
-      } catch (e) {
-        chatOrigin = `Groupe (${chatJid})`;
-      }
+    try {
+      const meta = await getCachedGroupMetadata(sock, chatJid);
+      const subject = meta?.subject || chatJid;
+      chatOrigin = `Groupe "${subject}"`;
+    } catch (e) {
+      chatOrigin = `Groupe (${chatJid})`;
     }
   }
 

@@ -2,6 +2,7 @@ import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { parseScheduledTime, addScheduledMessage } from './scheduler.js';
 import { replyOrEdit, sendStealthMessage, sleep } from '../utils/stealth.js';
 import { getConfig } from '../config.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 // Stockage de l'état du wizard par utilisateur
 const activeWizards = new Map();
@@ -272,7 +273,7 @@ export async function finalizeScheduling({ sock, msg, jid, wizard, userId, selfJ
       destDisplay = `Groupe "${aliasFound[0]}"`;
     } else {
       try {
-        const meta = await sock.groupMetadata(wizard.targetJid);
+        const meta = await getCachedGroupMetadata(sock, wizard.targetJid);
         destDisplay = meta?.subject ? `Groupe "${meta.subject}"` : 'Groupe';
       } catch (e) {
         destDisplay = 'Groupe';

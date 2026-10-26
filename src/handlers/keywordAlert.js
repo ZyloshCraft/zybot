@@ -3,6 +3,7 @@ import { getConfig } from '../config.js';
 import { recordKeywordAlert } from '../services/statsTracker.js';
 import { markChatUnread } from '../utils/stealth.js';
 import { sendNtfyNotification } from '../services/ntfy.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 /**
  * Nettoie et normalise une chaîne pour une comparaison insensible à la casse,
@@ -92,7 +93,7 @@ export async function handleKeywordAlert({ sock, msg, jid, text }) {
   let originName = `Discussion privée (+${senderNumber})`;
   if (jid.endsWith('@g.us')) {
     try {
-      const meta = await sock.groupMetadata(jid);
+      const meta = await getCachedGroupMetadata(sock, jid);
       originName = meta?.subject ? `Groupe "${meta.subject}"` : 'Groupe';
     } catch (e) {
       originName = 'Groupe';

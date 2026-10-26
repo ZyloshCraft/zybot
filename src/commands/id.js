@@ -1,6 +1,7 @@
 import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { replyOrEdit } from '../utils/stealth.js';
 import { getConfig } from '../config.js';
+import { getCachedGroupMetadata } from '../utils/groupCache.js';
 
 export default {
   name: 'id',
@@ -16,7 +17,7 @@ export default {
       let groupName = 'Groupe';
       let count = 0;
       try {
-        const meta = await sock.groupMetadata(normJid);
+        const meta = await getCachedGroupMetadata(sock, normJid);
         groupName = meta?.subject || 'Groupe';
         count = meta?.participants?.length || 0;
       } catch (e) {}
