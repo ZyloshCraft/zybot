@@ -137,6 +137,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | **`/warn`** | `/warn <membre> [raison]` | *(Alias: `/av`)* Avertit un membre, mémorise la sanction à long terme, et transmet le dossier complet dans le groupe `admintaverne`. |
 | **`/warn list`** | `/warn list [membre]` | *(Alias: `/av list`)* Liste tous les membres ayant des avertissements ou affiche l'historique complet d'une personne avec raisons et dates. |
 | **`/warn del`** | `/warn del <membre>` | *(Alias: `/av del`)* Efface tous les avertissements d'un membre et notifie les salons d'administration. |
+| **`/antinsfw`** | `/antinsfw [on\|off]` | Active/désactive le filtre automatique Anti-NSFW par IA (Freepik) dans vos groupes administrés. |
 
 ### 👥 Gestion de Groupes & Automatisation
 | Commande | Syntaxe | Description |
@@ -153,8 +154,8 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | :--- | :--- | :--- |
 | **`/update`** | `/update` ou `/update [on\|off]` | Vérifie les commits GitHub, effectue le `git pull`, met à jour les dépendances et redémarre instantanément. |
 | **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
-| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.22), l'uptime, l'utilisation RAM, la latence et Node.js. |
-| **`/help`** | `/help` | Affiche le menu d'aide condensé (31 commandes). |
+| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.23), l'uptime, l'utilisation RAM, la latence et Node.js. |
+| **`/help`** | `/help` | Affiche le menu d'aide condensé (32 commandes). |
 
 ---
 

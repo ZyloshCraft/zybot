@@ -29,6 +29,7 @@ import texteCmd from './texte.js';
 import resumeCmd from './resume.js';
 import warnCmd from './warn.js';
 import banCmd from './ban.js';
+import antinsfwCmd from './antinsfw.js';
 
 const commands = new Map();
 
@@ -72,6 +73,7 @@ registerCommand(texteCmd);
 registerCommand(resumeCmd);
 registerCommand(warnCmd);
 registerCommand(banCmd);
+registerCommand(antinsfwCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

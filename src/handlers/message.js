@@ -7,6 +7,7 @@ import { hasActiveWizard, handleWizardStep } from '../services/programWizard.js'
 import { handleRevokedMessage, handleEditedMessage } from '../services/antiDelete.js';
 import { recordMessageSent, recordPrivateMessageReceived } from '../services/statsTracker.js';
 import { trackStatus } from '../services/statusStore.js';
+import { handleGroupNsfwScan } from './nsfwInterceptor.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -193,9 +194,13 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         }
       }
 
-      // Traitement des messages reçus d'autres personnes : Détection des alertes mots-clés
+      // Traitement des messages reçus d'autres personnes : Détection des alertes mots-clés et filtre Anti-NSFW
       if (!msg.key.fromMe) {
         await handleKeywordAlert({ sock, msg, jid, text });
+        // Scan automatique Anti-NSFW dans les groupes administrés (en arrière-plan non-bloquant)
+        handleGroupNsfwScan({ sock, msg, jid }).catch((err) => {
+          console.error('[Anti-NSFW] Erreur non bloquante:', err.message);
+        });
       }
     } catch (err) {
       console.error('[Handler] Erreur lors du traitement d\'un message:', err);

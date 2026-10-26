@@ -13,6 +13,7 @@ export default {
       `• ${prefix}resume [nb] : Résumé IA ultra-rapide des derniers messages (mode éco)`,
       `• ${prefix}warn [@membre|list|del] : Avertit un membre (alertes admintaverne & notifs)`,
       `• ${prefix}ban [@membre] [raison] : Bannit un membre avec DM explicatif`,
+      `• ${prefix}antinsfw [on|off] : Filtre automatique Anti-NSFW dans vos groupes`,
       `• ${prefix}translate [lang] [texte] : Traduction instantanée`,
       `• ${prefix}s : Convertit une image ou vidéo en sticker WhatsApp`,
       `• ${prefix}dl <lien> : Télécharge une vidéo TikTok, Insta, Twitter, YouTube`,

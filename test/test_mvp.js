@@ -15,14 +15,14 @@ import { addWarn, getWarns, clearWarns } from '../src/services/warnStore.js';
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 31 commandes actives et de la version v1.22
+// Test 1: Vérification des 32 commandes actives et de la version v1.23
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'tagall', 'poll',
   'vv', 'reboot', 'edit', 'calc', 'rappel',
   'meteo', 'id', 'groupe', 'temp', 'recap', 'ntfy', 'update',
   'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
-  'resume', 'warn', 'ban'
+  'resume', 'warn', 'ban', 'antinsfw'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -35,12 +35,13 @@ assert.ok(getCommand('telecharger'), 'L\'alias "telecharger" pour dl doit existe
 assert.ok(getCommand('av'), 'L\'alias "av" pour warn doit exister');
 assert.ok(getCommand('kick'), 'L\'alias "kick" pour ban doit exister');
 assert.ok(getCommand('summary'), 'L\'alias "summary" pour resume doit exister');
+assert.ok(getCommand('nsfw'), 'L\'alias "nsfw" pour antinsfw doit exister');
 assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être supprimé');
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.22'), `La version doit être v1.22 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 31 commandes actives enregistrées, version ${currentVersion} validée.`);
+assert.ok(currentVersion.includes('1.23'), `La version doit être v1.23 (obtenu: ${currentVersion})`);
+console.log(`✅ Test 1 réussi : 32 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');

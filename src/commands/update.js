@@ -27,6 +27,24 @@ export default {
       return;
     }
 
+    if (sub === 'force') {
+      await replyOrEdit(sock, jid, msg, '⚡ Forçage de la mise à jour GitHub (alignement strict sur origin/main)...');
+      try {
+        const { exec } = await import('node:child_process');
+        const { promisify } = await import('node:util');
+        const execAsync = promisify(exec);
+        await execAsync('git fetch origin main');
+        await execAsync('git reset --hard origin/main');
+        await execAsync('npm install --omit=dev');
+        await replyOrEdit(sock, jid, msg, '✅ Alignement forcé sur GitHub terminé avec succès ! Redémarrage...');
+        if (sock) sock.end();
+        process.exit(0);
+      } catch (err) {
+        await replyOrEdit(sock, jid, msg, `❌ Échec du forçage : ${err.message}`);
+      }
+      return;
+    }
+
     await replyOrEdit(sock, jid, msg, '🔍 Vérification des mises à jour sur GitHub...');
     const result = await checkAndApplyUpdate(sock, true);
 

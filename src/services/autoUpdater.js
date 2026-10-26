@@ -48,10 +48,23 @@ export async function checkAndApplyUpdate(sock, manual = false) {
     console.log(`\n🚀 [AutoUpdate] Nouveau commit détecté sur GitHub : "${commitMsg}"`);
     console.log('📦 Téléchargement et application de la mise à jour...');
 
-    // 3. Effectuer le git pull
-    const { stdout: pullOutput } = await execAsync('git pull origin main');
+    // 3. Nettoyer les modifications locales sur les fichiers traqués pour éviter les conflits git pull
+    try {
+      await execAsync('git checkout -- .');
+    } catch {}
 
-    // 4. Vérifier si des dépendances package.json ont changé
+    // 4. Effectuer le git pull (avec repli sur git reset --hard en cas de conflit)
+    let pullOutput = '';
+    try {
+      const res = await execAsync('git pull origin main');
+      pullOutput = res.stdout;
+    } catch (pullErr) {
+      console.warn('[AutoUpdate] Conflit git pull détecté, alignement forcé sur origin/main :', pullErr.message);
+      await execAsync('git reset --hard origin/main');
+      pullOutput = 'package.json'; // forcer réinstallation par sécurité
+    }
+
+    // 5. Vérifier si des dépendances package.json ont changé
     if (pullOutput.includes('package.json') || pullOutput.includes('package-lock.json')) {
       console.log('📦 Mise à jour des dépendances npm...');
       await execAsync('npm install --omit=dev');
