@@ -107,7 +107,10 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
 | **`/s`** | *(En réponse ou légende)* `/s` | Convertit instantanément n'importe quelle photo ou courte vidéo en **vrai sticker WhatsApp officiel**. |
+| **`/toimg`** | *(En réponse à un sticker)* `/toimg` | *(Alias: `/img`, `/toimage`)* Convertit un sticker en photo standard (PNG) ou en vidéo animée (MP4). |
+| **`/music`** | `/music <titre ou lien>` | *(Alias: `/mp3`, `/song`, `/musique`)* Recherche et télécharge une musique en MP3 haute qualité via yt-dlp. |
 | **`/dl`** | `/dl <lien>` | *(Alias: `/telecharger`)* Télécharge et envoie directement une vidéo TikTok (sans filigrane), Twitter/X, Instagram ou YouTube. |
+| **`/pfp`** | `/pfp [@membre\|groupe]` | *(Alias: `/pp`, `/profilepic`)* Télécharge la photo de profil en pleine résolution d'un membre ou du groupe. |
 | **`/texte`** | *(En réponse)* `/texte` | *(Alias: `/transcrire`, `/transcribe`)* Transcrit une note vocale audio reçue en texte écrit clair. |
 | **`/resume`** | `/resume [nb]` | *(Alias: `/summary`)* Génère un résumé synthétique par IA (défaut: 50 messages, max: 200) économe en tokens. |
 | **`/export`** | `/export [nb]` | Exporte les N derniers messages du chat sous forme d'archive texte propre transmise dans `notifds`. |
@@ -139,8 +142,8 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniqueme
 | **`/ntfy`** | `/ntfy <canal\|off>` | Active les notifications push avec sonnerie et vibration sur votre smartphone via l'application ntfy. |
 | **`/update`** | `/update [force\|on\|off]` | Vérifie les commits GitHub, effectue le `git pull` résilient et redémarre instantanément. `/update force` réaligne le Pi. |
 | **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
-| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.24), l'uptime, l'utilisation RAM, la latence et Node.js. |
-| **`/help`** | `/help` | Affiche le menu d'aide organisé (29 commandes). |
+| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.25), l'uptime, l'utilisation RAM, la latence et Node.js. |
+| **`/help`** | `/help` | Affiche le menu d'aide organisé (32 commandes). |
 
 ---
 

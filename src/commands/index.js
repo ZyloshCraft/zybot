@@ -27,6 +27,9 @@ import texteCmd from './texte.js';
 import resumeCmd from './resume.js';
 import warnCmd from './warn.js';
 import antinsfwCmd from './antinsfw.js';
+import musicCmd from './music.js';
+import toimgCmd from './toimg.js';
+import pfpCmd from './pfp.js';
 
 const commands = new Map();
 
@@ -68,6 +71,9 @@ registerCommand(texteCmd);
 registerCommand(resumeCmd);
 registerCommand(warnCmd);
 registerCommand(antinsfwCmd);
+registerCommand(musicCmd);
+registerCommand(toimgCmd);
+registerCommand(pfpCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

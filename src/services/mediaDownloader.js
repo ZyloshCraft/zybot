@@ -160,3 +160,84 @@ export async function downloadSocialMedia(rawUrl) {
     throw new Error('Impossible d\'extraire ce média automatiquement. Vérifiez que le lien est public.');
   }
 }
+
+/**
+ * Télécharge une piste audio (recherche YouTube ou URL directe) via yt-dlp
+ * @param {string} queryOrUrl - Titre de musique ou URL
+ * @returns {Promise<{ buffer: Buffer, title: string, artist: string, duration: string }>}
+ */
+export async function downloadAudioTrack(queryOrUrl) {
+  const isUrl = /^https?:\/\//i.test(queryOrUrl.trim());
+  const target = isUrl ? queryOrUrl.trim() : `ytsearch1:${queryOrUrl.trim()}`;
+  const tempDir = os.tmpdir();
+  const filePrefix = `music_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  const outputPath = path.join(tempDir, `${filePrefix}.%(ext)s`);
+
+  return new Promise((resolve, reject) => {
+    const args = [
+      target,
+      '-x',
+      '--audio-format', 'mp3',
+      '--audio-quality', '0',
+      '-o', outputPath,
+      '--no-playlist',
+      '--max-filesize', '40M',
+      '--print', '%(title)s',
+      '--print', '%(uploader)s',
+      '--print', '%(duration_string)s'
+    ];
+
+    const proc = spawn('yt-dlp', args);
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout.on('data', (d) => {
+      stdout += d.toString();
+    });
+
+    proc.stderr.on('data', (d) => {
+      stderr += d.toString();
+    });
+
+    proc.on('close', (code) => {
+      const expectedMp3 = path.join(tempDir, `${filePrefix}.mp3`);
+      let foundPath = fs.existsSync(expectedMp3) ? expectedMp3 : null;
+
+      if (!foundPath) {
+        try {
+          const files = fs.readdirSync(tempDir);
+          const match = files.find((f) => f.startsWith(filePrefix));
+          if (match) foundPath = path.join(tempDir, match);
+        } catch {}
+      }
+
+      if (code === 0 && foundPath && fs.existsSync(foundPath)) {
+        try {
+          const lines = stdout.trim().split('\n').map((l) => l.trim()).filter(Boolean);
+          const title = lines[0] || queryOrUrl;
+          const artist = lines[1] || 'Artiste inconnu';
+          const duration = lines[2] || '';
+
+          const buffer = fs.readFileSync(foundPath);
+          resolve({ buffer, title, artist, duration });
+        } catch (err) {
+          reject(err);
+        } finally {
+          try {
+            if (foundPath && fs.existsSync(foundPath)) fs.unlinkSync(foundPath);
+          } catch {}
+        }
+      } else {
+        try {
+          if (foundPath && fs.existsSync(foundPath)) fs.unlinkSync(foundPath);
+        } catch {}
+        reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}. Vérifiez que yt-dlp et ffmpeg sont bien installés sur votre machine (\`sudo apt install yt-dlp ffmpeg\`).`));
+      }
+    });
+
+    proc.on('error', (err) => {
+      reject(new Error(`Impossible d'exécuter yt-dlp : ${err.message}. Installez yt-dlp avec \`sudo apt install yt-dlp\` ou \`pip install yt-dlp\`.`));
+    });
+  });
+}

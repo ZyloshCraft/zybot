@@ -16,13 +16,13 @@ import { getCachedGroupMetadata, invalidateGroupMetadataCache } from '../src/uti
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 29 commandes actives et de la version v1.24
+// Test 1: Vérification des 32 commandes actives et de la version v1.25
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'vv', 'reboot', 'edit', 'calc',
   'meteo', 'id', 'groupe', 'alias', 'temp', 'recap', 'ntfy', 'update',
   'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
-  'resume', 'warn', 'antinsfw'
+  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -39,6 +39,13 @@ assert.ok(getCommand('av'), 'L\'alias "av" pour warn doit exister');
 assert.ok(getCommand('aliases'), 'L\'alias "aliases" pour alias doit exister');
 assert.ok(getCommand('summary'), 'L\'alias "summary" pour resume doit exister');
 assert.ok(getCommand('nsfw'), 'L\'alias "nsfw" pour antinsfw doit exister');
+assert.ok(getCommand('mp3'), 'L\'alias "mp3" pour music doit exister');
+assert.ok(getCommand('song'), 'L\'alias "song" pour music doit exister');
+assert.ok(getCommand('musique'), 'L\'alias "musique" pour music doit exister');
+assert.ok(getCommand('img'), 'L\'alias "img" pour toimg doit exister');
+assert.ok(getCommand('toimage'), 'L\'alias "toimage" pour toimg doit exister');
+assert.ok(getCommand('pp'), 'L\'alias "pp" pour pfp doit exister');
+assert.ok(getCommand('avatar'), 'L\'alias "avatar" pour pfp doit exister');
 
 // Vérification stricte des commandes supprimées
 assert.strictEqual(getCommand('rappel'), undefined, 'rappel doit être supprimé');
@@ -49,8 +56,8 @@ assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être suppr
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.24'), `La version doit être v1.24 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 29 commandes actives enregistrées, version ${currentVersion} validée.`);
+assert.ok(currentVersion.includes('1.25'), `La version doit être v1.25 (obtenu: ${currentVersion})`);
+console.log(`✅ Test 1 réussi : 32 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -200,5 +207,19 @@ const meta2 = await getCachedGroupMetadata(mockSock, 'test_group@g.us');
 assert.strictEqual(meta2.subject, 'Groupe Secret');
 assert.strictEqual(fakeNetworkCalls, 1, 'Deuxième appel consécutif doit provenir du cache (0 appel réseau)');
 console.log('✅ Test 10 réussi : Cache furtif de métadonnées groupe (anti-flag IQ stanzas) validé.');
+
+// Test 11: Nouveaux outils médias (/music, /toimg, /pfp)
+const musicCmd = getCommand('music');
+assert.ok(musicCmd && typeof musicCmd.execute === 'function');
+assert.strictEqual(musicCmd.aliases.includes('mp3'), true);
+
+const toimgCmd = getCommand('toimg');
+assert.ok(toimgCmd && typeof toimgCmd.execute === 'function');
+assert.strictEqual(toimgCmd.aliases.includes('img'), true);
+
+const pfpCmd = getCommand('pfp');
+assert.ok(pfpCmd && typeof pfpCmd.execute === 'function');
+assert.strictEqual(pfpCmd.aliases.includes('pp'), true);
+console.log('✅ Test 11 réussi : Nouveaux modules médias (music, toimg, pfp) initialisés et validés.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
