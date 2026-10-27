@@ -35,6 +35,16 @@ export default {
       return;
     }
 
+    if (!/^https?:\/\//i.test(url)) {
+      await replyOrEdit(
+        sock,
+        jid,
+        msg,
+        `⚠️ Le paramètre "${url}" n'est pas un lien valide.\n💡 Pour rechercher et télécharger une musique par son titre, utilisez : \`/music ${args.join(' ')}\`\n💡 Pour une vidéo, collez un lien direct : \`/dl https://...\``
+      );
+      return;
+    }
+
     await replyOrEdit(sock, jid, msg, '⏳ Téléchargement et traitement du média en cours...');
 
     let lastUpdate = 0;

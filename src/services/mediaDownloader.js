@@ -53,12 +53,13 @@ async function downloadWithYtDlp(url, onProgress = null) {
   const bin = getYtDlpBinary();
 
   return new Promise((resolve, reject) => {
-    // Limiter la taille à 50Mo pour WhatsApp, forcer MP4 et contourner SABR YouTube
+    // Limiter la taille à 50Mo pour WhatsApp, privilégier 720p/480p pour rester léger et contourner SABR YouTube
     const args = [
       url,
-      '--extractor-args', 'youtube:player_client=ios,android,web',
+      '--extractor-args', 'youtube:player_client=android,ios,mweb',
       '--no-simulate',
-      '-f', 'best[filesize<50M]/bestvideo[filesize<40M]+bestaudio/best',
+      '-S', 'res:720,res:480,res:360,res:240,fps:30',
+      '-f', 'bv*[filesize<45M]+ba[filesize<10M]/b[filesize<50M]/bv*[height<=720]+ba/b[height<=720]/b[height<=480]/best',
       '-o', outputPath,
       '--merge-output-format', 'mp4',
       '--no-playlist',
@@ -94,10 +95,18 @@ async function downloadWithYtDlp(url, onProgress = null) {
     });
 
     proc.on('close', (code) => {
+      const combined = stdout + '\n' + stderr;
+
+      // Détecter si la vidéo dépasse la limite maximale WhatsApp
+      if (combined.includes('File is larger than max-filesize') || combined.includes('larger than max-filesize')) {
+        reject(new Error("⚠️ Cette vidéo dépasse 50 Mo (la taille maximale autorisée par WhatsApp). Essayez une vidéo plus courte ou utilisez /music pour extraire l'audio."));
+        return;
+      }
+
       let foundPath = null;
       try {
         const files = fs.readdirSync(tempDir);
-        // Chercher un .mp4 en priorité, sinon n'importe quel fichier complet généré
+        // Chercher un .mp4 en priorité, sinon n'importe quel fichier complet généré (ignorer les .part)
         const mp4Match = files.find((f) => f.startsWith(filePrefix) && f.endsWith('.mp4'));
         if (mp4Match) {
           foundPath = path.join(tempDir, mp4Match);
@@ -131,7 +140,7 @@ async function downloadWithYtDlp(url, onProgress = null) {
         } else if (code !== 0 && stderr.includes('The page needs to be reloaded')) {
           reject(new Error("La version de yt-dlp utilisée est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
         } else if (code === 0 && !foundPath) {
-          reject(new Error("Le fichier vidéo n'a pas été trouvé sur le disque après téléchargement."));
+          reject(new Error("Le fichier vidéo n'a pas pu être extrait ou dépasse la taille maximale autorisée."));
         } else {
           reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}`));
         }
@@ -240,14 +249,14 @@ export async function downloadAudioTrack(queryOrUrl) {
   return new Promise((resolve, reject) => {
     const args = [
       target,
-      '--extractor-args', 'youtube:player_client=ios,android,web',
+      '--extractor-args', 'youtube:player_client=android,ios,mweb',
       '--no-simulate',
       '-x',
       '--audio-format', 'mp3',
       '--audio-quality', '0',
       '-o', outputPath,
       '--no-playlist',
-      '--max-filesize', '40M',
+      '--max-filesize', '45M',
       '--print', '%(title)s',
       '--print', '%(uploader)s',
       '--print', '%(duration_string)s'
@@ -267,13 +276,21 @@ export async function downloadAudioTrack(queryOrUrl) {
     });
 
     proc.on('close', (code) => {
+      const combined = stdout + '\n' + stderr;
+
+      // Détection si l'audio dépasse la taille max
+      if (combined.includes('File is larger than max-filesize') || combined.includes('larger than max-filesize')) {
+        reject(new Error("⚠️ Cette piste audio dépasse 45 Mo. Veuillez choisir une musique ou vidéo plus courte."));
+        return;
+      }
+
       const expectedMp3 = path.join(tempDir, `${filePrefix}.mp3`);
       let foundPath = fs.existsSync(expectedMp3) ? expectedMp3 : null;
 
       if (!foundPath) {
         try {
           const files = fs.readdirSync(tempDir);
-          const match = files.find((f) => f.startsWith(filePrefix));
+          const match = files.find((f) => f.startsWith(filePrefix) && !f.endsWith('.part') && !f.endsWith('.ytdl'));
           if (match) foundPath = path.join(tempDir, match);
         } catch {}
       }
@@ -305,7 +322,7 @@ export async function downloadAudioTrack(queryOrUrl) {
         } else if (code !== 0 && stderr.includes('The page needs to be reloaded')) {
           reject(new Error("La version de yt-dlp utilisée est obsolète face aux changements YouTube. Mettez-la à jour avec :\n`sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp`"));
         } else if (code === 0 && !foundPath) {
-          reject(new Error("Le fichier audio MP3 n'a pas pu être extrait. Vérifiez que ffmpeg est bien installé (`sudo apt install ffmpeg`)."));
+          reject(new Error("Le fichier audio MP3 n'a pas pu être extrait ou dépasse la taille autorisée."));
         } else {
           reject(new Error(stderr || `yt-dlp a quitté avec le code ${code}. Vérifiez que yt-dlp et ffmpeg sont bien installés sur votre machine (\`sudo apt install yt-dlp ffmpeg\`).`));
         }

@@ -1,9 +1,16 @@
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { getConfig } from '../config.js';
 import { notifySystem } from './notifier.js';
 import { sendNtfyNotification } from './ntfy.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const CONFIG_PATH = path.resolve(__dirname, '../../config.json');
 
 const execAsync = promisify(exec);
 
@@ -48,20 +55,33 @@ export async function checkAndApplyUpdate(sock, manual = false) {
     console.log(`\n🚀 [AutoUpdate] Nouveau commit détecté sur GitHub : "${commitMsg}"`);
     console.log('📦 Téléchargement et application de la mise à jour...');
 
-    // 3. Nettoyer les modifications locales sur les fichiers traqués pour éviter les conflits git pull
+    // 3. Sauvegarder les configurations locales (mot de passe web, alertes personnalisées)
+    let savedLocalConfig = null;
     try {
-      await execAsync('git checkout -- .');
+      if (fs.existsSync(CONFIG_PATH)) {
+        savedLocalConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+      }
     } catch {}
 
-    // 4. Effectuer le git pull (avec repli sur git reset --hard en cas de conflit)
+    // 4. Effectuer le git pull sans conflit
     let pullOutput = '';
     try {
+      await execAsync('git checkout -- .');
       const res = await execAsync('git pull origin main');
       pullOutput = res.stdout;
     } catch (pullErr) {
-      console.warn('[AutoUpdate] Conflit git pull détecté, alignement forcé sur origin/main :', pullErr.message);
+      console.warn('[AutoUpdate] Conflit de mise à jour détecté, alignement forcé sur origin/main :', pullErr.message);
       await execAsync('git reset --hard origin/main');
-      pullOutput = 'package.json'; // forcer réinstallation par sécurité
+      pullOutput = 'package.json'; // Forcer vérification des dépendances par sécurité
+    }
+
+    // 5. Réappliquer et fusionner les préférences locales personnalisées
+    if (savedLocalConfig) {
+      try {
+        const repoConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+        const merged = { ...repoConfig, ...savedLocalConfig };
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(merged, null, 2), 'utf-8');
+      } catch {}
     }
 
     // 5. Vérifier si des dépendances package.json ont changé
