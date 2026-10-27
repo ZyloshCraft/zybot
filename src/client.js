@@ -22,8 +22,24 @@ const AUTH_DIR = path.resolve(__dirname, '../auth_info');
 let currentSocket = null;
 let isRestarting = false;
 
+const connectionInfo = {
+  status: 'disconnected',
+  connectedAt: null,
+  phone: null,
+  pushName: null,
+  version: null
+};
+
 export function getActiveSocket() {
   return currentSocket;
+}
+
+export function getConnectionState() {
+  if (currentSocket?.user) {
+    connectionInfo.phone = currentSocket.user.id ? currentSocket.user.id.split('@')[0].split(':')[0] : null;
+    connectionInfo.pushName = currentSocket.user.name || null;
+  }
+  return { ...connectionInfo };
 }
 
 export async function createWhatsAppClient() {
@@ -50,6 +66,8 @@ export async function createWhatsAppClient() {
 
   currentSocket = sock;
   isRestarting = false;
+  connectionInfo.status = 'connecting';
+  connectionInfo.version = version.join('.');
 
   function restartClient() {
     if (isRestarting) return;
@@ -109,6 +127,7 @@ export async function createWhatsAppClient() {
     }
 
     if (connection === 'close') {
+      connectionInfo.status = 'disconnected';
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const reason = lastDisconnect?.error?.message || statusCode || 'Inconnu';
       const isConnectionReplaced = statusCode === DisconnectReason.connectionReplaced;
@@ -132,6 +151,8 @@ export async function createWhatsAppClient() {
         console.log('❌ Session déconnectée (Logged Out). Veuillez supprimer le dossier auth_info pour rescanner.');
       }
     } else if (connection === 'open') {
+      connectionInfo.status = 'connected';
+      connectionInfo.connectedAt = Date.now();
       const userNumber = sock.user?.id ? sock.user.id.split(':')[0] : 'Inconnu';
       console.log('\n=============================================================');
       console.log(`✅ CONNECTÉ AVEC SUCCÈS À WHATSAPP !`);

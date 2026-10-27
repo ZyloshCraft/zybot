@@ -5,6 +5,7 @@ import { loadConfig } from './config.js';
 import { createWhatsAppClient, getActiveSocket } from './client.js';
 import { startScheduler } from './services/scheduler.js';
 import { startAutoUpdater } from './services/autoUpdater.js';
+import { startWebServer, stopWebServer } from './web/server.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,28 +56,35 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 // 1. Charger la configuration
 loadConfig();
 
-// 2. Démarrer le service de programmation et les mises à jour automatiques
+// 2. Démarrer le service de programmation, les mises à jour automatiques et la WebGUI
 startScheduler(getActiveSocket);
 startAutoUpdater(getActiveSocket);
+startWebServer();
 
 // 3. Lancer le client WhatsApp
 createWhatsAppClient().catch((err) => {
   console.error('❌ Erreur fatale au lancement du client WhatsApp:', err);
+  stopWebServer();
   cleanupPid();
   process.exit(1);
 });
 
 // Gestion des arrêts propres
-process.on('exit', cleanupPid);
+process.on('exit', () => {
+  stopWebServer();
+  cleanupPid();
+});
 
 process.on('SIGINT', () => {
   console.log('\n🛑 Arrêt du selfbot demandé (SIGINT). Au revoir !');
+  stopWebServer();
   cleanupPid();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   console.log('\n🛑 Arrêt du selfbot demandé (SIGTERM). Au revoir !');
+  stopWebServer();
   cleanupPid();
   process.exit(0);
 });

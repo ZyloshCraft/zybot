@@ -56,7 +56,7 @@ assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être suppr
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.26'), `La version doit être v1.26 (obtenu: ${currentVersion})`);
+assert.ok(currentVersion.includes('1.27'), `La version doit être v1.27 (obtenu: ${currentVersion})`);
 console.log(`✅ Test 1 réussi : 32 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
@@ -244,5 +244,12 @@ assert.ok(guide.includes('/id'), 'Le guide doit expliquer /id');
 assert.ok(guide.includes('/warn list'), 'Le guide doit expliquer /warn list');
 assert.ok(guide.includes('/warn del'), 'Le guide doit expliquer /warn del');
 console.log('✅ Test 13 réussi : Guide de modération /help warn validé.');
+
+// Test 14: WebGUI Server & Sécurité
+const { startWebServer, stopWebServer } = await import('../src/web/server.js');
+const server = startWebServer();
+assert.ok(server, 'Le serveur WebGUI doit démarrer avec succès');
+stopWebServer();
+console.log('✅ Test 14 réussi : Initialisation et cycle de vie WebGUI validés.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

@@ -82,6 +82,11 @@ const DEFAULT_CONFIG = {
   speech: {
     groqApiKey: '',
     geminiApiKey: ''
+  },
+  web: {
+    enabled: true,
+    port: 3050,
+    password: 'zybot'
   }
 };
 

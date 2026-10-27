@@ -118,3 +118,27 @@ export function clearWarns(userNumber) {
   saveWarns();
   return count;
 }
+
+/**
+ * Supprime un avertissement spécifique par son identifiant unique
+ * @param {string} userNumber
+ * @param {string} warnId
+ * @returns {boolean}
+ */
+export function deleteSingleWarn(userNumber, warnId) {
+  const cleanNumber = String(userNumber).replace(/[^0-9]/g, '');
+  if (!inMemoryWarns.has(cleanNumber)) return false;
+
+  const list = inMemoryWarns.get(cleanNumber);
+  const initialLength = list.length;
+  const filtered = list.filter((w) => w.id !== warnId);
+
+  if (filtered.length === 0) {
+    inMemoryWarns.delete(cleanNumber);
+  } else {
+    inMemoryWarns.set(cleanNumber, filtered);
+  }
+
+  saveWarns();
+  return filtered.length < initialLength;
+}
