@@ -235,4 +235,14 @@ assert.strictEqual(foundSender.pushName, 'Nolan');
 
 console.log('✅ Test 11 & 12 réussis : Modules médias et WarnResolver avec recherche par pseudo validés.');
 
+// Test 13: Guide de modération /help warn
+const { getWarnHelpGuide } = await import('../src/commands/help.js');
+const guide = getWarnHelpGuide('/');
+assert.ok(guide.includes('GUIDE MODÉRATEUR : MAÎTRISER LE /WARN'), 'Le guide doit contenir le titre');
+assert.ok(guide.includes('/warn'), 'Le guide doit expliquer /warn');
+assert.ok(guide.includes('/id'), 'Le guide doit expliquer /id');
+assert.ok(guide.includes('/warn list'), 'Le guide doit expliquer /warn list');
+assert.ok(guide.includes('/warn del'), 'Le guide doit expliquer /warn del');
+console.log('✅ Test 13 réussi : Guide de modération /help warn validé.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

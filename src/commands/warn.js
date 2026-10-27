@@ -6,6 +6,7 @@ import { getCachedGroupMetadata } from '../utils/groupCache.js';
 import { findSenderByPushName } from '../services/messageStore.js';
 import { searchContactByPseudo } from '../services/contactStore.js';
 import { resolveHistoricMembers, applyHistoricWarns } from '../services/warnResolver.js';
+import { getWarnHelpGuide } from './help.js';
 
 export default {
   name: 'warn',
@@ -26,6 +27,21 @@ export default {
       try {
         await sock.sendMessage(jid, { delete: msg.key });
       } catch {}
+    }
+
+    // 0. /warn help (ou /warn aide / guide) : Guide complet envoyé discrètement en privé à l'administrateur
+    if (args[0]?.toLowerCase() === 'help' || args[0]?.toLowerCase() === 'aide' || args[0]?.toLowerCase() === 'guide') {
+      const p = config.prefix || '/';
+      const guideText = getWarnHelpGuide(p);
+      try {
+        await sock.sendMessage(adminJid, { text: guideText });
+      } catch {
+        await sock.sendMessage(adminTaverneJid, {
+          text: `📖 *Guide /warn demandé par @${adminNum} :*\n\n${guideText}`,
+          mentions: [adminJid]
+        });
+      }
+      return;
     }
 
     // 1. /warn scan (ou /warn import) : Résolution et synchronisation automatique de la liste des 60 membres
