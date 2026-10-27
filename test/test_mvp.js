@@ -221,6 +221,9 @@ const pfpCmd = getCommand('pfp');
 assert.ok(pfpCmd && typeof pfpCmd.execute === 'function');
 assert.strictEqual(pfpCmd.aliases.includes('pp'), true);
 
+const idCmd = getCommand('id');
+assert.strictEqual(idCmd.adminOnly, true, '/id doit être autorisé pour les administrateurs');
+
 // Test 12: Recherche de participant par pseudo et WarnResolver
 const { findSenderByPushName } = await import('../src/services/messageStore.js');
 const { HISTORIC_TARGETS } = await import('../src/services/warnResolver.js');
