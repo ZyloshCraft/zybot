@@ -56,7 +56,7 @@ assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être suppr
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.25'), `La version doit être v1.25 (obtenu: ${currentVersion})`);
+assert.ok(currentVersion.includes('1.26'), `La version doit être v1.26 (obtenu: ${currentVersion})`);
 console.log(`✅ Test 1 réussi : 32 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
@@ -220,6 +220,16 @@ assert.strictEqual(toimgCmd.aliases.includes('img'), true);
 const pfpCmd = getCommand('pfp');
 assert.ok(pfpCmd && typeof pfpCmd.execute === 'function');
 assert.strictEqual(pfpCmd.aliases.includes('pp'), true);
-console.log('✅ Test 11 réussi : Nouveaux modules médias (music, toimg, pfp) initialisés et validés.');
+
+// Test 12: Recherche de participant par pseudo et WarnResolver
+const { findSenderByPushName } = await import('../src/services/messageStore.js');
+const { HISTORIC_TARGETS } = await import('../src/services/warnResolver.js');
+assert.ok(HISTORIC_TARGETS.length >= 60, 'La liste historique doit contenir au moins 60 cibles');
+
+const foundSender = findSenderByPushName('Nolan');
+assert.ok(foundSender, 'findSenderByPushName doit retrouver Nolan');
+assert.strictEqual(foundSender.pushName, 'Nolan');
+
+console.log('✅ Test 11 & 12 réussis : Modules médias et WarnResolver avec recherche par pseudo validés.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

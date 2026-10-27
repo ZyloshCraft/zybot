@@ -191,3 +191,45 @@ export function findMessageById(messageId) {
   if (!messageId) return null;
   return messagesById.get(messageId) || null;
 }
+
+/**
+ * Recherche un participant par son pseudo ou prénom (pushName)
+ * @param {string} query - Nom recherché
+ * @param {string} [specificChatJid] - Optionnel : restreindre à un groupe donné
+ * @returns {{ sender: string, pushName: string } | null}
+ */
+export function findSenderByPushName(query, specificChatJid = null) {
+  if (!query) return null;
+  const cleanQ = query.toLowerCase().replace(/[@~*]/g, '').trim();
+  if (!cleanQ) return null;
+
+  // 1. Chercher dans le chat spécifique si fourni
+  if (specificChatJid) {
+    const norm = jidNormalizedUser(specificChatJid);
+    const list = chatHistories.get(norm) || [];
+    for (let i = list.length - 1; i >= 0; i--) {
+      const item = list[i];
+      if (item.pushName && item.sender) {
+        const normPn = item.pushName.toLowerCase().replace(/[@~*]/g, '').trim();
+        if (normPn === cleanQ || normPn.includes(cleanQ) || cleanQ.includes(normPn)) {
+          return { sender: item.sender, pushName: item.pushName };
+        }
+      }
+    }
+  }
+
+  // 2. Chercher dans toutes les discussions
+  for (const [chatJid, list] of chatHistories.entries()) {
+    for (let i = list.length - 1; i >= 0; i--) {
+      const item = list[i];
+      if (item.pushName && item.sender) {
+        const normPn = item.pushName.toLowerCase().replace(/[@~*]/g, '').trim();
+        if (normPn === cleanQ || normPn.includes(cleanQ) || cleanQ.includes(normPn)) {
+          return { sender: item.sender, pushName: item.pushName };
+        }
+      }
+    }
+  }
+
+  return null;
+}

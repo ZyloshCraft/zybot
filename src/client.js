@@ -13,6 +13,7 @@ import { handleMessagesUpsert, extractTextFromMessage } from './handlers/message
 import { trackMessage, saveMessageHistory } from './services/messageStore.js';
 import { handleRevokedMessage, handleEditedMessage } from './services/antiDelete.js';
 import { initDailyRecapScheduler } from './services/statsTracker.js';
+import { updateContacts } from './services/contactStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -65,8 +66,19 @@ export async function createWhatsAppClient() {
   // Événement d'authentification
   sock.ev.on('creds.update', saveCreds);
 
+  // Synchronisation des contacts WhatsApp et pseudos
+  sock.ev.on('contacts.upsert', (contacts) => {
+    updateContacts(contacts);
+  });
+  sock.ev.on('contacts.update', (updates) => {
+    updateContacts(updates);
+  });
+
   // Synchronisation de l'historique des messages précédents (WhatsApp Phone Sync)
-  sock.ev.on('messaging-history.set', ({ messages }) => {
+  sock.ev.on('messaging-history.set', ({ messages, contacts }) => {
+    if (contacts && contacts.length) {
+      updateContacts(contacts);
+    }
     if (messages && messages.length) {
       for (const m of messages) {
         if (m.key) {
