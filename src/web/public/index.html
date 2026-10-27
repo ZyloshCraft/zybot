@@ -3,35 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZyBot | Panneau d'Administration</title>
-  <!-- Tailwind CSS CDN -->
+  <title>ZyBot / Moderation</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Space Grotesk Font (Identique au site ZyloshCraft) -->
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Space Grotesk"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace']
           },
           colors: {
-            brand: {
-              50: '#eef2ff',
-              400: '#818cf8',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-              neon: '#06b6d4',
-              glow: '#a855f7'
-            },
-            dark: {
-              bg: '#090a0f',
-              card: '#12151f',
-              surface: '#1a1e2e',
-              border: '#262b42'
+            noir: {
+              950: '#07080a',
+              900: '#0d0e12',
+              850: '#13151b',
+              800: '#1b1e27',
+              700: '#262a36',
+              600: '#393e4f'
             }
           }
         }
@@ -39,458 +29,222 @@
     }
   </script>
   <style>
+    * {
+      border-radius: 0px !important; /* Esthétique carrée pure */
+    }
     body {
-      background-color: #090a0f;
+      background-color: #07080a;
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+    .grid-bg {
+      background-size: 24px 24px;
       background-image: 
-        radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.12) 0%, transparent 60%);
-      background-attachment: fixed;
-    }
-    .glass-card {
-      background: rgba(18, 21, 31, 0.75);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .glass-card:hover {
-      border-color: rgba(99, 102, 241, 0.3);
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
     }
     .custom-scroll::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
     }
     .custom-scroll::-webkit-scrollbar-track {
-      background: #090a0f;
+      background: #07080a;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-      background: #262b42;
-      border-radius: 4px;
+      background: #262a36;
     }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-      background: #4f46e5;
+      background: #6366f1;
     }
   </style>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col font-sans antialiased select-none">
+<body class="grid-bg min-h-screen flex flex-col text-xs select-none">
 
   <!-- ======================================================== -->
-  <!-- 1. ÉCRAN DE VERROUILLAGE / LOGIN (AVEC MOT DE PASSE)      -->
+  <!-- 1. ÉCRAN DE VERROUILLAGE ÉPURÉ & CARRÉ                   -->
   <!-- ======================================================== -->
-  <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#090a0f]/90 backdrop-blur-xl">
-    <div class="glass-card w-full max-w-md p-8 rounded-2xl shadow-2xl relative overflow-hidden border border-brand-500/30">
-      <div class="absolute -top-24 -right-24 w-48 h-48 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-brand-neon/20 rounded-full blur-3xl pointer-events-none"></div>
-      
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-cyan-400 p-0.5 shadow-lg shadow-brand-500/30 mb-4">
-          <div class="w-full h-full bg-dark-bg rounded-2xl flex items-center justify-center">
-            <span class="text-3xl">⚡</span>
-          </div>
-        </div>
-        <h1 class="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
-          ZyBot <span class="text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">WebGUI</span>
-        </h1>
-        <p class="text-slate-400 text-sm mt-1">Authentification sécurisée requise</p>
+  <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#07080a]">
+    <div class="w-full max-w-sm bg-noir-900 border border-noir-700 p-8 space-y-6 shadow-2xl relative">
+      <div class="border-b border-noir-800 pb-4">
+        <div class="text-xs font-bold tracking-widest text-slate-400 uppercase">SYSTÈME DE MODÉRATION</div>
+        <div class="text-xl font-bold tracking-tight text-white mt-1">ZYBOT // AUTH</div>
       </div>
 
-      <div id="loginError" class="hidden mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center gap-2">
-        <span>⚠️</span>
-        <span id="loginErrorMsg">Mot de passe incorrect.</span>
+      <div id="loginError" class="hidden p-3 bg-red-950/40 border border-red-800/80 text-red-300 text-[11px]">
+        Mot de passe incorrect.
       </div>
 
       <form id="loginForm" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Mot de passe d'accès</label>
-          <div class="relative">
-            <input 
-              type="password" 
-              id="passwordInput" 
-              placeholder="••••••••••••" 
-              required
-              class="w-full px-4 py-3 bg-dark-surface/90 border border-dark-border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-sm"
-            >
-            <button type="button" id="togglePasswordBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1">
-              👁️
-            </button>
-          </div>
+        <div class="space-y-1.5">
+          <label class="block text-[10px] uppercase tracking-widest text-slate-400">Mot de passe</label>
+          <input 
+            type="password" 
+            id="passwordInput" 
+            placeholder="••••••••••••" 
+            required
+            class="w-full px-3 py-2.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white transition-colors"
+          >
         </div>
 
         <button 
           type="submit" 
-          id="loginSubmitBtn"
-          class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white font-semibold shadow-lg shadow-brand-500/25 transition-all duration-200 flex items-center justify-center gap-2"
+          class="w-full py-2.5 px-4 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors"
         >
-          <span>Déverrouiller le Panneau</span>
-          <span>➔</span>
+          Déverrouiller ➔
         </button>
       </form>
 
-      <div class="mt-6 text-center text-xs text-slate-500">
-        ZyBot v1.26.0 • Modération & Contrôle Furtif
+      <div class="text-[10px] text-slate-600 tracking-wider">
+        STATUS : VERROUILLÉ • V1.27
       </div>
     </div>
   </div>
 
   <!-- ======================================================== -->
-  <!-- 2. PANNEAU PRINCIPAL (PROTÉGÉ)                           -->
+  <!-- 2. APPLICATION PRINCIPALE                                -->
   <!-- ======================================================== -->
   <div id="appScreen" class="hidden flex-1 flex flex-col">
-    <!-- Navbar supérieure -->
-    <header class="glass-card sticky top-0 z-40 border-b border-white/5">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    
+    <!-- Barre supérieure compacte -->
+    <header class="bg-noir-900 border-b border-noir-800 sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
         
-        <!-- Logo & Titre -->
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-400 p-0.5 flex items-center justify-center">
-            <div class="w-full h-full bg-dark-bg rounded-[10px] flex items-center justify-center">
-              <span class="text-xl">⚡</span>
-            </div>
+        <!-- Titre & Statut direct -->
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 bg-emerald-400 animate-pulse" id="statusDot"></span>
+            <span class="font-bold tracking-wider text-white">ZYBOT</span>
+            <span class="text-slate-500">/</span>
+            <span id="waPhoneText" class="text-slate-300 font-medium">Chargement...</span>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-lg text-white">ZyBot</span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 font-mono">v1.26.0</span>
-            </div>
-            <p class="text-xs text-slate-400 hidden sm:block">Panneau de Modération & Surveillance</p>
-          </div>
+          <span class="text-slate-700 hidden sm:inline">|</span>
+          <div class="text-slate-400 text-[11px] hidden sm:block" id="uptimeDisplay">UPTIME: --</div>
         </div>
 
-        <!-- Badges d'état WhatsApp & Uptime -->
-        <div class="flex items-center gap-3">
-          <div id="waStatusBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="waStatusText">WhatsApp Connecté</span>
-          </div>
-
-          <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-dark-surface border border-dark-border text-slate-300 text-xs font-mono">
-            <span>⏱️</span>
-            <span id="uptimeText">Uptime: --</span>
-          </div>
-
-          <button id="logoutBtn" title="Déconnexion" class="p-2 rounded-xl bg-dark-surface hover:bg-red-500/20 border border-dark-border hover:border-red-500/30 text-slate-400 hover:text-red-400 transition-colors">
-            🚪
+        <!-- Navigation épurée & Déconnexion -->
+        <div class="flex items-center gap-2">
+          <button class="nav-tab active px-3 py-1.5 border border-white bg-white text-black font-bold tracking-wider uppercase transition-colors" data-tab="tab-warns">
+            WARNS (<span id="tabWarnCount">0</span>)
+          </button>
+          <button class="nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors" data-tab="tab-logs">
+            LOGS CONSOLE
+          </button>
+          <button id="logoutBtn" title="Déconnexion" class="px-2.5 py-1.5 border border-noir-800 hover:border-red-600/60 text-slate-500 hover:text-red-400 uppercase transition-colors ml-2">
+            SORTIR
           </button>
         </div>
-      </div>
-
-      <!-- Navigation Tabs -->
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 border-t border-white/5 overflow-x-auto custom-scroll">
-        <button class="nav-tab active py-3 px-4 text-sm font-medium border-b-2 border-brand-500 text-white flex items-center gap-2" data-tab="tab-dashboard">
-          <span>📊</span>
-          <span>Tableau de Bord</span>
-        </button>
-        <button class="nav-tab py-3 px-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2 transition-colors" data-tab="tab-warns">
-          <span>⚠️</span>
-          <span>Gestion des Warns</span>
-          <span id="warnCountBadge" class="text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400">0</span>
-        </button>
-        <button class="nav-tab py-3 px-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2 transition-colors" data-tab="tab-historic">
-          <span>👥</span>
-          <span>60 Membres Taverne</span>
-        </button>
-        <button class="nav-tab py-3 px-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2 transition-colors" data-tab="tab-logs">
-          <span>📜</span>
-          <span>Logs Console</span>
-        </button>
-        <button class="nav-tab py-3 px-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2 transition-colors" data-tab="tab-settings">
-          <span>⚙️</span>
-          <span>Paramètres</span>
-        </button>
       </div>
     </header>
 
     <!-- Contenu Principal -->
-    <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1">
-      
-      <!-- ============================================== -->
-      <!-- ONGLET 1 : TABLEAU DE BORD                     -->
-      <!-- ============================================== -->
-      <section id="tab-dashboard" class="tab-content space-y-6">
+    <main class="max-w-7xl mx-auto w-full px-4 py-5 flex-1 space-y-4">
+
+      <!-- ====================================================== -->
+      <!-- SECTION 1 : GESTION DES WARNS (ESSENTIEL)              -->
+      <!-- ====================================================== -->
+      <section id="tab-warns" class="tab-content space-y-4">
         
-        <!-- Cartes Statistiques Métriques -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- WhatsApp Card -->
-          <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-semibold uppercase text-slate-400">Compte WhatsApp</span>
-              <span class="text-xl">📱</span>
-            </div>
-            <div class="text-xl font-bold text-white font-mono" id="cardWaPhone">Chargement...</div>
-            <div class="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
-              <span id="cardWaStatus">Protection furtive active</span>
-            </div>
-          </div>
-
-          <!-- Total Warns Card -->
-          <div class="glass-card p-5 rounded-2xl">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-semibold uppercase text-slate-400">Membres Avertis</span>
-              <span class="text-xl">⚠️</span>
-            </div>
-            <div class="text-2xl font-bold text-amber-400 font-mono" id="cardWarnUsers">0</div>
-            <div class="text-xs text-slate-400 mt-1" id="cardWarnTotal">Total avertissements : 0</div>
-          </div>
-
-          <!-- RAM & Système Card -->
-          <div class="glass-card p-5 rounded-2xl">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-semibold uppercase text-slate-400">Mémoire Pi & Process</span>
-              <span class="text-xl">⚡</span>
-            </div>
-            <div class="text-2xl font-bold text-cyan-400 font-mono" id="cardRamUsage">-- MB</div>
-            <div class="text-xs text-slate-400 mt-1" id="cardSystemMem">Pi : -- GB libre</div>
-          </div>
-
-          <!-- Mode Furtif & DND Card -->
-          <div class="glass-card p-5 rounded-2xl">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-semibold uppercase text-slate-400">Furtivité & Sécurité</span>
-              <span class="text-xl">🛡️</span>
-            </div>
-            <div class="text-xl font-bold text-emerald-400" id="cardStealth">Zéro-Trace OK</div>
-            <div class="text-xs text-slate-400 mt-1" id="cardDnd">DND de nuit actif</div>
-          </div>
-        </div>
-
-        <!-- Actions Rapides -->
-        <div class="glass-card p-6 rounded-2xl">
-          <h2 class="text-base font-semibold text-white mb-4 flex items-center gap-2">
-            <span>⚡</span>
-            <span>Actions Rapides Administrateur</span>
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button id="btnQuickAddWarn" class="py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 transition-all">
-              <span>➕</span>
-              <span>Ajouter un Warn</span>
-            </button>
-            <button id="btnQuickScanTaverne" class="py-3 px-4 rounded-xl bg-dark-surface hover:bg-dark-border border border-dark-border text-white font-medium text-sm flex items-center justify-center gap-2 transition-all">
-              <span>🔄</span>
-              <span>Synchroniser Taverne</span>
-            </button>
-            <button id="btnQuickRestart" class="py-3 px-4 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 font-medium text-sm flex items-center justify-center gap-2 transition-all">
-              <span>🔄</span>
-              <span>Redémarrer le Bot (PM2)</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Aperçu des Derniers Warns Émis -->
-        <div class="glass-card p-6 rounded-2xl">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-base font-semibold text-white flex items-center gap-2">
-              <span>📋</span>
-              <span>Derniers Avertissements Actifs</span>
-            </h2>
-            <button class="text-xs text-brand-400 hover:underline" onclick="switchTab('tab-warns')">
-              Voir tout ➔
-            </button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="text-xs uppercase text-slate-400 border-b border-white/5">
-                <tr>
-                  <th class="py-3 px-3">Membre / Cible</th>
-                  <th class="py-3 px-3">Avertissements</th>
-                  <th class="py-3 px-3">Dernière Raison</th>
-                  <th class="py-3 px-3">Admin</th>
-                  <th class="py-3 px-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="dashboardRecentWarnsTable" class="divide-y divide-white/5 font-mono text-xs">
-                <tr><td colspan="5" class="py-4 text-center text-slate-500">Chargement...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- ONGLET 2 : GESTION COMPLÈTE DES WARNS          -->
-      <!-- ============================================== -->
-      <section id="tab-warns" class="tab-content hidden space-y-6">
-        
-        <!-- Header & Barre d'outils -->
-        <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div class="relative w-full sm:w-80">
-            <input 
-              type="text" 
-              id="warnSearchInput" 
-              placeholder="🔍 Rechercher (nom, numéro, LID, raison)..." 
-              class="w-full px-4 py-2.5 bg-dark-surface border border-dark-border rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-500"
-            >
-          </div>
-          <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button id="btnOpenAddWarnModal" class="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
-              <span>➕</span>
-              <span>Nouvel Avertissement</span>
-            </button>
-            <button id="btnRefreshWarns" class="p-2.5 rounded-xl bg-dark-surface hover:bg-dark-border border border-dark-border text-slate-300">
-              🔄
-            </button>
-          </div>
-        </div>
-
-        <!-- Tableau des Warns -->
-        <div class="glass-card rounded-2xl overflow-hidden border border-white/5">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="text-xs uppercase text-slate-400 bg-dark-surface/50 border-b border-white/5">
-                <tr>
-                  <th class="py-3.5 px-4">Membre / Numéro / LID</th>
-                  <th class="py-3.5 px-4">Pseudo</th>
-                  <th class="py-3.5 px-4">Avertissements</th>
-                  <th class="py-3.5 px-4">Dernière Raison</th>
-                  <th class="py-3.5 px-4">Groupe</th>
-                  <th class="py-3.5 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="warnsTableBody" class="divide-y divide-white/5">
-                <tr><td colspan="6" class="py-8 text-center text-slate-500">Chargement des données...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- ONGLET 3 : 60 MEMBRES HISTORIQUES TAVERNE      -->
-      <!-- ============================================== -->
-      <section id="tab-historic" class="tab-content hidden space-y-6">
-        <div class="glass-card p-6 rounded-2xl">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <!-- Barre d'outils et stats minimalistes -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
+          
+          <!-- Compteurs carrés -->
+          <div class="flex items-center gap-4 text-[11px]">
             <div>
-              <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                <span>👥</span>
-                <span>Résolution des 60 Membres Historiques Taverne</span>
-              </h2>
-              <p class="text-slate-400 text-sm mt-1">
-                Suivi de la synchronisation des identifiants (LIDs/numéros) des membres avertis de la Taverne.
-              </p>
+              <span class="text-slate-500">MEMBRES AVERTIS:</span>
+              <span class="font-bold text-amber-400 ml-1" id="statUsersCount">0</span>
             </div>
-            <button id="btnTriggerScan" class="py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-brand-500/20">
-              <span>🔍</span>
-              <span>Lancer le Scan en direct (/warn scan)</span>
-            </button>
-          </div>
-
-          <!-- Barre de Progression -->
-          <div class="mb-6">
-            <div class="flex items-center justify-between text-xs text-slate-400 mb-2 font-mono">
-              <span id="historicProgressText">Progression : 0 / 60 membres identifiés</span>
-              <span id="historicProgressPercent" class="text-brand-400 font-bold">0%</span>
+            <span class="text-slate-700">•</span>
+            <div>
+              <span class="text-slate-500">TOTAL WARNS:</span>
+              <span class="font-bold text-white ml-1" id="statTotalWarns">0</span>
             </div>
-            <div class="w-full h-3 rounded-full bg-dark-surface overflow-hidden p-0.5 border border-dark-border">
-              <div id="historicProgressBar" class="h-full rounded-full bg-gradient-to-r from-brand-500 to-cyan-400 transition-all duration-500" style="width: 0%"></div>
+            <span class="text-slate-700">•</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span class="text-slate-400 text-[10px]">SYNC TEMPS RÉEL (2.5s)</span>
             </div>
           </div>
 
-          <!-- Tableau des 60 Membres -->
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="text-xs uppercase text-slate-400 bg-dark-surface/50 border-b border-white/5">
-                <tr>
-                  <th class="py-3 px-3">#</th>
-                  <th class="py-3 px-3">Pseudo Recherché</th>
-                  <th class="py-3 px-3">Statut & Identifiant (LID/Phone)</th>
-                  <th class="py-3 px-3">Avertissements Requis</th>
-                  <th class="py-3 px-3">Actuellement Appliqués</th>
-                </tr>
-              </thead>
-              <tbody id="historicTableBody" class="divide-y divide-white/5 font-mono text-xs">
-                <tr><td colspan="5" class="py-6 text-center text-slate-500">Chargement de la liste...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- ONGLET 4 : CONSOLE LOGS EN DIRECT              -->
-      <!-- ============================================== -->
-      <section id="tab-logs" class="tab-content hidden space-y-4">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div class="flex items-center gap-3 w-full sm:w-auto">
+          <!-- Actions -->
+          <div class="flex items-center gap-2">
             <div class="relative flex-1 sm:w-64">
               <input 
                 type="text" 
-                id="logFilterInput" 
-                placeholder="Filtrer les logs..." 
-                class="w-full px-3 py-1.5 bg-dark-surface border border-dark-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none"
+                id="warnSearchInput" 
+                placeholder="Filtrer (numéro, pseudo, raison)..." 
+                class="w-full px-3 py-1.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-xs"
               >
             </div>
-            <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
-              <input type="checkbox" id="autoRefreshLogsCheck" checked class="rounded bg-dark-surface border-dark-border text-brand-500">
-              <span>Auto-refresh (3s)</span>
-            </label>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button id="btnRefreshLogs" class="py-1.5 px-3 rounded-xl bg-dark-surface hover:bg-dark-border border border-dark-border text-xs text-slate-300">
-              🔄 Rafraîchir
+            <button id="btnOpenAddWarnModal" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors whitespace-nowrap">
+              + AVERTIR
             </button>
-            <button id="btnClearLogsView" class="py-1.5 px-3 rounded-xl bg-dark-surface hover:bg-dark-border border border-dark-border text-xs text-slate-400">
-              🧹 Vider vue
+            <button id="btnScanTaverne" title="Analyser participants de la taverne" class="px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-300 uppercase transition-colors whitespace-nowrap">
+              SCAN TAVERNE
             </button>
           </div>
         </div>
 
-        <div id="terminalWindow" class="w-full h-[550px] p-4 rounded-2xl bg-[#050608] border border-white/10 font-mono text-xs text-slate-300 overflow-y-auto custom-scroll space-y-1">
-          <div class="text-slate-600">// En attente des flux de logs pm2 (zybot-out / zybot-error)...</div>
+        <!-- Tableau carré épuré des avertissements -->
+        <div class="bg-noir-900 border border-noir-800 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-noir-850 text-slate-400 border-b border-noir-800 uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th class="py-2.5 px-3">Identifiant (Numéro / LID)</th>
+                  <th class="py-2.5 px-3">Pseudo</th>
+                  <th class="py-2.5 px-3">Statut / Niveau</th>
+                  <th class="py-2.5 px-3">Dernière Raison</th>
+                  <th class="py-2.5 px-3">Groupe</th>
+                  <th class="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="warnsTableBody" class="divide-y divide-noir-800">
+                <tr><td colspan="6" class="py-8 text-center text-slate-600">Chargement des données...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <!-- ============================================== -->
-      <!-- ONGLET 5 : PARAMÈTRES & SÉCURITÉ               -->
-      <!-- ============================================== -->
-      <section id="tab-settings" class="tab-content hidden space-y-6">
+      <!-- ====================================================== -->
+      <!-- SECTION 2 : LOGS CONSOLE (COPIABLE)                    -->
+      <!-- ====================================================== -->
+      <section id="tab-logs" class="tab-content hidden space-y-3">
         
-        <!-- Changement de Mot de Passe -->
-        <div class="glass-card p-6 rounded-2xl max-w-xl">
-          <h2 class="text-base font-semibold text-white mb-2 flex items-center gap-2">
-            <span>🔑</span>
-            <span>Sécurité & Mot de Passe de la WebGUI</span>
-          </h2>
-          <p class="text-slate-400 text-xs mb-4">
-            Modifiez le mot de passe requis pour accéder à cette interface de gestion.
-          </p>
-          <form id="changePasswordForm" class="space-y-4">
-            <div>
-              <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Nouveau mot de passe</label>
-              <input 
-                type="password" 
-                id="newWebPasswordInput" 
-                placeholder="Nouveau mot de passe fort" 
-                required
-                class="w-full px-4 py-2.5 bg-dark-surface border border-dark-border rounded-xl text-white text-sm focus:outline-none focus:border-brand-500"
-              >
+        <!-- Barre de contrôle des logs -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 bg-emerald-400 animate-pulse"></span>
+              <span class="text-[11px] font-bold text-white uppercase tracking-wider">FLUX EN DIRECT (PM2)</span>
             </div>
-            <button type="submit" class="py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-medium text-sm transition-all">
-              Sauvegarder le Nouveau Mot de Passe
+            <span class="text-slate-700">|</span>
+            <input 
+              type="text" 
+              id="logFilterInput" 
+              placeholder="Filtrer les lignes..." 
+              class="px-2.5 py-1 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-[11px] w-48"
+            >
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btnCopyLogs" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5">
+              <span>📋</span>
+              <span id="btnCopyLogsText">COPIER LES LOGS</span>
             </button>
-          </form>
+            <button id="btnClearLogs" class="px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white uppercase transition-colors">
+              VIDER
+            </button>
+            <button id="btnRestartBot" class="px-3 py-1.5 border border-red-800/80 hover:bg-red-950/40 text-red-400 uppercase transition-colors">
+              RESTART PM2
+            </button>
+          </div>
         </div>
 
-        <!-- Statut des Protections Furtives -->
-        <div class="glass-card p-6 rounded-2xl max-w-xl">
-          <h2 class="text-base font-semibold text-white mb-2 flex items-center gap-2">
-            <span>🛡️</span>
-            <span>Moteur Furtif & Confidentialité</span>
-          </h2>
-          <div class="space-y-3 text-xs text-slate-300">
-            <div class="flex items-center justify-between p-3 rounded-xl bg-dark-surface border border-dark-border">
-              <span>Protection anti-détection WhatsApp</span>
-              <span class="text-emerald-400 font-bold">ACTIVE (Chrome macOS)</span>
-            </div>
-            <div class="flex items-center justify-between p-3 rounded-xl bg-dark-surface border border-dark-border">
-              <span>Discrétion /warn dans les groupes</span>
-              <span class="text-emerald-400 font-bold">SILENCE TOTAL (0 msg)</span>
-            </div>
-            <div class="flex items-center justify-between p-3 rounded-xl bg-dark-surface border border-dark-border">
-              <span>Rapports modération</span>
-              <span class="text-brand-400 font-bold">#admintaverne uniquement</span>
-            </div>
-          </div>
+        <!-- Fenêtre terminal noire carrée -->
+        <div id="terminalWindow" class="w-full h-[650px] p-4 bg-black border border-noir-800 font-mono text-[11px] text-slate-300 overflow-y-auto custom-scroll space-y-0.5 select-text">
+          <div class="text-slate-600">// Flux de logs en cours de synchronisation...</div>
         </div>
       </section>
 
@@ -498,69 +252,65 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- MODALE : AJOUTER UN AVERTISSEMENT MANUELLEMENT           -->
+  <!-- MODALE : AJOUTER UN WARN (CARRÉE & MINIMALISTE)          -->
   <!-- ======================================================== -->
-  <div id="addWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-    <div class="glass-card w-full max-w-lg p-6 rounded-2xl border border-brand-500/30">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <span>⚠️</span>
-          <span>Ajouter un Avertissement</span>
-        </h3>
-        <button onclick="closeModal('addWarnModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+  <div id="addWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
+    <div class="w-full max-w-md bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
+        <span class="font-bold uppercase tracking-wider text-white">+ NOUVEL AVERTISSEMENT</span>
+        <button onclick="closeModal('addWarnModal')" class="text-slate-500 hover:text-white px-2">✕</button>
       </div>
 
-      <form id="addWarnForm" class="space-y-4">
-        <div>
-          <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Cible (Numéro WhatsApp ou LID)</label>
+      <form id="addWarnForm" class="space-y-3">
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Cible (Numéro ou LID)</label>
           <input 
             type="text" 
             id="modalWarnTarget" 
             placeholder="Ex: 33612345678 ou 218193348006100" 
             required
-            class="w-full px-4 py-2.5 bg-dark-surface border border-dark-border rounded-xl text-white text-sm font-mono focus:outline-none focus:border-brand-500"
+            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white font-mono text-xs"
           >
-          <p class="text-[11px] text-slate-500 mt-1">Vous pouvez entrer le numéro international ou l'identifiant LID.</p>
         </div>
 
-        <div>
-          <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Pseudo / Nom d'affichage (Optionnel)</label>
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Pseudo (Optionnel)</label>
           <input 
             type="text" 
             id="modalWarnPseudo" 
             placeholder="Ex: Hugo, Mme chaise Ikea..." 
-            class="w-full px-4 py-2.5 bg-dark-surface border border-dark-border rounded-xl text-white text-sm focus:outline-none focus:border-brand-500"
+            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white text-xs"
           >
         </div>
 
-        <div>
-          <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Motif / Raison de l'avertissement</label>
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Motif de l'avertissement</label>
           <textarea 
             id="modalWarnReason" 
             rows="3" 
             placeholder="Ex: Spam de stickers, insultes, pub non autorisée..." 
             required
-            class="w-full px-4 py-2.5 bg-dark-surface border border-dark-border rounded-xl text-white text-sm focus:outline-none focus:border-brand-500"
+            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white text-xs"
           ></textarea>
         </div>
 
-        <div>
-          <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Nom du modérateur émetteur</label>
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Admin émetteur</label>
           <input 
             type="text" 
             id="modalWarnAdmin" 
             value="Administrateur Web" 
             required
-            class="w-full px-4 py-2.5 bg-dark-surface border border-dark-border rounded-xl text-white text-sm focus:outline-none focus:border-brand-500"
+            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white text-xs"
           >
         </div>
 
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="closeModal('addWarnModal')" class="py-2.5 px-4 rounded-xl bg-dark-surface border border-dark-border text-slate-300 text-sm">
+        <div class="flex justify-end gap-2 pt-2 border-t border-noir-800">
+          <button type="button" onclick="closeModal('addWarnModal')" class="px-3 py-1.5 border border-noir-700 hover:border-slate-500 text-slate-300 uppercase">
             Annuler
           </button>
-          <button type="submit" class="py-2.5 px-5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-medium text-sm shadow-lg shadow-brand-500/20">
-            Enregistrer le Warn
+          <button type="submit" class="px-4 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider">
+            Enregistrer
           </button>
         </div>
       </form>
@@ -568,44 +318,43 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- MODALE : HISTORIQUE DÉTAILLÉ D'UN MEMBRE                 -->
+  <!-- MODALE : HISTORIQUE D'UN MEMBRE                          -->
   <!-- ======================================================== -->
-  <div id="detailsWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-    <div class="glass-card w-full max-w-2xl p-6 rounded-2xl border border-white/10 max-h-[85vh] flex flex-col">
-      <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+  <div id="detailsWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
+    <div class="w-full max-w-xl bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
         <div>
-          <h3 class="text-base font-bold text-white flex items-center gap-2" id="modalDetailsTitle">
-            Détails des avertissements
-          </h3>
-          <p class="text-xs text-slate-400 font-mono mt-0.5" id="modalDetailsSubtitle"></p>
+          <span class="font-bold uppercase tracking-wider text-white" id="modalDetailsTitle">HISTORIQUE WARNS</span>
+          <div class="text-[10px] text-slate-500 font-mono mt-0.5" id="modalDetailsSubtitle"></div>
         </div>
-        <button onclick="closeModal('detailsWarnModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+        <button onclick="closeModal('detailsWarnModal')" class="text-slate-500 hover:text-white px-2">✕</button>
       </div>
 
-      <div class="flex-1 overflow-y-auto custom-scroll space-y-3 pr-1" id="modalDetailsList">
+      <div class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-1" id="modalDetailsList">
         <!-- Rempli par JavaScript -->
       </div>
 
-      <div class="pt-4 border-t border-white/10 mt-4 flex items-center justify-between">
-        <button id="modalDetailsResetAllBtn" class="py-2 px-4 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-xs font-semibold">
-          🗑️ Effacer tous ses avertissements (Reset)
+      <div class="pt-3 border-t border-noir-800 flex items-center justify-between">
+        <button id="modalDetailsResetAllBtn" class="px-3 py-1.5 bg-red-950/60 border border-red-800 hover:bg-red-900 text-red-300 uppercase font-bold tracking-wider text-[10px]">
+          EFFACER TOUS LES WARNS (RESET)
         </button>
-        <button onclick="closeModal('detailsWarnModal')" class="py-2 px-4 rounded-xl bg-dark-surface border border-dark-border text-slate-300 text-xs">
+        <button onclick="closeModal('detailsWarnModal')" class="px-3 py-1.5 border border-noir-700 text-slate-300 uppercase text-[10px]">
           Fermer
         </button>
       </div>
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT TEMPS RÉEL MINIMALISTE                        -->
+  <!-- ======================================================== -->
   <script>
-    // Variables d'état
     let currentAuthToken = localStorage.getItem('zybot_token') || null;
     let allWarnsData = [];
-    let logInterval = null;
-    let currentDetailedMember = null;
+    let rawLogsList = [];
+    let activeTab = 'tab-warns';
+    let pollInterval = null;
 
-    // Helper fetch authentifié
     async function apiFetch(endpoint, options = {}) {
       const headers = options.headers || {};
       if (currentAuthToken) {
@@ -616,28 +365,26 @@
       const res = await fetch(endpoint, { ...options, headers });
       if (res.status === 401 && !endpoint.includes('/api/auth/')) {
         showLogin();
-        throw new Error('Session expirée');
+        throw new Error('Non authentifié');
       }
       return res;
     }
 
-    // Gestion de l'affichage Login / App
     function showLogin() {
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('appScreen').classList.add('hidden');
-      if (logInterval) clearInterval(logInterval);
+      if (pollInterval) clearInterval(pollInterval);
     }
 
     function showApp() {
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('appScreen').classList.remove('hidden');
-      loadAllData();
-      startLogStream();
+      fetchAllData();
+      startRealTimeEngine();
     }
 
     // Initialisation
     window.addEventListener('DOMContentLoaded', async () => {
-      // Vérifier si la session est active
       try {
         const res = await apiFetch('api/auth/check');
         const data = await res.json();
@@ -651,16 +398,14 @@
       }
 
       setupTabs();
-      setupEventListeners();
+      setupEvents();
     });
 
-    // Formulaire de Connexion
+    // Formulaire Login
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const pwd = document.getElementById('passwordInput').value;
       const errBox = document.getElementById('loginError');
-      const errMsg = document.getElementById('loginErrorMsg');
-
       errBox.classList.add('hidden');
 
       try {
@@ -677,163 +422,138 @@
           showApp();
         } else {
           errBox.classList.remove('hidden');
-          errMsg.textContent = data.error || 'Mot de passe incorrect.';
+          errBox.textContent = data.error || 'Mot de passe incorrect.';
         }
-      } catch (err) {
+      } catch {
         errBox.classList.remove('hidden');
-        errMsg.textContent = 'Impossible de contacter le serveur.';
+        errBox.textContent = 'Erreur réseau.';
       }
-    });
-
-    // Toggle Password Visibility
-    document.getElementById('togglePasswordBtn').addEventListener('click', () => {
-      const input = document.getElementById('passwordInput');
-      input.type = input.type === 'password' ? 'text' : 'password';
     });
 
     // Déconnexion
     document.getElementById('logoutBtn').addEventListener('click', async () => {
-      try {
-        await apiFetch('api/auth/logout', { method: 'POST' });
-      } catch {}
+      try { await apiFetch('api/auth/logout', { method: 'POST' }); } catch {}
       currentAuthToken = null;
       localStorage.removeItem('zybot_token');
       showLogin();
     });
 
-    // Navigation Onglets
+    // Navigation entre les 2 onglets essentiels
     function setupTabs() {
       document.querySelectorAll('.nav-tab').forEach((tab) => {
         tab.addEventListener('click', () => {
-          const targetId = tab.dataset.tab;
-          switchTab(targetId);
+          activeTab = tab.dataset.tab;
+          document.querySelectorAll('.nav-tab').forEach((t) => {
+            if (t.dataset.tab === activeTab) {
+              t.className = 'nav-tab active px-3 py-1.5 border border-white bg-white text-black font-bold tracking-wider uppercase transition-colors';
+            } else {
+              t.className = 'nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors';
+            }
+          });
+
+          document.querySelectorAll('.tab-content').forEach((sec) => {
+            if (sec.id === activeTab) sec.classList.remove('hidden');
+            else sec.classList.add('hidden');
+          });
+
+          if (activeTab === 'tab-logs') renderLogs();
         });
       });
     }
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.nav-tab').forEach((t) => {
-        if (t.dataset.tab === tabId) {
-          t.classList.add('active', 'border-brand-500', 'text-white');
-          t.classList.remove('border-transparent', 'text-slate-400');
-        } else {
-          t.classList.remove('active', 'border-brand-500', 'text-white');
-          t.classList.add('border-transparent', 'text-slate-400');
-        }
-      });
-
-      document.querySelectorAll('.tab-content').forEach((section) => {
-        if (section.id === tabId) {
-          section.classList.remove('hidden');
-        } else {
-          section.classList.add('hidden');
-        }
-      });
-
-      if (tabId === 'tab-historic') loadHistoricData();
-      if (tabId === 'tab-logs') refreshLogs();
+    // Récupération globale et mise à jour en temps réel
+    async function fetchAllData() {
+      await Promise.all([updateStatus(), updateWarns(), updateLogs()]);
     }
 
-    // Chargement global des données
-    async function loadAllData() {
-      await Promise.all([loadStatus(), loadWarns()]);
+    function startRealTimeEngine() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(() => {
+        fetchAllData();
+      }, 2500); // Mise à jour automatique toutes les 2.5 secondes
     }
 
-    // 1. Statut & Dashboard
-    async function loadStatus() {
+    // 1. Statut
+    async function updateStatus() {
       try {
         const res = await apiFetch('api/status');
         const data = await res.json();
 
-        // Navbar & Uptime
-        const hours = Math.floor(data.bot.uptime / 3600);
-        const mins = Math.floor((data.bot.uptime % 3600) / 60);
-        document.getElementById('uptimeText').textContent = `Uptime: ${hours}h ${mins}m`;
-
-        const waBadge = document.getElementById('waStatusBadge');
-        const waText = document.getElementById('waStatusText');
+        const phoneSpan = document.getElementById('waPhoneText');
+        const dot = document.getElementById('statusDot');
         if (data.bot.status === 'connected') {
-          waBadge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium';
-          waText.textContent = `Connecté (+${data.bot.phone || 'OK'})`;
-          document.getElementById('cardWaPhone').textContent = data.bot.phone ? `+${data.bot.phone}` : 'Connecté';
-          document.getElementById('cardWaStatus').textContent = `Furtif • macOS v${data.bot.version || '1.26'}`;
+          phoneSpan.textContent = `+${data.bot.phone || 'CONNECTÉ'}`;
+          dot.className = 'w-2 h-2 bg-emerald-400 animate-pulse';
         } else {
-          waBadge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium';
-          waText.textContent = 'Déconnecté';
-          document.getElementById('cardWaPhone').textContent = 'Hors ligne';
-          document.getElementById('cardWaStatus').textContent = 'En attente de connexion';
+          phoneSpan.textContent = 'DÉCONNECTÉ';
+          dot.className = 'w-2 h-2 bg-red-500';
         }
 
-        // RAM & Stats
-        document.getElementById('cardRamUsage').textContent = `${data.system.processMemMb} MB`;
-        document.getElementById('cardSystemMem').textContent = `Pi : ${Math.round(data.system.freeMemMb / 1024 * 10) / 10} GB libre`;
-        document.getElementById('cardWarnUsers').textContent = data.stats.warnedUsersCount;
-        document.getElementById('cardWarnTotal').textContent = `Total avertissements : ${data.stats.totalWarnCount}`;
-        document.getElementById('warnCountBadge').textContent = data.stats.warnedUsersCount;
-
-      } catch (err) {
-        console.error('Erreur loadStatus:', err);
-      }
+        const hours = Math.floor(data.bot.uptime / 3600);
+        const mins = Math.floor((data.bot.uptime % 3600) / 60);
+        document.getElementById('uptimeDisplay').textContent = `UPTIME: ${hours}H ${mins}M • RAM: ${data.system.processMemMb}MB`;
+        document.getElementById('statUsersCount').textContent = data.stats.warnedUsersCount;
+        document.getElementById('statTotalWarns').textContent = data.stats.totalWarnCount;
+        document.getElementById('tabWarnCount').textContent = data.stats.warnedUsersCount;
+      } catch {}
     }
 
-    // 2. Avertissements
-    async function loadWarns() {
+    // 2. Warns
+    async function updateWarns() {
       try {
         const res = await apiFetch('api/warns');
         const data = await res.json();
         allWarnsData = data.users || [];
-        renderWarnsTable(allWarnsData);
-        renderRecentWarns(allWarnsData);
-      } catch (err) {
-        console.error('Erreur loadWarns:', err);
-      }
+        renderWarns();
+      } catch {}
     }
 
-    function renderWarnsTable(users) {
+    function renderWarns() {
+      const q = document.getElementById('warnSearchInput').value.toLowerCase().trim();
+      const filtered = q ? allWarnsData.filter((u) => {
+        return (
+          u.number.includes(q) ||
+          (u.pushName && u.pushName.toLowerCase().includes(q)) ||
+          u.warns.some((w) => (w.reason && w.reason.toLowerCase().includes(q)))
+        );
+      }) : allWarnsData;
+
       const tbody = document.getElementById('warnsTableBody');
-      if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-500">Aucun avertissement actif enregistré.</td></tr>';
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-600">Aucun avertissement enregistré.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = users.map((u) => {
+      tbody.innerHTML = filtered.map((u) => {
         const count = u.count;
-        let badgeClass = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-        let alertIcon = '⚠️';
+        let badge = `<span class="px-2 py-0.5 border border-yellow-800 bg-yellow-950/40 text-yellow-300 font-bold">${count} WARN</span>`;
         if (count === 2) {
-          badgeClass = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-          alertIcon = '🚨';
+          badge = `<span class="px-2 py-0.5 border border-orange-800 bg-orange-950/40 text-orange-300 font-bold">2 WARNS</span>`;
         } else if (count >= 3) {
-          badgeClass = 'bg-red-500/20 text-red-400 border-red-500/30 animate-pulse';
-          alertIcon = '⛔ BAN';
+          badge = `<span class="px-2 py-0.5 border border-red-700 bg-red-950/70 text-red-300 font-bold animate-pulse">⛔ BAN (${count})</span>`;
         }
 
         const last = u.lastWarn || {};
-        const pseudoDisplay = u.pushName ? u.pushName : '<span class="text-slate-500 italic">Non renseigné</span>';
+        const pseudo = u.pushName || '<span class="text-slate-600">-</span>';
         const isLid = u.number.length >= 14;
 
         return `
-          <tr class="hover:bg-white/[0.02] transition-colors">
-            <td class="py-3.5 px-4 font-mono font-medium text-white flex items-center gap-2">
-              <span>${isLid ? '🆔 ' : '📞 +'}${u.number}</span>
-              <button onclick="navigator.clipboard.writeText('${u.number}')" title="Copier l'identifiant" class="text-slate-500 hover:text-brand-400 text-xs">📋</button>
+          <tr class="hover:bg-white/[0.02] border-b border-noir-800/60 font-mono">
+            <td class="py-2.5 px-3 text-white font-medium">
+              <span class="text-slate-500">${isLid ? 'ID:' : '+'}</span>${u.number}
+              <button onclick="copyText('${u.number}', this)" title="Copier" class="ml-1 text-slate-600 hover:text-white">⧉</button>
             </td>
-            <td class="py-3.5 px-4 text-slate-300 font-medium">${pseudoDisplay}</td>
-            <td class="py-3.5 px-4">
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeClass}">
-                <span>${alertIcon}</span>
-                <span>${count} warn${count > 1 ? 's' : ''}</span>
-              </span>
+            <td class="py-2.5 px-3 text-slate-300 font-sans">${pseudo}</td>
+            <td class="py-2.5 px-3">${badge}</td>
+            <td class="py-2.5 px-3 text-slate-300 max-w-xs truncate font-sans" title="${last.reason || ''}">
+              "${escapeHtml(last.reason || 'N/A')}"
             </td>
-            <td class="py-3.5 px-4 text-slate-300 max-w-xs truncate" title="${last.reason || ''}">
-              ${last.reason || 'Non spécifiée'}
-            </td>
-            <td class="py-3.5 px-4 text-slate-400 text-xs">${last.groupName || 'Taverne'}</td>
-            <td class="py-3.5 px-4 text-right space-x-2">
-              <button onclick="openMemberDetails('${u.number}')" class="px-2.5 py-1 rounded-lg bg-dark-surface hover:bg-brand-600/30 text-brand-400 border border-brand-500/20 text-xs font-medium transition-colors">
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] font-sans">${last.groupName || 'Taverne'}</td>
+            <td class="py-2.5 px-3 text-right space-x-1.5 whitespace-nowrap">
+              <button onclick="openMemberDetails('${u.number}')" class="px-2 py-0.5 border border-noir-700 hover:border-white text-slate-300 hover:text-white uppercase text-[10px]">
                 Détails
               </button>
-              <button onclick="deleteMemberWarns('${u.number}')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/30 text-red-400 border border-red-500/20 text-xs font-medium transition-colors">
+              <button onclick="deleteMemberWarns('${u.number}')" class="px-2 py-0.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 uppercase text-[10px]">
                 Effacer
               </button>
             </td>
@@ -842,160 +562,69 @@
       }).join('');
     }
 
-    function renderRecentWarns(users) {
-      const tbody = document.getElementById('dashboardRecentWarnsTable');
-      if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-500">Aucun avertissement actif.</td></tr>';
-        return;
-      }
+    document.getElementById('warnSearchInput').addEventListener('input', renderWarns);
 
-      tbody.innerHTML = users.slice(0, 5).map((u) => {
-        const last = u.lastWarn || {};
-        return `
-          <tr class="hover:bg-white/[0.02]">
-            <td class="py-3 px-3 text-white font-medium">+${u.number} ${u.pushName ? '(' + u.pushName + ')' : ''}</td>
-            <td class="py-3 px-3 text-amber-400 font-bold">${u.count} av</td>
-            <td class="py-3 px-3 text-slate-300 truncate max-w-xs">${last.reason || 'N/A'}</td>
-            <td class="py-3 px-3 text-slate-400">${last.admin || 'Admin'}</td>
-            <td class="py-3 px-3 text-right">
-              <button onclick="openMemberDetails('${u.number}')" class="text-xs text-brand-400 hover:underline">Gérer ➔</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
+    // 3. Logs et Copie dans le presse-papier
+    async function updateLogs() {
+      try {
+        const res = await apiFetch('api/logs?limit=150');
+        const data = await res.json();
+        rawLogsList = data.combined || [];
+        if (activeTab === 'tab-logs') renderLogs();
+      } catch {}
     }
 
-    // Recherche dans les warns
-    document.getElementById('warnSearchInput').addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      if (!q) {
-        renderWarnsTable(allWarnsData);
+    function renderLogs() {
+      const term = document.getElementById('terminalWindow');
+      const filter = document.getElementById('logFilterInput').value.toLowerCase();
+      const filtered = filter ? rawLogsList.filter((l) => l.text.toLowerCase().includes(filter)) : rawLogsList;
+
+      if (!filtered.length) {
+        term.innerHTML = '<div class="text-slate-600">// Aucun log disponible.</div>';
         return;
       }
-      const filtered = allWarnsData.filter((u) => {
-        return (
-          u.number.includes(q) ||
-          (u.pushName && u.pushName.toLowerCase().includes(q)) ||
-          u.warns.some((w) => (w.reason && w.reason.toLowerCase().includes(q)) || (w.admin && w.admin.toLowerCase().includes(q)))
-        );
+
+      term.innerHTML = filtered.map((l) => {
+        let color = 'text-slate-300';
+        if (l.type === 'error' || l.text.includes('Error') || l.text.includes('❌')) {
+          color = 'text-red-400 font-semibold';
+        } else if (l.text.includes('WARNING') || l.text.includes('⚠️')) {
+          color = 'text-yellow-400';
+        } else if (l.text.includes('✅') || l.text.includes('CONNECTÉ')) {
+          color = 'text-emerald-400 font-semibold';
+        } else if (l.text.includes('[Commande]')) {
+          color = 'text-cyan-300';
+        }
+        return `<div class="${color} leading-relaxed break-all">${escapeHtml(l.text)}</div>`;
+      }).join('');
+
+      term.scrollTop = term.scrollHeight;
+    }
+
+    document.getElementById('logFilterInput').addEventListener('input', renderLogs);
+
+    // BOUTON COPIER TOUS LES LOGS DANS LE PRESSE-PAPIER
+    document.getElementById('btnCopyLogs').addEventListener('click', () => {
+      if (!rawLogsList.length) return;
+      const text = rawLogsList.map((l) => l.text).join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        const btnText = document.getElementById('btnCopyLogsText');
+        const prev = btnText.textContent;
+        btnText.textContent = 'COPIÉ !';
+        setTimeout(() => { btnText.textContent = prev; }, 2000);
       });
-      renderWarnsTable(filtered);
     });
 
-    // 3. 60 Membres Historiques
-    async function loadHistoricData() {
-      try {
-        const res = await apiFetch('api/warns/historic');
-        const data = await res.json();
-        
-        document.getElementById('historicProgressText').textContent = `Progression : ${data.resolvedCount} / ${data.total} membres identifiés`;
-        const percent = Math.round((data.resolvedCount / data.total) * 100);
-        document.getElementById('historicProgressPercent').textContent = `${percent}%`;
-        document.getElementById('historicProgressBar').style.width = `${percent}%`;
+    document.getElementById('btnClearLogs').addEventListener('click', () => {
+      document.getElementById('terminalWindow').innerHTML = '<div class="text-slate-600">// Vue nettoyée.</div>';
+    });
 
-        const tbody = document.getElementById('historicTableBody');
-        tbody.innerHTML = data.targets.map((t, i) => {
-          const isResolved = !!t.resolvedId;
-          const statusBadge = isResolved 
-            ? `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✅ ${t.resolvedId}</span>`
-            : `<span class="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">⏳ En attente scan Taverne</span>`;
+    // 4. Modales & Actions
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-          return `
-            <tr class="hover:bg-white/[0.02]">
-              <td class="py-2.5 px-3 text-slate-500">${i + 1}</td>
-              <td class="py-2.5 px-3 font-bold text-white">${t.pseudo}</td>
-              <td class="py-2.5 px-3">${statusBadge}</td>
-              <td class="py-2.5 px-3 text-slate-400">${t.expectedWarns} av</td>
-              <td class="py-2.5 px-3 text-amber-400 font-bold">${t.currentWarnsCount} appliqué(s)</td>
-            </tr>
-          `;
-        }).join('');
-      } catch (err) {
-        console.error('Erreur loadHistoricData:', err);
-      }
-    }
-
-    // Déclencher le Scan Taverne
-    document.getElementById('btnTriggerScan').addEventListener('click', runTaverneScan);
-    document.getElementById('btnQuickScanTaverne').addEventListener('click', runTaverneScan);
-
-    async function runTaverneScan() {
-      const btn = document.getElementById('btnTriggerScan');
-      btn.textContent = '⏳ Scan en cours...';
-      btn.disabled = true;
-
-      try {
-        const res = await apiFetch('api/warns/scan', { method: 'POST' });
-        const data = await res.json();
-        alert(`✅ Scan terminé avec succès !\n• Total membres identifiés : ${data.resolvedCount}\n• Avertissements appliqués : ${data.appliedWarns}`);
-        loadAllData();
-        loadHistoricData();
-      } catch (err) {
-        alert('❌ Erreur lors du scan de la Taverne.');
-      } finally {
-        btn.textContent = '🔍 Lancer le Scan en direct (/warn scan)';
-        btn.disabled = false;
-      }
-    }
-
-    // 4. Logs Console
-    async function refreshLogs() {
-      try {
-        const res = await apiFetch('api/logs?limit=120');
-        const data = await res.json();
-        const term = document.getElementById('terminalWindow');
-        const filter = document.getElementById('logFilterInput').value.toLowerCase();
-
-        const lines = data.combined || [];
-        const filtered = filter ? lines.filter((l) => l.text.toLowerCase().includes(filter)) : lines;
-
-        if (!filtered.length) {
-          term.innerHTML = '<div class="text-slate-600">// Aucun log correspondant.</div>';
-          return;
-        }
-
-        term.innerHTML = filtered.map((l) => {
-          let color = 'text-slate-300';
-          if (l.type === 'error' || l.text.includes('Error') || l.text.includes('❌')) {
-            color = 'text-red-400';
-          } else if (l.text.includes('WARNING') || l.text.includes('⚠️')) {
-            color = 'text-yellow-400';
-          } else if (l.text.includes('✅') || l.text.includes('CONNECTÉ')) {
-            color = 'text-emerald-400';
-          } else if (l.text.includes('[Commande]')) {
-            color = 'text-cyan-400 font-semibold';
-          }
-          return `<div class="${color} leading-relaxed break-all">${escapeHtml(l.text)}</div>`;
-        }).join('');
-
-        term.scrollTop = term.scrollHeight;
-      } catch (err) {
-        console.error('Erreur refreshLogs:', err);
-      }
-    }
-
-    function startLogStream() {
-      if (logInterval) clearInterval(logInterval);
-      logInterval = setInterval(() => {
-        if (document.getElementById('autoRefreshLogsCheck').checked && !document.getElementById('tab-logs').classList.contains('hidden')) {
-          refreshLogs();
-        }
-      }, 3000);
-    }
-
-    // 5. Actions & Modales
-    function openModal(id) {
-      document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    document.getElementById('btnQuickAddWarn').addEventListener('click', () => openModal('addWarnModal'));
     document.getElementById('btnOpenAddWarnModal').addEventListener('click', () => openModal('addWarnModal'));
 
-    // Soumission Nouveau Warn
     document.getElementById('addWarnForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const target = document.getElementById('modalWarnTarget').value.trim();
@@ -1012,60 +641,49 @@
         if (res.ok && data.success) {
           closeModal('addWarnModal');
           document.getElementById('addWarnForm').reset();
-          loadAllData();
+          fetchAllData();
         } else {
-          alert(`Erreur : ${data.error || 'Impossible d\'ajouter le warn'}`);
+          alert(`Erreur : ${data.error || 'Échec ajout warn'}`);
         }
-      } catch (err) {
-        alert('Erreur réseau lors de l\'ajout du warn.');
+      } catch {
+        alert('Erreur réseau');
       }
     });
 
-    // Supprimer tous les warns d'un membre
     async function deleteMemberWarns(target) {
-      if (!confirm(`Voulez-vous vraiment réinitialiser et effacer TOUS les avertissements de ${target} ?`)) {
-        return;
-      }
+      if (!confirm(`Effacer TOUS les avertissements de ${target} ?`)) return;
       try {
-        const res = await apiFetch('api/warns/delete', {
-          method: 'POST',
-          body: JSON.stringify({ target })
-        });
-        const data = await res.json();
-        if (data.success) {
-          loadAllData();
-          closeModal('detailsWarnModal');
-        }
-      } catch (err) {
-        alert('Erreur lors de la suppression.');
+        await apiFetch('api/warns/delete', { method: 'POST', body: JSON.stringify({ target }) });
+        fetchAllData();
+        closeModal('detailsWarnModal');
+      } catch {
+        alert('Erreur suppression');
       }
     }
 
-    // Ouvrir les détails d'un membre
     function openMemberDetails(target) {
       const user = allWarnsData.find((u) => u.number === target);
       if (!user) return;
 
-      currentDetailedMember = user;
-      document.getElementById('modalDetailsTitle').textContent = `Historique de ${user.pushName ? user.pushName + ' ' : ''}(+${user.number})`;
-      document.getElementById('modalDetailsSubtitle').textContent = `${user.count} avertissement(s) au total dans la base`;
+      document.getElementById('modalDetailsTitle').textContent = `WARNS // ${user.pushName || ''} (+${user.number})`;
+      document.getElementById('modalDetailsSubtitle').textContent = `TOTAL : ${user.count} AVERTISSEMENT(S)`;
 
       const listDiv = document.getElementById('modalDetailsList');
       listDiv.innerHTML = user.warns.map((w, idx) => {
         const dateStr = new Date(w.timestamp).toLocaleString('fr-FR');
         return `
-          <div class="p-3.5 rounded-xl bg-dark-surface border border-white/5 flex items-start justify-between gap-3">
+          <div class="p-3 bg-noir-950 border border-noir-800 flex items-start justify-between gap-3 font-mono">
             <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-amber-400">#${idx + 1}</span>
-                <span class="text-xs text-slate-400 font-mono">[${dateStr}]</span>
-                <span class="text-xs px-2 py-0.5 rounded bg-brand-500/20 text-brand-400 font-medium">${w.groupName || 'Taverne'}</span>
+              <div class="flex items-center gap-2 text-[10px]">
+                <span class="text-amber-400 font-bold">#${idx + 1}</span>
+                <span class="text-slate-500">[${dateStr}]</span>
+                <span class="text-slate-400">${w.groupName || 'Taverne'}</span>
               </div>
-              <p class="text-sm text-white font-medium mt-1">"${escapeHtml(w.reason)}"</p>
-              <div class="text-xs text-slate-400">Émis par : <span class="text-slate-300 font-semibold">${w.admin || 'Admin'}</span></div>
+              <div class="text-white font-sans text-xs">"${escapeHtml(w.reason)}"</div>
+              <div class="text-[10px] text-slate-500">Par : ${w.admin || 'Admin'}</div>
             </div>
-            <button onclick="deleteSingleWarn('${user.number}', '${w.id}')" title="Supprimer cet avertissement précis" class="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs">
-              🗑️
+            <button onclick="deleteSingleWarn('${user.number}', '${w.id}')" title="Supprimer cet avertissement" class="text-red-400 hover:text-red-300 text-xs px-1">
+              ✕
             </button>
           </div>
         `;
@@ -1075,62 +693,48 @@
       openModal('detailsWarnModal');
     }
 
-    // Supprimer un avertissement précis
     async function deleteSingleWarn(target, warnId) {
-      if (!confirm('Supprimer cet avertissement précis de l\'historique ?')) return;
+      if (!confirm('Supprimer cet avertissement précis ?')) return;
       try {
-        const res = await apiFetch('api/warns/delete', {
-          method: 'POST',
-          body: JSON.stringify({ target, warnId })
-        });
-        const data = await res.json();
-        if (data.success) {
-          loadAllData();
-          openMemberDetails(target);
-        }
-      } catch (err) {
-        alert('Erreur lors de la suppression.');
-      }
+        await apiFetch('api/warns/delete', { method: 'POST', body: JSON.stringify({ target, warnId }) });
+        fetchAllData();
+        openMemberDetails(target);
+      } catch {}
     }
 
-    // Changement de mot de passe
-    document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const newPwd = document.getElementById('newWebPasswordInput').value;
+    // Scan Taverne
+    document.getElementById('btnScanTaverne').addEventListener('click', async () => {
+      const btn = document.getElementById('btnScanTaverne');
+      btn.textContent = 'SCAN EN COURS...';
+      btn.disabled = true;
       try {
-        const res = await apiFetch('api/config/update', {
-          method: 'POST',
-          body: JSON.stringify({ newPassword: newPwd })
-        });
+        const res = await apiFetch('api/warns/scan', { method: 'POST' });
         const data = await res.json();
-        if (data.success) {
-          alert('✅ Mot de passe mis à jour avec succès !');
-          document.getElementById('changePasswordForm').reset();
-        }
+        alert(`Scan terminé : ${data.resolvedCount} membres identifiés (${data.appliedWarns} warns synchronisés).`);
+        fetchAllData();
       } catch {
-        alert('Erreur lors de la mise à jour du mot de passe.');
+        alert('Erreur scan Taverne');
+      } finally {
+        btn.textContent = 'SCAN TAVERNE';
+        btn.disabled = false;
       }
     });
 
-    // Redémarrage PM2
-    document.getElementById('btnQuickRestart').addEventListener('click', async () => {
-      if (!confirm('Confirmez-vous le redémarrage immédiat de ZyBot via PM2 ?')) return;
+    // Restart PM2
+    document.getElementById('btnRestartBot').addEventListener('click', async () => {
+      if (!confirm('Confirmez-vous le redémarrage PM2 de ZyBot ?')) return;
       try {
         await apiFetch('api/bot/restart', { method: 'POST' });
-        alert('🔄 Redémarrage en cours... La connexion sera rétablie dans quelques secondes.');
-        setTimeout(() => location.reload(), 4000);
-      } catch {
-        alert('Commande envoyée.');
-      }
+        alert('Redémarrage en cours...');
+      } catch {}
     });
 
-    function setupEventListeners() {
-      document.getElementById('btnRefreshWarns').addEventListener('click', loadWarns);
-      document.getElementById('btnRefreshLogs').addEventListener('click', refreshLogs);
-      document.getElementById('btnClearLogsView').addEventListener('click', () => {
-        document.getElementById('terminalWindow').innerHTML = '<div class="text-slate-600">// Vue nettoyée.</div>';
+    function copyText(str, el) {
+      navigator.clipboard.writeText(str).then(() => {
+        const prev = el.textContent;
+        el.textContent = '✓';
+        setTimeout(() => { el.textContent = prev; }, 1200);
       });
-      document.getElementById('logFilterInput').addEventListener('input', refreshLogs);
     }
 
     function escapeHtml(str) {
@@ -1142,6 +746,8 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
+
+    function setupEvents() {}
   </script>
 </body>
 </html>
