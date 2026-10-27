@@ -86,7 +86,7 @@ const DEFAULT_CONFIG = {
   web: {
     enabled: true,
     port: 3050,
-    password: 'zybot'
+    password: 'Nexoria2026'
   }
 };
 
