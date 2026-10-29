@@ -99,7 +99,7 @@ export default {
       `• ${p}texte : Transcrit une note vocale en texte (alias: ${p}transcrire)`,
       `• ${p}resume [nb] : Résumé IA ultra-rapide des échanges (défaut 50, max 200)`,
       `• ${p}top [nb] : Classement des membres les plus actifs par messages envoyés`,
-      `• ${p}gw <lot> ; <durée> : Tirage au sort avec inscription par réaction (alias: ${p}giveaway)`,
+      `• ${p}gw [<lot> ; <durée>|end|reroll] : Tirage au sort, fin anticipée et reroll (alias: ${p}giveaway)`,
       `• ${p}export [nb] : Archive la discussion en fichier texte (.txt) dans notifds`,
       `• ${p}persoping : Sauvegarde message cité avec date/heure exacte (alias: ${p}save)`,
       `• ${p}vv : Capture discrètement une vue unique en clair`,

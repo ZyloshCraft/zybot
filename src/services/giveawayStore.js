@@ -425,6 +425,101 @@ export async function finishGiveaway(sock, giveawayId) {
       } catch (err) {}
     }
   }
+
+  return { success: true, winner, giveaway: gw };
+}
+
+/**
+ * Tire un nouveau gagnant (reroll) pour un giveaway
+ */
+export async function rerollGiveaway(sock, giveawayId) {
+  const gw = giveaways.find(g => g.id === giveawayId);
+  if (!gw) return { success: false, reason: 'not_found' };
+
+  if (!gw.participants || gw.participants.length === 0) {
+    return { success: false, reason: 'no_participants', giveaway: gw };
+  }
+
+  // Si le giveaway était encore actif, on l'arrête proprement
+  if (gw.status === 'active') {
+    gw.status = 'completed';
+    gw.completedAt = Date.now();
+    if (activeTimers.has(gw.id)) {
+      const t = activeTimers.get(gw.id);
+      if (t.endTimer) clearTimeout(t.endTimer);
+      if (t.hourlyInterval) clearInterval(t.hourlyInterval);
+      activeTimers.delete(gw.id);
+    }
+  }
+
+  // Si plus d'un participant, on sélectionne parmi les autres participants
+  let candidatePool = gw.participants;
+  if (gw.participants.length > 1 && gw.winner) {
+    const others = gw.participants.filter(p => p.number !== gw.winner.number);
+    if (others.length > 0) {
+      candidatePool = others;
+    }
+  }
+
+  const randomIndex = Math.floor(Math.random() * candidatePool.length);
+  const newWinner = candidatePool[randomIndex];
+  gw.winner = newWinner;
+  gw.rerolledAt = Date.now();
+  saveGiveaways();
+
+  if (sock && gw.groupJid) {
+    const winnerJid = newWinner.jid.includes('@') ? newWinner.jid : `${newWinner.number}@s.whatsapp.net`;
+    const announcement = [
+      '🎉 *GIVEAWAY — REROLL*',
+      '━━━━━━━━━━━━━━━━━━━━',
+      `🎁 *Lot :* ${gw.prize}`,
+      `🏆 *Nouveau Gagnant :* @${newWinner.number} (*${newWinner.name || newWinner.number}*)`,
+      `👥 *Participants :* ${gw.participants.length}`,
+      '',
+      '🥳 Félicitations au nouveau gagnant !'
+    ].join('\n');
+
+    try {
+      await sock.sendMessage(gw.groupJid, {
+        text: announcement,
+        mentions: [winnerJid]
+      });
+    } catch (err) {
+      console.error('[Giveaway] Erreur annonce reroll:', err.message);
+    }
+
+    // Message privé de félicitations au nouveau gagnant
+    const winnerDm = [
+      '🥳 *FÉLICITATIONS ! TU AS REMPORTÉ LE REROLL !*',
+      '━━━━━━━━━━━━━━━━━━━━',
+      `🎁 *Lot gagné :* ${gw.prize}`,
+      `👥 Tu as été tiré au sort lors du reroll parmi *${gw.participants.length} participants* !`,
+      '',
+      '💬 Réponds à ce message ou contacte les administrateurs pour recevoir ton lot !'
+    ].join('\n');
+
+    try {
+      if (newWinner.dmChatJid) {
+        await sock.sendMessage(newWinner.dmChatJid, { text: winnerDm });
+      }
+    } catch (err) {
+      console.error('[Giveaway] Erreur envoi DM nouveau gagnant reroll:', err.message);
+    }
+  }
+
+  return { success: true, winner: newWinner, giveaway: gw };
+}
+
+export function getActiveGiveawayForGroup(groupJid) {
+  return giveaways.slice().reverse().find(g => g.groupJid === groupJid && g.status === 'active');
+}
+
+export function getLatestGiveawayForGroup(groupJid) {
+  return giveaways.slice().reverse().find(g => g.groupJid === groupJid);
+}
+
+export function getGiveawayByMessageId(messageId) {
+  return giveaways.find(g => g.messageId === messageId);
 }
 
 /**

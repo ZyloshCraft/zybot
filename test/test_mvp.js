@@ -325,8 +325,18 @@ unrevokeUser('33677889900');
 assert.strictEqual(isUserTrusted('33688990011'), false, 'Après suppression, l\'utilisateur ne doit plus être trusted');
 console.log('✅ Test 16 réussi : Système de permissions (/trust, /untrust, révocation) validé.');
 
-// Test 17: Moteur de Giveaway (/gw, parsing de durée, réactions et inscription)
-const { parseGiveawayDuration, formatRemainingTime, createGiveaway, handleGiveawayReaction, finishGiveaway, getAllGiveaways } = await import('../src/services/giveawayStore.js');
+// Test 17: Moteur de Giveaway (/gw, durées, réactions, /gw end et /gw reroll)
+const {
+  parseGiveawayDuration,
+  formatRemainingTime,
+  createGiveaway,
+  handleGiveawayReaction,
+  finishGiveaway,
+  rerollGiveaway,
+  getActiveGiveawayForGroup,
+  getLatestGiveawayForGroup,
+  getAllGiveaways
+} = await import('../src/services/giveawayStore.js');
 
 const p30m = parseGiveawayDuration('30m');
 assert.strictEqual(p30m?.durationMs, 30 * 60 * 1000, '30m doit correspondre à 1800000ms');
@@ -361,28 +371,50 @@ const gw = createGiveaway({
 assert.strictEqual(gw.status, 'active');
 assert.strictEqual(gw.prize, 'Discord Nitro 1 mois');
 
-// Simuler réaction d'un participant
-const reactionHandled = await handleGiveawayReaction({
+// Simuler réaction d'un participant 1
+await handleGiveawayReaction({
   sock: gwMockSock,
   messageId: 'gw_announce_123',
   reactorJid: '33611223344@s.whatsapp.net',
   emoji: '🎉',
   pushName: 'GamerOne'
 });
-assert.strictEqual(reactionHandled, true, 'La réaction doit être traitée');
-assert.strictEqual(gw.participants.length, 1, 'Il doit y avoir 1 participant');
-assert.strictEqual(gw.participants[0].number, '33611223344');
+
+// Simuler réaction d'un participant 2
+await handleGiveawayReaction({
+  sock: gwMockSock,
+  messageId: 'gw_announce_123',
+  reactorJid: '33655667788@s.whatsapp.net',
+  emoji: '🚀',
+  pushName: 'GamerTwo'
+});
+
+assert.strictEqual(gw.participants.length, 2, 'Il doit y avoir 2 participants');
 
 // Vérifier que le DM de confirmation a été envoyé
 const dmSent = mockSentMessages.find(m => m.jid.includes('33611223344'));
 assert.ok(dmSent, 'Un DM de confirmation doit être envoyé au participant');
 assert.ok(dmSent.content.text.includes('Participation enregistrée'), 'Le texte du DM doit confirmer la participation');
 
-// Clôturer le giveaway
-await finishGiveaway(gwMockSock, gw.id);
+// Clôturer le giveaway (/gw end)
+const endRes = await finishGiveaway(gwMockSock, gw.id);
 assert.strictEqual(gw.status, 'completed');
 assert.ok(gw.winner, 'Un gagnant doit être sélectionné');
-assert.strictEqual(gw.winner.number, '33611223344');
-console.log('✅ Test 17 réussi : Moteur de giveaway (/gw, durées, réactions et DM temps réel) validé.');
+const firstWinnerNumber = gw.winner.number;
+
+// Relancer le tirage (/gw reroll)
+const rerollRes = await rerollGiveaway(gwMockSock, gw.id);
+assert.strictEqual(rerollRes.success, true);
+assert.ok(rerollRes.winner, 'Un nouveau gagnant doit être sélectionné');
+assert.strictEqual(rerollRes.winner.number !== firstWinnerNumber, true, 'Le reroll avec 2 participants doit désigner le second');
+
+// Test helpers de recherche
+const activeGw = getActiveGiveawayForGroup('test_group_gw@g.us');
+assert.strictEqual(activeGw, undefined, 'Le giveaway étant terminé, aucun actif ne doit être retourné');
+
+const latestGw = getLatestGiveawayForGroup('test_group_gw@g.us');
+assert.strictEqual(latestGw?.id, gw.id, 'Le dernier giveaway doit être retrouvé');
+
+console.log('✅ Test 17 réussi : Moteur de giveaway (/gw, durées, réactions, /gw end et /gw reroll) validé.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
