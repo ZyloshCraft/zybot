@@ -37,8 +37,9 @@ export async function handleGroupParticipantsUpdate(sock, event) {
   });
 
   for (const participant of participants) {
-    const cleanNum = participant.split('@')[0].split(':')[0];
-    const contact = getContact(cleanNum) || getContact(participant);
+    const pId = typeof participant === 'string' ? participant : (participant?.id || participant?.jid || String(participant || ''));
+    const cleanNum = pId.split('@')[0].split(':')[0];
+    const contact = getContact(cleanNum) || getContact(pId);
     const pseudo = contact?.notify || contact?.name;
     const nameDisplay = pseudo ? `*${pseudo}* (+${cleanNum})` : `*+${cleanNum}*`;
 

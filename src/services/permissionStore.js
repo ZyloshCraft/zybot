@@ -43,7 +43,8 @@ loadPermissions();
 
 function cleanTargetNumber(target) {
   if (!target) return '';
-  return String(target).split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+  const str = typeof target === 'string' ? target : (target?.id || target?.number || String(target || ''));
+  return str.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
 }
 
 /**
