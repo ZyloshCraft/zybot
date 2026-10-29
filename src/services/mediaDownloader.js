@@ -33,6 +33,24 @@ async function downloadTikTok(url) {
 }
 
 /**
+ * Récupère le chemin d'un fichier cookies.txt éventuel pour contourner les protections anti-bot
+ */
+function getCookiesPath() {
+  const candidates = [
+    path.resolve(process.cwd(), 'cookies.txt'),
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../cookies.txt'),
+    '/home/valen/zybot/cookies.txt',
+    '/home/valen/cookies.txt'
+  ];
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) return c;
+    } catch {}
+  }
+  return null;
+}
+
+/**
  * Récupère le binaire yt-dlp prioritaire (/usr/local/bin en premier si présent)
  */
 function getYtDlpBinary() {
@@ -53,10 +71,10 @@ async function downloadWithYtDlp(url, onProgress = null) {
   const bin = getYtDlpBinary();
 
   return new Promise((resolve, reject) => {
-    // Limiter la taille à 50Mo pour WhatsApp, privilégier 720p/480p pour rester léger et contourner SABR YouTube
+    // Limiter la taille à 50Mo pour WhatsApp, privilégier 720p/480p pour rester léger
     const args = [
       url,
-      '--extractor-args', 'youtube:player_client=android,ios,mweb',
+      '-4',
       '--no-simulate',
       '-S', 'res:720,res:480,res:360,res:240,fps:30',
       '-f', 'bv*[filesize<45M]+ba[filesize<10M]/b[filesize<50M]/bv*[height<=720]+ba/b[height<=720]/b[height<=480]/best',
@@ -67,6 +85,11 @@ async function downloadWithYtDlp(url, onProgress = null) {
       '--print', '%(title)s',
       '--progress'
     ];
+
+    const cookiesPath = getCookiesPath();
+    if (cookiesPath) {
+      args.push('--cookies', cookiesPath);
+    }
 
     const proc = spawn(bin, args);
 
@@ -96,6 +119,12 @@ async function downloadWithYtDlp(url, onProgress = null) {
 
     proc.on('close', (code) => {
       const combined = stdout + '\n' + stderr;
+
+      // Détection anti-bot YouTube spécifique
+      if (combined.includes('confirm you’re not a bot') || combined.includes("confirm you're not a bot")) {
+        reject(new Error("⚠️ YouTube bloque cette vidéo avec une vérification anti-bot. Vous pouvez déposer un fichier cookies.txt à la racine du bot sur le Pi pour la débloquer, ou utiliser /music pour tenter l'audio."));
+        return;
+      }
 
       // Détecter si la vidéo dépasse la limite maximale WhatsApp
       if (combined.includes('File is larger than max-filesize') || combined.includes('larger than max-filesize')) {
@@ -249,7 +278,7 @@ export async function downloadAudioTrack(queryOrUrl) {
   return new Promise((resolve, reject) => {
     const args = [
       target,
-      '--extractor-args', 'youtube:player_client=android,ios,mweb',
+      '-4',
       '--no-simulate',
       '-x',
       '--audio-format', 'mp3',
@@ -261,6 +290,11 @@ export async function downloadAudioTrack(queryOrUrl) {
       '--print', '%(uploader)s',
       '--print', '%(duration_string)s'
     ];
+
+    const cookiesPath = getCookiesPath();
+    if (cookiesPath) {
+      args.push('--cookies', cookiesPath);
+    }
 
     const proc = spawn(bin, args);
 
@@ -277,6 +311,12 @@ export async function downloadAudioTrack(queryOrUrl) {
 
     proc.on('close', (code) => {
       const combined = stdout + '\n' + stderr;
+
+      // Détection anti-bot YouTube spécifique
+      if (combined.includes('confirm you’re not a bot') || combined.includes("confirm you're not a bot")) {
+        reject(new Error("⚠️ YouTube bloque cette musique avec une vérification anti-bot. Vous pouvez déposer un fichier cookies.txt à la racine du bot sur le Pi pour la débloquer."));
+        return;
+      }
 
       // Détection si l'audio dépasse la taille max
       if (combined.includes('File is larger than max-filesize') || combined.includes('larger than max-filesize')) {
