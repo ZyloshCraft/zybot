@@ -113,10 +113,14 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
       if (!msg.message || msg.messageStubType) continue;
 
       // 3. Détection des réactions emoji (Giveaway, etc.)
-      const reactionMessage = msg.message?.reactionMessage;
+      const normalizedContent = normalizeMessageContent(msg.message);
+      const reactionMessage = normalizedContent?.reactionMessage || msg.message?.reactionMessage;
       if (reactionMessage) {
         const targetMessageId = reactionMessage.key?.id;
-        const reactorJid = msg.key.participant || msg.key.remoteJid;
+        const reactorJid =
+          msg.key.participant ||
+          reactionMessage.key?.participant ||
+          msg.key.remoteJid;
         const emoji = reactionMessage.text;
         if (targetMessageId && reactorJid) {
           await handleGiveawayReaction({

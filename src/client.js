@@ -247,9 +247,16 @@ export async function createWhatsAppClient() {
     if (!reactions || !reactions.length) return;
     for (const item of reactions) {
       try {
-        const targetMsgId = item.reaction?.key?.id || item.key?.id;
-        const reactorJid = item.key?.participant || item.key?.remoteJid;
+        // item.key est la clé du message qui a reçu la réaction (le giveaway)
+        // item.reaction.key est la clé du message de la réaction (contient l'émetteur)
+        const targetMsgId = item.key?.id || item.reaction?.key?.id;
+        const reactorJid =
+          item.reaction?.key?.participant ||
+          item.reaction?.key?.remoteJid ||
+          item.key?.participant ||
+          item.key?.remoteJid;
         const emoji = item.reaction?.text;
+
         if (targetMsgId && reactorJid) {
           await handleGiveawayReaction({
             sock,

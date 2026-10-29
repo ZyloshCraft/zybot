@@ -6,7 +6,8 @@ import {
   rerollGiveaway,
   getActiveGiveawayForGroup,
   getLatestGiveawayForGroup,
-  getGiveawayByMessageId
+  getGiveawayByMessageId,
+  updateGiveawayAnnouncement
 } from '../services/giveawayStore.js';
 import { replyOrEdit } from '../utils/stealth.js';
 
@@ -71,7 +72,35 @@ export default {
       return;
     }
 
-    // 3. CRÉATION D'UN GIVEAWAY : /gw <Lot> ; <Durée>
+    // 3. COMMANDE /gw sync (ou update, refresh)
+    if (subCommand === 'sync' || subCommand === 'update' || subCommand === 'refresh') {
+      let targetGw = quotedStanzaId ? getGiveawayByMessageId(quotedStanzaId) : null;
+      if (!targetGw) {
+        targetGw = getActiveGiveawayForGroup(jid);
+      }
+
+      if (!targetGw || targetGw.status !== 'active') {
+        return await replyOrEdit(sock, jid, msg, '❌ *Aucun giveaway actif trouvé dans cette discussion.*');
+      }
+
+      const ok = await updateGiveawayAnnouncement(sock, targetGw);
+      if (ok) {
+        await replyOrEdit(sock, jid, msg, `✅ *Annonce actualisée !* (${targetGw.participants.length} participants)`);
+      } else {
+        await replyOrEdit(sock, jid, msg, '❌ *Erreur lors de l\'actualisation de l\'annonce.*');
+      }
+
+      if (msg.key.fromMe) {
+        setTimeout(async () => {
+          try {
+            await sock.sendMessage(jid, { delete: msg.key });
+          } catch (e) {}
+        }, 4000);
+      }
+      return;
+    }
+
+    // 4. CRÉATION D'UN GIVEAWAY : /gw <Lot> ; <Durée>
     const rawArgs = args.join(' ').trim();
 
     if (!rawArgs || !rawArgs.includes(';')) {
@@ -80,6 +109,7 @@ export default {
         '━━━━━━━━━━━━━━━━━━━━',
         '👉 *Commandes disponibles :*',
         '• `/gw <Lot> ; <Durée>` : Lancer un giveaway',
+        '• `/gw sync` : Forcer l\'actualisation du message d\'annonce',
         '• `/gw end` : Terminer immédiatement et tirer le sort',
         '• `/gw reroll` : Tirer un nouveau gagnant au sort',
         '',

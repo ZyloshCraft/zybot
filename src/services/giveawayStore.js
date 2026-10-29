@@ -160,9 +160,48 @@ function scheduleGiveaway(sock, giveaway) {
   const intervalMs = giveaway.durationMs <= 3600000 ? 60000 : 3600000;
   const hourlyInterval = setInterval(() => {
     updateGiveawayDMs(sock, giveaway.id);
+    updateGiveawayAnnouncement(sock, giveaway);
   }, intervalMs);
 
   activeTimers.set(giveaway.id, { endTimer, hourlyInterval });
+}
+
+/**
+ * Met à jour le message d'annonce principal dans le groupe avec le temps restant et les participants
+ */
+export async function updateGiveawayAnnouncement(sock, gw) {
+  if (!sock || !gw || !gw.groupJid || !gw.messageKey) return false;
+
+  const remaining = gw.endsAt - Date.now();
+  const timeStr = formatRemainingTime(remaining);
+  const endFormatted = new Date(gw.endsAt).toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const mainText = [
+    '🎉 *GIVEAWAY*',
+    '━━━━━━━━━━━━━━━━━━━━',
+    `🎁 *Lot :* ${gw.prize}`,
+    `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
+    `👥 *Participants :* ${gw.participants.length}`,
+    '',
+    '👉 Réagissez avec un emoji pour participer !'
+  ].join('\n');
+
+  try {
+    await sock.sendMessage(gw.groupJid, {
+      text: mainText,
+      edit: gw.messageKey
+    });
+    console.log(`[Giveaway] Annonce mise à jour dans ${gw.groupJid} (${gw.participants.length} participants, ${timeStr} restant)`);
+    return true;
+  } catch (err) {
+    console.error(`[Giveaway] Erreur actualisation annonce ${gw.messageId}:`, err.message);
+    return false;
+  }
 }
 
 /**
@@ -198,32 +237,8 @@ export async function updateGiveawayDMs(sock, giveawayId) {
     }
   }
 
-  // Mettre également à jour le message principal du giveaway dans le groupe avec le nouveau temps restant
-  if (gw.groupJid && gw.messageKey) {
-    const endFormatted = new Date(gw.endsAt).toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    const mainText = [
-      '🎉 *GIVEAWAY*',
-      '━━━━━━━━━━━━━━━━━━━━',
-      `🎁 *Lot :* ${gw.prize}`,
-      `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
-      `👥 *Participants :* ${gw.participants.length}`,
-      '',
-      '👉 Réagissez avec un emoji pour participer !'
-    ].join('\n');
-
-    try {
-      await sock.sendMessage(gw.groupJid, {
-        text: mainText,
-        edit: gw.messageKey
-      });
-    } catch (err) {}
-  }
+  // Mettre également à jour le message principal du giveaway dans le groupe
+  await updateGiveawayAnnouncement(sock, gw);
 }
 
 /**
@@ -235,32 +250,36 @@ export async function handleGiveawayReaction({ sock, messageId, reactorJid, emoj
   const gw = giveaways.find(g => g.messageId === messageId && g.status === 'active');
   if (!gw) return false;
 
+  const isLid = reactorJid.endsWith('@lid');
   const cleanNum = reactorJid.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
   if (!cleanNum) return false;
 
   // Déterminer le JID direct pour le message privé (DM)
-  const dmChatJid = `${cleanNum}@s.whatsapp.net`;
+  const dmChatJid = isLid ? reactorJid : `${cleanNum}@s.whatsapp.net`;
 
   // 1. Réaction retirée (emoji vide ou null)
   if (!emoji || emoji.trim() === '') {
-    const idx = gw.participants.findIndex(p => p.number === cleanNum);
+    const idx = gw.participants.findIndex(p => p.jid === reactorJid || p.number === cleanNum);
     if (idx >= 0) {
       gw.participants.splice(idx, 1);
       saveGiveaways();
       console.log(`[Giveaway] ${cleanNum} a retiré sa réaction, participation annulée.`);
+      if (sock) {
+        await updateGiveawayAnnouncement(sock, gw);
+      }
     }
     return true;
   }
 
   // 2. Vérifier si déjà participant
-  const alreadyParticipating = gw.participants.some(p => p.number === cleanNum);
+  const alreadyParticipating = gw.participants.some(p => p.jid === reactorJid || p.number === cleanNum);
   if (alreadyParticipating) {
     return true; // Déjà inscrit, rien à faire
   }
 
   // Récupérer le pseudo
   const contact = getContact(cleanNum);
-  const resolvedName = pushName || contact?.notify || contact?.name || `+${cleanNum}`;
+  const resolvedName = pushName || contact?.notify || contact?.name || (isLid ? `Membre` : `+${cleanNum}`);
 
   const remaining = gw.endsAt - Date.now();
   const timeStr = formatRemainingTime(remaining);
@@ -274,10 +293,12 @@ export async function handleGiveawayReaction({ sock, messageId, reactorJid, emoj
   ].join('\n');
 
   let sentDm = null;
-  try {
-    sentDm = await sock.sendMessage(dmChatJid, { text: dmText });
-  } catch (err) {
-    console.error(`[Giveaway] Impossible d'envoyer le message privé à ${dmChatJid}:`, err.message);
+  if (sock) {
+    try {
+      sentDm = await sock.sendMessage(dmChatJid, { text: dmText });
+    } catch (err) {
+      console.warn(`[Giveaway] Impossible d'envoyer le message privé à ${dmChatJid}:`, err.message);
+    }
   }
 
   const participant = {
@@ -292,32 +313,12 @@ export async function handleGiveawayReaction({ sock, messageId, reactorJid, emoj
   gw.participants.push(participant);
   saveGiveaways();
 
-  console.log(`[Giveaway] Nouveau participant : ${resolvedName} (+${cleanNum}) pour "${gw.prize}". Total : ${gw.participants.length}`);
+  console.log(`[Giveaway] Nouveau participant : ${resolvedName} (${cleanNum}) pour "${gw.prize}". Total : ${gw.participants.length}`);
 
-  // Mettre à jour le compteur sur le message principal
-  try {
-    const endFormatted = new Date(gw.endsAt).toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    const mainText = [
-      '🎉 *GIVEAWAY*',
-      '━━━━━━━━━━━━━━━━━━━━',
-      `🎁 *Lot :* ${gw.prize}`,
-      `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
-      `👥 *Participants :* ${gw.participants.length}`,
-      '',
-      '👉 Réagissez avec un emoji pour participer !'
-    ].join('\n');
-
-    await sock.sendMessage(gw.groupJid, {
-      text: mainText,
-      edit: gw.messageKey
-    });
-  } catch (err) {}
+  // Mettre à jour immédiatement le message principal du giveaway dans le groupe
+  if (sock) {
+    await updateGiveawayAnnouncement(sock, gw);
+  }
 
   return true;
 }
@@ -532,6 +533,10 @@ export function initGiveawayEngine(sock) {
   for (const gw of giveaways) {
     if (gw.status === 'active') {
       scheduleGiveaway(sock, gw);
+      // Mettre à jour immédiatement l'annonce dans le groupe au démarrage
+      updateGiveawayAnnouncement(sock, gw).catch(err => {
+        console.warn(`[Giveaway] Impossible de rafraîchir l'annonce ${gw.id} au démarrage:`, err.message);
+      });
     }
   }
 }
