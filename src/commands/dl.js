@@ -47,14 +47,21 @@ export default {
 
     await replyOrEdit(sock, jid, msg, '⏳ Téléchargement et traitement du média en cours...');
 
+    const startTime = Date.now();
     let lastUpdate = 0;
-    let lastPercent = 0;
+    let lastPercent = -1;
+    let isUpdating = false;
 
     const onProgress = async (prog) => {
       const now = Date.now();
-      // Anti-flag : maximum une mise à jour toutes les 3,5 secondes et au moins 15% de progression
-      // (seulement 3 à 4 modifications de message au total sur les gros téléchargements)
-      if (now - lastUpdate >= 3500 && (prog.percent - lastPercent >= 15 || prog.percent >= 99)) {
+      const elapsed = now - startTime;
+
+      // Intervalle dynamique : 1s par défaut, passe à 3s si le téléchargement dure plus de 10s
+      // pour éviter de se faire flag par WhatsApp sur les médias volumineux/longs
+      const minInterval = elapsed > 10000 ? 3000 : 1000;
+
+      if (!isUpdating && now - lastUpdate >= minInterval && (prog.percent > lastPercent || prog.percent >= 99)) {
+        isUpdating = true;
         lastUpdate = now;
         lastPercent = prog.percent;
 
@@ -68,7 +75,9 @@ export default {
 
         try {
           await replyOrEdit(sock, jid, msg, statusText);
-        } catch {}
+        } catch {} finally {
+          isUpdating = false;
+        }
       }
     };
 
