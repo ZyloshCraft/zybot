@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import makeWASocket, {
@@ -21,6 +22,7 @@ const AUTH_DIR = path.resolve(__dirname, '../auth_info');
 
 let currentSocket = null;
 let isRestarting = false;
+let latestQr = null;
 
 const connectionInfo = {
   status: 'disconnected',
@@ -39,7 +41,28 @@ export function getConnectionState() {
     connectionInfo.phone = currentSocket.user.id ? currentSocket.user.id.split('@')[0].split(':')[0] : null;
     connectionInfo.pushName = currentSocket.user.name || null;
   }
-  return { ...connectionInfo };
+  return { ...connectionInfo, qr: latestQr };
+}
+
+export async function clearAuthAndReconnect() {
+  console.log('🧹 Réinitialisation de la session WhatsApp (suppression de auth_info)...');
+  try {
+    if (currentSocket) {
+      currentSocket.end();
+    }
+  } catch {}
+  try {
+    if (fs.existsSync(AUTH_DIR)) {
+      fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+    }
+  } catch (err) {
+    console.warn('Avertissement suppression auth_info:', err.message);
+  }
+  latestQr = null;
+  connectionInfo.status = 'connecting';
+  setTimeout(() => {
+    createWhatsAppClient();
+  }, 1500);
 }
 
 export async function createWhatsAppClient() {
@@ -119,6 +142,7 @@ export async function createWhatsAppClient() {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
+      latestQr = qr;
       console.log('\n╔════════════════════════════════════════════════════════════╗');
       console.log('║        📲 SCANNEZ CE QR CODE AVEC VOTRE WHATSAPP          ║');
       console.log('║  (WhatsApp > Appareils connectés > Connecter un appareil)  ║');
@@ -142,15 +166,21 @@ export async function createWhatsAppClient() {
         process.exit(0);
       }
 
+      if (isLoggedOut) {
+        console.log('❌ Session déconnectée (Logged Out, code 401).');
+        console.log('🧹 Nettoyage automatique du dossier auth_info pour générer un nouveau QR Code...');
+        clearAuthAndReconnect();
+        return;
+      }
+
       if (shouldReconnect) {
         console.log('⏳ Tentative de reconnexion automatique dans 3 secondes...');
         setTimeout(() => {
           if (!isRestarting) createWhatsAppClient();
         }, 3000);
-      } else {
-        console.log('❌ Session déconnectée (Logged Out). Veuillez supprimer le dossier auth_info pour rescanner.');
       }
     } else if (connection === 'open') {
+      latestQr = null;
       connectionInfo.status = 'connected';
       connectionInfo.connectedAt = Date.now();
       const userNumber = sock.user?.id ? sock.user.id.split(':')[0] : 'Inconnu';

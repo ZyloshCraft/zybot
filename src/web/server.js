@@ -6,7 +6,7 @@ import os from 'node:os';
 import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { getConfig, updateConfig } from '../config.js';
-import { getConnectionState, getActiveSocket } from '../client.js';
+import { getConnectionState, getActiveSocket, clearAuthAndReconnect } from '../client.js';
 import { getAllWarnedUsers, getWarns, addWarn, clearWarns, deleteSingleWarn } from '../services/warnStore.js';
 import { getAllContacts } from '../services/contactStore.js';
 import { HISTORIC_TARGETS, resolveHistoricMembers, applyHistoricWarns } from '../services/warnResolver.js';
@@ -252,12 +252,13 @@ export function startWebServer() {
         return sendJson(res, 200, {
           bot: {
             name: 'ZyBot',
-            version: '1.26.0',
+            version: '1.27.0',
             uptime: Math.floor(process.uptime()),
             status: conn.status,
             phone: conn.phone,
             pushName: conn.pushName,
-            connectedAt: conn.connectedAt
+            connectedAt: conn.connectedAt,
+            qr: conn.qr || null
           },
           system: {
             platform: os.platform(),
@@ -406,6 +407,12 @@ export function startWebServer() {
           });
         }, 500);
         return;
+      }
+
+      // POST /api/bot/reauth : Réinitialiser la session WhatsApp (supprimer auth_info et générer un nouveau QR)
+      if (pathname === '/api/bot/reauth' && method === 'POST') {
+        clearAuthAndReconnect();
+        return sendJson(res, 200, { success: true, message: 'Session réinitialisée. Nouveau QR code en cours de génération...' });
       }
 
       // GET /api/config : Configuration publique

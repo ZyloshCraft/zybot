@@ -145,6 +145,34 @@
       <!-- ====================================================== -->
       <section id="tab-warns" class="tab-content space-y-4">
         
+        <!-- ALERTE / CARTE SCAN QR CODE (VISIBLE UNIQUEMENT SI DÉCONNECTÉ) -->
+        <div id="qrCodeCard" class="hidden bg-noir-900 border border-amber-600/70 p-6 flex flex-col sm:flex-row items-center gap-6 shadow-2xl">
+          <div class="bg-white p-3 border border-slate-700 shrink-0">
+            <img id="qrCodeImg" src="" alt="QR Code WhatsApp" class="w-48 h-48 block">
+            <div id="qrLoadingText" class="w-48 h-48 flex items-center justify-center text-black font-bold text-xs text-center hidden">
+              Génération du QR Code...
+            </div>
+          </div>
+          <div class="space-y-3 flex-1 text-center sm:text-left">
+            <div class="inline-flex items-center gap-1.5 px-2 py-0.5 border border-amber-500/40 bg-amber-950/40 text-amber-400 font-bold uppercase text-[10px]">
+              ⚠️ RECONNEXION REQUISE (CODE 401)
+            </div>
+            <div class="text-sm font-bold text-white uppercase tracking-wider">
+              Scannez ce QR Code avec votre WhatsApp
+            </div>
+            <div class="text-slate-400 text-xs space-y-1">
+              <div>1. Ouvrez WhatsApp sur votre téléphone (+33 7 66 33 79 37).</div>
+              <div>2. Allez dans <b>Appareils connectés</b> &gt; <b>Connecter un appareil</b>.</div>
+              <div>3. Pointez votre caméra vers ce QR code pour reconnecter ZyBot.</div>
+            </div>
+            <div class="pt-2 flex items-center justify-center sm:justify-start gap-2">
+              <button id="btnReauth" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase text-[10px] tracking-wider transition-colors">
+                🔄 GÉNÉRER UN NOUVEAU QR
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Barre d'outils et stats minimalistes -->
         <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
           
@@ -481,12 +509,27 @@
 
         const phoneSpan = document.getElementById('waPhoneText');
         const dot = document.getElementById('statusDot');
+        const qrCard = document.getElementById('qrCodeCard');
+        const qrImg = document.getElementById('qrCodeImg');
+        const qrLoad = document.getElementById('qrLoadingText');
+
         if (data.bot.status === 'connected') {
           phoneSpan.textContent = `+${data.bot.phone || 'CONNECTÉ'}`;
           dot.className = 'w-2 h-2 bg-emerald-400 animate-pulse';
+          qrCard.classList.add('hidden');
         } else {
           phoneSpan.textContent = 'DÉCONNECTÉ';
           dot.className = 'w-2 h-2 bg-red-500';
+          qrCard.classList.remove('hidden');
+
+          if (data.bot.qr) {
+            qrImg.classList.remove('hidden');
+            qrLoad.classList.add('hidden');
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.bot.qr)}`;
+          } else {
+            qrImg.classList.add('hidden');
+            qrLoad.classList.remove('hidden');
+          }
         }
 
         const hours = Math.floor(data.bot.uptime / 3600);
@@ -727,6 +770,24 @@
         await apiFetch('api/bot/restart', { method: 'POST' });
         alert('Redémarrage en cours...');
       } catch {}
+    });
+
+    // Générer un nouveau QR Code / Réinitialiser la session WhatsApp
+    document.getElementById('btnReauth').addEventListener('click', async () => {
+      const btn = document.getElementById('btnReauth');
+      btn.textContent = 'RÉINITIALISATION...';
+      btn.disabled = true;
+      try {
+        await apiFetch('api/bot/reauth', { method: 'POST' });
+        setTimeout(() => {
+          fetchAllData();
+          btn.textContent = '🔄 GÉNÉRER UN NOUVEAU QR';
+          btn.disabled = false;
+        }, 2000);
+      } catch {
+        btn.textContent = '🔄 GÉNÉRER UN NOUVEAU QR';
+        btn.disabled = false;
+      }
     });
 
     function copyText(str, el) {
