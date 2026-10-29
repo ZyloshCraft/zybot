@@ -180,11 +180,11 @@ export async function updateGiveawayDMs(sock, giveawayId) {
   for (const p of gw.participants) {
     if (p.dmChatJid && p.dmMessageKey) {
       const updatedText = [
-        '✅ *Participation confirmée !*',
-        `🎁 Votre inscription au tirage au sort pour *${gw.prize}* a bien été prise en compte.`,
-        `⏱️ *Temps restant avant le tirage :* ${timeStr}`,
+        '✅ *Participation enregistrée !*',
+        `🎁 Lot : *${gw.prize}*`,
+        `⏱️ *Temps restant :* ${timeStr}`,
         '',
-        '🍀 _Bonne chance ! Ce message s\'actualise régulièrement pour refléter le temps restant._'
+        '🍀 _Ce message s\'actualise chaque heure._'
       ].join('\n');
 
       try {
@@ -208,16 +208,13 @@ export async function updateGiveawayDMs(sock, giveawayId) {
     });
 
     const mainText = [
-      '🎉 *GIVEAWAY — NOUVEAU TIRAGE AU SORT !*',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      `🎁 *Lot à gagner :* ${gw.prize}`,
+      '🎉 *GIVEAWAY*',
+      '━━━━━━━━━━━━━━━━━━━━',
+      `🎁 *Lot :* ${gw.prize}`,
       `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
+      `👥 *Participants :* ${gw.participants.length}`,
       '',
-      '👉 *Comment participer ?*',
-      'Réagissez avec un emoji (ex: 🎉, ❤️, 🚀) directement à ce message pour vous inscrire !',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      `👥 *Participants inscrits :* ${gw.participants.length}`,
-      '⚡ _ZyBot Community Giveaway_'
+      '👉 Réagissez avec un emoji pour participer !'
     ].join('\n');
 
     try {
@@ -269,11 +266,11 @@ export async function handleGiveawayReaction({ sock, messageId, reactorJid, emoj
   const timeStr = formatRemainingTime(remaining);
 
   const dmText = [
-    '✅ *Participation confirmée !*',
-    `🎁 Votre inscription au tirage au sort pour *${gw.prize}* a bien été prise en compte.`,
-    `⏱️ *Temps restant avant le tirage :* ${timeStr}`,
+    '✅ *Participation enregistrée !*',
+    `🎁 Lot : *${gw.prize}*`,
+    `⏱️ *Temps restant :* ${timeStr}`,
     '',
-    '🍀 _Bonne chance ! Ce message s\'actualise chaque heure pour mettre à jour le compte à rebours._'
+    '🍀 _Ce message s\'actualise chaque heure._'
   ].join('\n');
 
   let sentDm = null;
@@ -307,16 +304,13 @@ export async function handleGiveawayReaction({ sock, messageId, reactorJid, emoj
     });
 
     const mainText = [
-      '🎉 *GIVEAWAY — NOUVEAU TIRAGE AU SORT !*',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      `🎁 *Lot à gagner :* ${gw.prize}`,
+      '🎉 *GIVEAWAY*',
+      '━━━━━━━━━━━━━━━━━━━━',
+      `🎁 *Lot :* ${gw.prize}`,
       `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
+      `👥 *Participants :* ${gw.participants.length}`,
       '',
-      '👉 *Comment participer ?*',
-      'Réagissez avec un emoji (ex: 🎉, ❤️, 🚀) directement à ce message pour vous inscrire !',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      `👥 *Participants inscrits :* ${gw.participants.length}`,
-      '⚡ _ZyBot Community Giveaway_'
+      '👉 Réagissez avec un emoji pour participer !'
     ].join('\n');
 
     await sock.sendMessage(gw.groupJid, {
@@ -354,12 +348,9 @@ export async function finishGiveaway(sock, giveawayId) {
   if (!gw.participants || gw.participants.length === 0) {
     const noWinnerMsg = [
       '⌛ *GIVEAWAY TERMINÉ*',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '━━━━━━━━━━━━━━━━━━━━',
       `🎁 *Lot :* ${gw.prize}`,
-      '❌ *Aucun participant n\'a réagi au message.*',
-      'Le tirage au sort est donc annulé.',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      '⚡ _ZyBot Giveaway Engine_'
+      '❌ Aucun participant n\'a réagi au message.'
     ].join('\n');
 
     try {
@@ -380,14 +371,13 @@ export async function finishGiveaway(sock, giveawayId) {
 
   // Annonce dans le groupe avec mention du gagnant
   const announcement = [
-    '🎉 *RÉSULTAT DU GIVEAWAY !*',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    '🎉 *GIVEAWAY TERMINÉ*',
+    '━━━━━━━━━━━━━━━━━━━━',
     `🎁 *Lot :* ${gw.prize}`,
-    `🏆 *GAGNANT(E) :* @${winner.number} (*${winner.name || winner.number}*)`,
-    `👥 *Participants totaux :* ${gw.participants.length}`,
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    '🥳 *Félicitations au gagnant !* Le lot vous sera remis prochainement.',
-    '⚡ _ZyBot Community Giveaway_'
+    `🏆 *Gagnant :* @${winner.number} (*${winner.name || winner.number}*)`,
+    `👥 *Participants :* ${gw.participants.length}`,
+    '',
+    '🥳 Félicitations au gagnant !'
   ].join('\n');
 
   try {
@@ -402,13 +392,11 @@ export async function finishGiveaway(sock, giveawayId) {
   // Message privé de félicitations au gagnant
   const winnerDm = [
     '🥳 *FÉLICITATIONS ! TU AS REMPORTÉ LE GIVEAWAY !*',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    '━━━━━━━━━━━━━━━━━━━━',
     `🎁 *Lot gagné :* ${gw.prize}`,
-    `👥 Tu as été tiré(e) au sort parmi *${gw.participants.length} participants* !`,
+    `👥 Tu as été tiré au sort parmi *${gw.participants.length} participants* !`,
     '',
-    '💬 Réponds à ce message ou contacte les administrateurs pour recevoir ton lot !',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    '⚡ _ZyBot Community_'
+    '💬 Réponds à ce message ou contacte les administrateurs pour recevoir ton lot !'
   ].join('\n');
 
   try {
@@ -422,11 +410,11 @@ export async function finishGiveaway(sock, giveawayId) {
     if (p.number === winner.number) continue;
     if (p.dmChatJid && p.dmMessageKey) {
       const finishDmText = [
-        '⌛ *Tirage au sort terminé !*',
+        '⌛ *Giveaway terminé !*',
         `🎁 Le giveaway pour *${gw.prize}* a pris fin.`,
         `🏆 Le gagnant tiré au sort est : *${winner.name || winner.number}*`,
         '',
-        '🙏 Merci pour votre participation et bonne chance pour les prochains tirages !'
+        '🙏 Merci pour votre participation !'
       ].join('\n');
 
       try {

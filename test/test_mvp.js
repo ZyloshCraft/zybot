@@ -376,7 +376,7 @@ assert.strictEqual(gw.participants[0].number, '33611223344');
 // Vérifier que le DM de confirmation a été envoyé
 const dmSent = mockSentMessages.find(m => m.jid.includes('33611223344'));
 assert.ok(dmSent, 'Un DM de confirmation doit être envoyé au participant');
-assert.ok(dmSent.content.text.includes('Participation confirmée'), 'Le texte du DM doit confirmer la participation');
+assert.ok(dmSent.content.text.includes('Participation enregistrée'), 'Le texte du DM doit confirmer la participation');
 
 // Clôturer le giveaway
 await finishGiveaway(gwMockSock, gw.id);

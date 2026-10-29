@@ -62,16 +62,13 @@ export default {
     const timeStr = formatRemainingTime(parsed.durationMs);
 
     const announcement = [
-      '🎉 *GIVEAWAY — NOUVEAU TIRAGE AU SORT !*',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      `🎁 *Lot à gagner :* ${prize}`,
+      '🎉 *GIVEAWAY*',
+      '━━━━━━━━━━━━━━━━━━━━',
+      `🎁 *Lot :* ${prize}`,
       `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
+      '👥 *Participants :* 0',
       '',
-      '👉 *Comment participer ?*',
-      'Réagissez avec un emoji (ex: 🎉, ❤️, 🚀) directement à ce message pour vous inscrire !',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      '👥 *Participants inscrits :* 0',
-      '⚡ _ZyBot Community Giveaway_'
+      '👉 Réagissez avec un emoji pour participer !'
     ].join('\n');
 
     // Envoyer le message d'annonce officiel dans le groupe
