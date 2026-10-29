@@ -15,6 +15,7 @@ import { trackMessage, saveMessageHistory } from './services/messageStore.js';
 import { handleRevokedMessage, handleEditedMessage } from './services/antiDelete.js';
 import { initDailyRecapScheduler } from './services/statsTracker.js';
 import { updateContacts } from './services/contactStore.js';
+import { handleGroupParticipantsUpdate } from './services/groupEvents.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -225,6 +226,15 @@ export async function createWhatsAppClient() {
           timestamp: Date.now()
         });
       }
+    }
+  });
+
+  // Événements de groupe : Départs et arrivées de membres
+  sock.ev.on('group-participants.update', async (event) => {
+    try {
+      await handleGroupParticipantsUpdate(sock, event);
+    } catch (err) {
+      console.error('[GroupParticipants] Erreur:', err.message);
     }
   });
 

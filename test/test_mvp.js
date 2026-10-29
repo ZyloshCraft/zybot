@@ -16,13 +16,13 @@ import { getCachedGroupMetadata, invalidateGroupMetadataCache } from '../src/uti
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 32 commandes actives et de la version v1.25
+// Test 1: Vérification des 33 commandes actives et de la version v1.27
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'vv', 'reboot', 'edit', 'calc',
   'meteo', 'id', 'groupe', 'alias', 'temp', 'recap', 'ntfy', 'update',
   'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
-  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp'
+  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -46,6 +46,9 @@ assert.ok(getCommand('img'), 'L\'alias "img" pour toimg doit exister');
 assert.ok(getCommand('toimage'), 'L\'alias "toimage" pour toimg doit exister');
 assert.ok(getCommand('pp'), 'L\'alias "pp" pour pfp doit exister');
 assert.ok(getCommand('avatar'), 'L\'alias "avatar" pour pfp doit exister');
+assert.ok(getCommand('classement'), 'L\'alias "classement" pour top doit exister');
+assert.ok(getCommand('leaderboard'), 'L\'alias "leaderboard" pour top doit exister');
+assert.ok(getCommand('activite'), 'L\'alias "activite" pour top doit exister');
 
 // Vérification stricte des commandes supprimées
 assert.strictEqual(getCommand('rappel'), undefined, 'rappel doit être supprimé');
@@ -57,7 +60,7 @@ assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé
 
 const currentVersion = getBotVersion();
 assert.ok(currentVersion.includes('1.27'), `La version doit être v1.27 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 32 commandes actives enregistrées, version ${currentVersion} validée.`);
+console.log(`✅ Test 1 réussi : 33 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -251,5 +254,38 @@ const server = startWebServer();
 assert.ok(server, 'Le serveur WebGUI doit démarrer avec succès');
 stopWebServer();
 console.log('✅ Test 14 réussi : Initialisation et cycle de vie WebGUI validés.');
+
+// Test 15: Traqueur d'activité de groupe et détection des changements de pseudo
+const { recordGroupMessage, getGroupLeaderboard, getAllGroupsActivity } = await import('../src/services/groupActivityStore.js');
+recordGroupMessage({
+  groupJid: 'test_group_123@g.us',
+  groupName: 'Groupe Test Activité',
+  senderJid: '33611223344@s.whatsapp.net',
+  pushName: 'TestUser1'
+});
+recordGroupMessage({
+  groupJid: 'test_group_123@g.us',
+  groupName: 'Groupe Test Activité',
+  senderJid: '33611223344@s.whatsapp.net',
+  pushName: 'TestUser1'
+});
+recordGroupMessage({
+  groupJid: 'test_group_123@g.us',
+  groupName: 'Groupe Test Activité',
+  senderJid: '33699887766@s.whatsapp.net',
+  pushName: 'TestUser2'
+});
+
+const lb = getGroupLeaderboard('test_group_123@g.us');
+assert.strictEqual(lb.totalMessages >= 3, true, 'Le total de messages doit être au moins 3');
+assert.strictEqual(lb.leaderboard[0].count >= 2, true, 'Le premier utilisateur doit avoir au moins 2 messages');
+
+const { checkAndTrackPseudo } = await import('../src/services/contactStore.js');
+checkAndTrackPseudo('33600001111@s.whatsapp.net', 'AncienPseudo');
+const pseudoChange = checkAndTrackPseudo('33600001111@s.whatsapp.net', 'NouveauPseudo');
+assert.ok(pseudoChange, 'Le changement de pseudo doit être détecté');
+assert.strictEqual(pseudoChange.oldName, 'AncienPseudo');
+assert.strictEqual(pseudoChange.newName, 'NouveauPseudo');
+console.log('✅ Test 15 réussi : Traqueur d\'activité de groupe (/top) et détection des changements de pseudo validés.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

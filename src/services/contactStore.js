@@ -99,3 +99,35 @@ export function getContact(idOrNumber) {
 export function getAllContacts() {
   return Array.from(contactMap.values());
 }
+
+/**
+ * Vérifie si le pseudo (pushName) a changé pour un contact donné
+ * @param {string} idOrNumber
+ * @param {string} newPushName
+ * @returns {{ oldName: string, newName: string } | null}
+ */
+export function checkAndTrackPseudo(idOrNumber, newPushName) {
+  if (!idOrNumber || !newPushName) return null;
+  const cleanId = String(idOrNumber).split('@')[0].split(':')[0];
+  const existing = contactMap.get(cleanId);
+  const trimmed = newPushName.trim();
+
+  if (existing) {
+    const currentNotify = (existing.notify || '').trim();
+    if (currentNotify && currentNotify !== trimmed) {
+      const oldName = currentNotify;
+      existing.notify = trimmed;
+      saveContacts();
+      return { oldName, newName: trimmed };
+    }
+    if (!currentNotify) {
+      existing.notify = trimmed;
+      saveContacts();
+    }
+  } else {
+    contactMap.set(cleanId, { id: idOrNumber, notify: trimmed });
+    contactMap.set(idOrNumber, { id: idOrNumber, notify: trimmed });
+    saveContacts();
+  }
+  return null;
+}

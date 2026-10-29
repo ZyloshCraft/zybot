@@ -3,6 +3,8 @@ auth_info/
 message_history.json
 stats.json
 warns.json
+group_activity.json
+contacts.json
 bot.pid
 .DS_Store
 *.log

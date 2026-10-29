@@ -10,6 +10,7 @@ import { getConnectionState, getActiveSocket, clearAuthAndReconnect } from '../c
 import { getAllWarnedUsers, getWarns, addWarn, clearWarns, deleteSingleWarn } from '../services/warnStore.js';
 import { getAllContacts } from '../services/contactStore.js';
 import { HISTORIC_TARGETS, resolveHistoricMembers, applyHistoricWarns } from '../services/warnResolver.js';
+import { getAllGroupsActivity } from '../services/groupActivityStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -275,6 +276,12 @@ export function startWebServer() {
             alerts: cfg.alerts?.enabled ?? true
           }
         });
+      }
+
+      // GET /api/groups/activity : Leaderboard et statistiques d'activité des groupes
+      if (pathname === '/api/groups/activity' && method === 'GET') {
+        const groups = getAllGroupsActivity();
+        return sendJson(res, 200, { success: true, count: groups.length, groups });
       }
 
       // GET /api/warns : Liste complète de tous les avertissements

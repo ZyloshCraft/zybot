@@ -9,6 +9,9 @@ import { recordMessageSent, recordPrivateMessageReceived } from '../services/sta
 import { trackStatus } from '../services/statusStore.js';
 import { handleGroupNsfwScan } from './nsfwInterceptor.js';
 import { getCachedGroupMetadata } from '../utils/groupCache.js';
+import { recordGroupMessage } from '../services/groupActivityStore.js';
+import { checkAndTrackPseudo } from '../services/contactStore.js';
+import { handlePseudoChange } from '../services/groupEvents.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -129,15 +132,38 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         recordPrivateMessageReceived();
       }
 
+      const senderJid = msg.key.participant || msg.key.remoteJid;
+
       // Mémoriser tous les messages (pour Anti-Delete, Anti-Edit, /clear et /persoping date exacte)
       trackMessage(jid, msg.key, {
         timestamp: msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now(),
         fromMe: msg.key.fromMe,
         text,
-        sender: msg.key.participant || msg.key.remoteJid,
+        sender: senderJid,
         pushName: msg.pushName,
         rawMessage: msg.message
       });
+
+      // Traquer l'activité des membres dans les groupes
+      if (jid.endsWith('@g.us')) {
+        recordGroupMessage({
+          groupJid: jid,
+          senderJid,
+          pushName: msg.pushName
+        });
+      }
+
+      // Détection des changements de pseudo en temps réel
+      if (msg.pushName && senderJid && !msg.key.fromMe) {
+        const change = checkAndTrackPseudo(senderJid, msg.pushName);
+        if (change) {
+          handlePseudoChange(sock, {
+            senderJid,
+            oldName: change.oldName,
+            newName: change.newName
+          }).catch((err) => console.error('[PseudoChange] Erreur non bloquante:', err.message));
+        }
+      }
 
       // Gestion de l'auto-destruction programmée (/temp) pour vos messages dans cette discussion
       if (isOwner && config.tempChats && config.tempChats[normJid]) {

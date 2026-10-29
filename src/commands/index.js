@@ -30,6 +30,7 @@ import antinsfwCmd from './antinsfw.js';
 import musicCmd from './music.js';
 import toimgCmd from './toimg.js';
 import pfpCmd from './pfp.js';
+import topCmd from './top.js';
 
 const commands = new Map();
 
@@ -74,6 +75,7 @@ registerCommand(antinsfwCmd);
 registerCommand(musicCmd);
 registerCommand(toimgCmd);
 registerCommand(pfpCmd);
+registerCommand(topCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

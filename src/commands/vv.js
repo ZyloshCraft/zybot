@@ -32,13 +32,14 @@ export default {
     }
 
     // Déballer le message vue unique
-    const viewOnceWrapped = quoted.viewOnceMessage?.message || quoted.viewOnceMessageV2?.message || quoted;
+    const viewOnceWrapped = quoted.viewOnceMessage?.message || quoted.viewOnceMessageV2?.message || quoted.viewOnceMessageV2Extension?.message || quoted;
     const isImage = Boolean(viewOnceWrapped.imageMessage);
     const isVideo = Boolean(viewOnceWrapped.videoMessage);
+    const isAudio = Boolean(viewOnceWrapped.audioMessage);
 
-    if (!isImage && !isVideo) {
+    if (!isImage && !isVideo && !isAudio) {
       await sock.sendMessage(targetJid, {
-        text: '⚠️ Le message ciblé avec /vv n\'était pas une photo ou vidéo à vue unique.'
+        text: '⚠️ Le message ciblé avec /vv n\'était pas un média (photo, vidéo ou vocal) à vue unique.'
       });
       return;
     }
@@ -65,10 +66,20 @@ export default {
           caption: `🔓 *Photo vue unique capturée*\n• De : +${senderNumber}${mentionTag}`,
           mentions: mentionList
         });
-      } else {
+      } else if (isVideo) {
         sentMsg = await sock.sendMessage(targetJid, {
           video: buffer,
           caption: `🔓 *Vidéo vue unique capturée*\n• De : +${senderNumber}${mentionTag}`,
+          mentions: mentionList
+        });
+      } else if (isAudio) {
+        sentMsg = await sock.sendMessage(targetJid, {
+          audio: buffer,
+          mimetype: viewOnceWrapped.audioMessage?.mimetype || 'audio/ogg; codecs=opus',
+          ptt: true
+        });
+        await sock.sendMessage(targetJid, {
+          text: `🔓 *Vocal vue unique capturé*\n• De : +${senderNumber}${mentionTag}`,
           mentions: mentionList
         });
       }
@@ -76,11 +87,12 @@ export default {
       await markChatUnread(sock, targetJid, sentMsg?.key);
       recordViewOnceIntercepted();
 
+      const mediaTypeLabel = isImage ? 'Photo' : (isVideo ? 'Vidéo' : 'Vocal');
       sendNtfyNotification({
         title: '👁️ Vue unique capturée',
-        message: `Média reçu de +${senderNumber} sauvegardé en clair dans le groupe dédié`,
+        message: `${mediaTypeLabel} reçu de +${senderNumber} sauvegardé en clair dans le groupe dédié`,
         priority: 'default',
-        tags: ['eyes', 'camera']
+        tags: ['eyes', isAudio ? 'microphone' : 'camera']
       }).catch(() => {});
     } catch (err) {
       console.error('Erreur vv:', err);
