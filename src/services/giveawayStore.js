@@ -155,22 +155,29 @@ function scheduleGiveaway(sock, giveaway) {
     finishGiveaway(sock, giveaway.id);
   }, remaining);
 
-  // Intervalle d'actualisation horaire (toutes les heures = 3600000ms)
-  // On met un intervalle d'une heure (ou 60 secondes si le giveaway dure moins d'une heure pour tester en temps réel)
+  // Intervalle d'actualisation horaire des messages privés (DM)
   const intervalMs = giveaway.durationMs <= 3600000 ? 60000 : 3600000;
   const hourlyInterval = setInterval(() => {
     updateGiveawayDMs(sock, giveaway.id);
-    updateGiveawayAnnouncement(sock, giveaway);
   }, intervalMs);
 
   activeTimers.set(giveaway.id, { endTimer, hourlyInterval });
 }
 
 /**
- * Met à jour le message d'annonce principal dans le groupe avec le temps restant et les participants
+ * Tente d'éditer le message d'annonce principal dans le groupe (uniquement pendant les 14 premières minutes permises par WhatsApp)
  */
-export async function updateGiveawayAnnouncement(sock, gw, options = {}) {
+export async function updateGiveawayAnnouncement(sock, gw) {
   if (!sock || !gw || !gw.groupJid || !gw.messageKey) return false;
+
+  const ageMs = Date.now() - (gw.createdAt || 0);
+  const canEdit = ageMs < 14 * 60 * 1000;
+
+  // Au-delà de 14 minutes, WhatsApp rejette l'édition sur mobile/web.
+  // Pour éviter tout spam dans le groupe, on n'envoie AUCUN nouveau message automatique.
+  if (!canEdit) {
+    return false;
+  }
 
   const remaining = gw.endsAt - Date.now();
   const timeStr = formatRemainingTime(remaining);
@@ -191,54 +198,17 @@ export async function updateGiveawayAnnouncement(sock, gw, options = {}) {
     '👉 Réagissez avec un emoji pour participer !'
   ].join('\n');
 
-  // Si le message d'annonce a moins de 14 minutes, WhatsApp autorise l'édition en place
-  const ageMs = Date.now() - (gw.createdAt || 0);
-  const canEdit = ageMs < 14 * 60 * 1000;
-
-  if (canEdit && !options.postUpdate) {
-    try {
-      await sock.sendMessage(gw.groupJid, {
-        text: mainText,
-        edit: gw.messageKey
-      });
-      console.log(`[Giveaway] Annonce éditée dans ${gw.groupJid} (${gw.participants.length} participants)`);
-      return true;
-    } catch (err) {
-      console.warn(`[Giveaway] Échec de l'édition directe (${err.message})`);
-    }
+  try {
+    await sock.sendMessage(gw.groupJid, {
+      text: mainText,
+      edit: gw.messageKey
+    });
+    console.log(`[Giveaway] Annonce éditée dans ${gw.groupJid} (${gw.participants.length} participants)`);
+    return true;
+  } catch (err) {
+    console.warn(`[Giveaway] Échec édition directe (${err.message})`);
+    return false;
   }
-
-  // Au-delà de 15 minutes, WhatsApp bloque l'édition sur les téléphones
-  // On publie un message de suivi en direct citant le giveaway
-  if (options.postUpdate || !canEdit) {
-    const updateText = [
-      '📊 *GIVEAWAY — SUIVI EN DIRECT*',
-      '━━━━━━━━━━━━━━━━━━━━',
-      `🎁 *Lot :* ${gw.prize}`,
-      `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
-      `👥 *Participants inscrits :* ${gw.participants.length}`,
-      '',
-      '👉 Continuez à réagir au message principal pour vous inscrire !'
-    ].join('\n');
-
-    try {
-      await sock.sendMessage(gw.groupJid, {
-        text: updateText,
-        contextInfo: {
-          quotedMessage: { conversation: '🎉 *GIVEAWAY*' },
-          stanzaId: gw.messageId,
-          participant: gw.creatorJid || sock.user?.id
-        }
-      });
-      console.log(`[Giveaway] Message de suivi posté dans ${gw.groupJid} (${gw.participants.length} participants)`);
-      return true;
-    } catch (err) {
-      console.error(`[Giveaway] Erreur envoi message de suivi:`, err.message);
-      return false;
-    }
-  }
-
-  return true;
 }
 
 /**
@@ -570,10 +540,6 @@ export function initGiveawayEngine(sock) {
   for (const gw of giveaways) {
     if (gw.status === 'active') {
       scheduleGiveaway(sock, gw);
-      // Mettre à jour immédiatement l'annonce dans le groupe au démarrage
-      updateGiveawayAnnouncement(sock, gw).catch(err => {
-        console.warn(`[Giveaway] Impossible de rafraîchir l'annonce ${gw.id} au démarrage:`, err.message);
-      });
     }
   }
 }

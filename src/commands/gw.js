@@ -72,7 +72,39 @@ export default {
       return;
     }
 
-    // 3. COMMANDE /gw sync (ou update, refresh)
+    // 3. COMMANDE /gw status (ou stats, info)
+    if (subCommand === 'status' || subCommand === 'stats' || subCommand === 'info') {
+      let targetGw = quotedStanzaId ? getGiveawayByMessageId(quotedStanzaId) : null;
+      if (!targetGw) {
+        targetGw = getActiveGiveawayForGroup(jid) || getLatestGiveawayForGroup(jid);
+      }
+
+      if (!targetGw) {
+        return await replyOrEdit(sock, jid, msg, '❌ *Aucun giveaway trouvé dans cette discussion.*');
+      }
+
+      const remaining = targetGw.endsAt - Date.now();
+      const timeStr = formatRemainingTime(remaining);
+      const endFormatted = new Date(targetGw.endsAt).toLocaleString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const statusText = [
+        '📊 *STATUT DU GIVEAWAY*',
+        '━━━━━━━━━━━━━━━━━━━━',
+        `🎁 *Lot :* ${targetGw.prize}`,
+        `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
+        `👥 *Participants inscrits :* ${targetGw.participants.length}`,
+        `📌 *État :* ${targetGw.status === 'active' ? '🟢 En cours' : '🔴 Terminé'}`
+      ].join('\n');
+
+      return await replyOrEdit(sock, jid, msg, statusText);
+    }
+
+    // 4. COMMANDE /gw sync (ou update, refresh)
     if (subCommand === 'sync' || subCommand === 'update' || subCommand === 'refresh') {
       let targetGw = quotedStanzaId ? getGiveawayByMessageId(quotedStanzaId) : null;
       if (!targetGw) {
@@ -83,24 +115,13 @@ export default {
         return await replyOrEdit(sock, jid, msg, '❌ *Aucun giveaway actif trouvé dans cette discussion.*');
       }
 
-      const ok = await updateGiveawayAnnouncement(sock, targetGw, { postUpdate: true });
-      if (ok) {
-        await replyOrEdit(sock, jid, msg, `✅ *Annonce actualisée !* (${targetGw.participants.length} participants)`);
-      } else {
-        await replyOrEdit(sock, jid, msg, '❌ *Erreur lors de l\'actualisation de l\'annonce.*');
-      }
+      // Tenter l'édition si < 14 min, mais ne jamais poster de message automatique
+      await updateGiveawayAnnouncement(sock, targetGw);
 
-      if (msg.key.fromMe) {
-        setTimeout(async () => {
-          try {
-            await sock.sendMessage(jid, { delete: msg.key });
-          } catch (e) {}
-        }, 4000);
-      }
-      return;
+      return await replyOrEdit(sock, jid, msg, `✅ *Giveaway synchronisé !* (${targetGw.participants.length} participants inscrits)`);
     }
 
-    // 4. CRÉATION D'UN GIVEAWAY : /gw <Lot> ; <Durée>
+    // 5. CRÉATION D'UN GIVEAWAY : /gw <Lot> ; <Durée>
     const rawArgs = args.join(' ').trim();
 
     if (!rawArgs || !rawArgs.includes(';')) {
@@ -109,7 +130,7 @@ export default {
         '━━━━━━━━━━━━━━━━━━━━',
         '👉 *Commandes disponibles :*',
         '• `/gw <Lot> ; <Durée>` : Lancer un giveaway',
-        '• `/gw sync` : Forcer l\'actualisation du message d\'annonce',
+        '• `/gw status` : Affiche le statut et le nombre de participants',
         '• `/gw end` : Terminer immédiatement et tirer le sort',
         '• `/gw reroll` : Tirer un nouveau gagnant au sort',
         '',
