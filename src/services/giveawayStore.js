@@ -169,7 +169,7 @@ function scheduleGiveaway(sock, giveaway) {
 /**
  * Met à jour le message d'annonce principal dans le groupe avec le temps restant et les participants
  */
-export async function updateGiveawayAnnouncement(sock, gw) {
+export async function updateGiveawayAnnouncement(sock, gw, options = {}) {
   if (!sock || !gw || !gw.groupJid || !gw.messageKey) return false;
 
   const remaining = gw.endsAt - Date.now();
@@ -191,17 +191,54 @@ export async function updateGiveawayAnnouncement(sock, gw) {
     '👉 Réagissez avec un emoji pour participer !'
   ].join('\n');
 
-  try {
-    await sock.sendMessage(gw.groupJid, {
-      text: mainText,
-      edit: gw.messageKey
-    });
-    console.log(`[Giveaway] Annonce mise à jour dans ${gw.groupJid} (${gw.participants.length} participants, ${timeStr} restant)`);
-    return true;
-  } catch (err) {
-    console.error(`[Giveaway] Erreur actualisation annonce ${gw.messageId}:`, err.message);
-    return false;
+  // Si le message d'annonce a moins de 14 minutes, WhatsApp autorise l'édition en place
+  const ageMs = Date.now() - (gw.createdAt || 0);
+  const canEdit = ageMs < 14 * 60 * 1000;
+
+  if (canEdit && !options.postUpdate) {
+    try {
+      await sock.sendMessage(gw.groupJid, {
+        text: mainText,
+        edit: gw.messageKey
+      });
+      console.log(`[Giveaway] Annonce éditée dans ${gw.groupJid} (${gw.participants.length} participants)`);
+      return true;
+    } catch (err) {
+      console.warn(`[Giveaway] Échec de l'édition directe (${err.message})`);
+    }
   }
+
+  // Au-delà de 15 minutes, WhatsApp bloque l'édition sur les téléphones
+  // On publie un message de suivi en direct citant le giveaway
+  if (options.postUpdate || !canEdit) {
+    const updateText = [
+      '📊 *GIVEAWAY — SUIVI EN DIRECT*',
+      '━━━━━━━━━━━━━━━━━━━━',
+      `🎁 *Lot :* ${gw.prize}`,
+      `⏱️ *Temps restant :* ${timeStr} _(Fin : ${endFormatted})_`,
+      `👥 *Participants inscrits :* ${gw.participants.length}`,
+      '',
+      '👉 Continuez à réagir au message principal pour vous inscrire !'
+    ].join('\n');
+
+    try {
+      await sock.sendMessage(gw.groupJid, {
+        text: updateText,
+        contextInfo: {
+          quotedMessage: { conversation: '🎉 *GIVEAWAY*' },
+          stanzaId: gw.messageId,
+          participant: gw.creatorJid || sock.user?.id
+        }
+      });
+      console.log(`[Giveaway] Message de suivi posté dans ${gw.groupJid} (${gw.participants.length} participants)`);
+      return true;
+    } catch (err) {
+      console.error(`[Giveaway] Erreur envoi message de suivi:`, err.message);
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**

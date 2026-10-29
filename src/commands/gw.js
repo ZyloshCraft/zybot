@@ -83,7 +83,7 @@ export default {
         return await replyOrEdit(sock, jid, msg, '❌ *Aucun giveaway actif trouvé dans cette discussion.*');
       }
 
-      const ok = await updateGiveawayAnnouncement(sock, targetGw);
+      const ok = await updateGiveawayAnnouncement(sock, targetGw, { postUpdate: true });
       if (ok) {
         await replyOrEdit(sock, jid, msg, `✅ *Annonce actualisée !* (${targetGw.participants.length} participants)`);
       } else {
