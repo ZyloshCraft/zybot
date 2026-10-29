@@ -16,13 +16,13 @@ import { getCachedGroupMetadata, invalidateGroupMetadataCache } from '../src/uti
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 34 commandes actives et de la version v1.27
+// Test 1: Vérification des 35 commandes actives et de la version v1.28
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'vv', 'reboot', 'edit', 'calc',
   'meteo', 'id', 'groupe', 'alias', 'temp', 'recap', 'ntfy', 'update',
   'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
-  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top', 'trust'
+  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top', 'trust', 'gw'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -52,6 +52,7 @@ assert.ok(getCommand('activite'), 'L\'alias "activite" pour top doit exister');
 assert.ok(getCommand('trusted'), 'L\'alias "trusted" pour trust doit exister');
 assert.ok(getCommand('untrust'), 'L\'alias "untrust" pour trust doit exister');
 assert.ok(getCommand('perms'), 'L\'alias "perms" pour trust doit exister');
+assert.ok(getCommand('giveaway'), 'L\'alias "giveaway" pour gw doit exister');
 
 // Vérification stricte des commandes supprimées
 assert.strictEqual(getCommand('rappel'), undefined, 'rappel doit être supprimé');
@@ -62,8 +63,8 @@ assert.strictEqual(getCommand('vacances'), undefined, 'vacances doit être suppr
 assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé');
 
 const currentVersion = getBotVersion();
-assert.ok(currentVersion.includes('1.27'), `La version doit être v1.27 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 34 commandes actives enregistrées, version ${currentVersion} validée.`);
+assert.ok(currentVersion.includes('1.28'), `La version doit être v1.28 (obtenu: ${currentVersion})`);
+console.log(`✅ Test 1 réussi : 35 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -323,5 +324,65 @@ removeTrustedUser('33688990011');
 unrevokeUser('33677889900');
 assert.strictEqual(isUserTrusted('33688990011'), false, 'Après suppression, l\'utilisateur ne doit plus être trusted');
 console.log('✅ Test 16 réussi : Système de permissions (/trust, /untrust, révocation) validé.');
+
+// Test 17: Moteur de Giveaway (/gw, parsing de durée, réactions et inscription)
+const { parseGiveawayDuration, formatRemainingTime, createGiveaway, handleGiveawayReaction, finishGiveaway, getAllGiveaways } = await import('../src/services/giveawayStore.js');
+
+const p30m = parseGiveawayDuration('30m');
+assert.strictEqual(p30m?.durationMs, 30 * 60 * 1000, '30m doit correspondre à 1800000ms');
+
+const p2h = parseGiveawayDuration('2h');
+assert.strictEqual(p2h?.durationMs, 2 * 3600 * 1000, '2h doit correspondre à 7200000ms');
+
+const p1j = parseGiveawayDuration('1j');
+assert.strictEqual(p1j?.durationMs, 24 * 3600 * 1000, '1j doit correspondre à 86400000ms');
+
+const timeFmt = formatRemainingTime(3600000 * 2 + 1800000);
+assert.ok(timeFmt.includes('2 heures'), 'formatRemainingTime doit formater les heures correctement');
+
+// Test création et réaction giveaway
+const mockSentMessages = [];
+const gwMockSock = {
+  sendMessage: async (jid, content) => {
+    mockSentMessages.push({ jid, content });
+    return { key: { remoteJid: jid, id: `msg_${Date.now()}` } };
+  }
+};
+
+const gw = createGiveaway({
+  groupJid: 'test_group_gw@g.us',
+  messageId: 'gw_announce_123',
+  messageKey: { remoteJid: 'test_group_gw@g.us', id: 'gw_announce_123' },
+  prize: 'Discord Nitro 1 mois',
+  durationMs: 60000,
+  creatorJid: '33766337937@s.whatsapp.net'
+});
+
+assert.strictEqual(gw.status, 'active');
+assert.strictEqual(gw.prize, 'Discord Nitro 1 mois');
+
+// Simuler réaction d'un participant
+const reactionHandled = await handleGiveawayReaction({
+  sock: gwMockSock,
+  messageId: 'gw_announce_123',
+  reactorJid: '33611223344@s.whatsapp.net',
+  emoji: '🎉',
+  pushName: 'GamerOne'
+});
+assert.strictEqual(reactionHandled, true, 'La réaction doit être traitée');
+assert.strictEqual(gw.participants.length, 1, 'Il doit y avoir 1 participant');
+assert.strictEqual(gw.participants[0].number, '33611223344');
+
+// Vérifier que le DM de confirmation a été envoyé
+const dmSent = mockSentMessages.find(m => m.jid.includes('33611223344'));
+assert.ok(dmSent, 'Un DM de confirmation doit être envoyé au participant');
+assert.ok(dmSent.content.text.includes('Participation confirmée'), 'Le texte du DM doit confirmer la participation');
+
+// Clôturer le giveaway
+await finishGiveaway(gwMockSock, gw.id);
+assert.strictEqual(gw.status, 'completed');
+assert.ok(gw.winner, 'Un gagnant doit être sélectionné');
+assert.strictEqual(gw.winner.number, '33611223344');
+console.log('✅ Test 17 réussi : Moteur de giveaway (/gw, durées, réactions et DM temps réel) validé.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

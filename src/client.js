@@ -16,6 +16,7 @@ import { handleRevokedMessage, handleEditedMessage } from './services/antiDelete
 import { initDailyRecapScheduler } from './services/statsTracker.js';
 import { updateContacts } from './services/contactStore.js';
 import { handleGroupParticipantsUpdate } from './services/groupEvents.js';
+import { initGiveawayEngine, handleGiveawayReaction } from './services/giveawayStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -194,6 +195,9 @@ export async function createWhatsAppClient() {
 
       // Initialiser le planificateur du récapitulatif quotidien à 23h00
       initDailyRecapScheduler(sock);
+
+      // Initialiser le moteur de giveaways actifs
+      initGiveawayEngine(sock);
     }
   });
 
@@ -235,6 +239,29 @@ export async function createWhatsAppClient() {
       await handleGroupParticipantsUpdate(sock, event);
     } catch (err) {
       console.error('[GroupParticipants] Erreur:', err.message);
+    }
+  });
+
+  // Réactions emoji sur les messages (Giveaways, sondages, etc.)
+  sock.ev.on('messages.reaction', async (reactions) => {
+    if (!reactions || !reactions.length) return;
+    for (const item of reactions) {
+      try {
+        const targetMsgId = item.reaction?.key?.id || item.key?.id;
+        const reactorJid = item.key?.participant || item.key?.remoteJid;
+        const emoji = item.reaction?.text;
+        if (targetMsgId && reactorJid) {
+          await handleGiveawayReaction({
+            sock,
+            messageId: targetMsgId,
+            reactorJid,
+            emoji,
+            pushName: undefined
+          });
+        }
+      } catch (err) {
+        console.error('[GiveawayReaction] Erreur traitement réaction:', err.message);
+      }
     }
   });
 

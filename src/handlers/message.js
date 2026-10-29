@@ -13,6 +13,7 @@ import { recordGroupMessage } from '../services/groupActivityStore.js';
 import { checkAndTrackPseudo } from '../services/contactStore.js';
 import { handlePseudoChange } from '../services/groupEvents.js';
 import { canUserExecuteCommand } from '../services/permissionStore.js';
+import { handleGiveawayReaction } from '../services/giveawayStore.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -110,6 +111,24 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
 
       // Ignorer les messages sans contenu ou autres stubs WhatsApp internes
       if (!msg.message || msg.messageStubType) continue;
+
+      // 3. Détection des réactions emoji (Giveaway, etc.)
+      const reactionMessage = msg.message?.reactionMessage;
+      if (reactionMessage) {
+        const targetMessageId = reactionMessage.key?.id;
+        const reactorJid = msg.key.participant || msg.key.remoteJid;
+        const emoji = reactionMessage.text;
+        if (targetMessageId && reactorJid) {
+          await handleGiveawayReaction({
+            sock,
+            messageId: targetMessageId,
+            reactorJid,
+            emoji,
+            pushName: msg.pushName
+          });
+        }
+        continue;
+      }
 
       const jid = msg.key.remoteJid;
       if (!jid) continue;

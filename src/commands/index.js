@@ -32,6 +32,7 @@ import toimgCmd from './toimg.js';
 import pfpCmd from './pfp.js';
 import topCmd from './top.js';
 import trustCmd from './trust.js';
+import gwCmd from './gw.js';
 
 const commands = new Map();
 
@@ -78,6 +79,7 @@ registerCommand(toimgCmd);
 registerCommand(pfpCmd);
 registerCommand(topCmd);
 registerCommand(trustCmd);
+registerCommand(gwCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

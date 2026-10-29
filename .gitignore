@@ -6,6 +6,7 @@ warns.json
 group_activity.json
 contacts.json
 permissions.json
+giveaways.json
 bot.pid
 .DS_Store
 *.log
