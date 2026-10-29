@@ -3,50 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZyBot / Moderation</title>
+  <title>ZyBot // Modération & Casier</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            mono: ['"JetBrains Mono"', 'monospace']
+            mono: ['"JetBrains Mono"', 'monospace', 'ui-monospace'],
+            sans: ['"JetBrains Mono"', 'monospace']
           },
           colors: {
             noir: {
               950: '#07080a',
-              900: '#0d0e12',
-              850: '#13151b',
-              800: '#1b1e27',
+              900: '#0d0f14',
+              850: '#12151c',
+              800: '#1a1e28',
               700: '#262a36',
-              600: '#393e4f'
+              600: '#383e4e'
             }
           }
         }
       }
     }
   </script>
+
   <style>
     * {
-      border-radius: 0px !important; /* Esthétique carrée pure */
+      border-radius: 0px !important;
     }
     body {
       background-color: #07080a;
       color: #e2e8f0;
       font-family: 'JetBrains Mono', monospace;
-      -webkit-font-smoothing: antialiased;
     }
     .grid-bg {
-      background-size: 24px 24px;
+      background-size: 32px 32px;
       background-image: 
         linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
     }
     .custom-scroll::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
+      width: 6px;
+      height: 6px;
     }
     .custom-scroll::-webkit-scrollbar-track {
       background: #07080a;
@@ -62,51 +66,94 @@
 <body class="grid-bg min-h-screen flex flex-col text-xs select-none">
 
   <!-- ======================================================== -->
-  <!-- 1. ÉCRAN DE VERROUILLAGE ÉPURÉ & CARRÉ                   -->
+  <!-- 1. VUE PUBLIQUE (ACCESSIBLE À TOUS SANS MOT DE PASSE)    -->
   <!-- ======================================================== -->
-  <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#07080a]">
-    <div class="w-full max-w-sm bg-noir-900 border border-noir-700 p-8 space-y-6 shadow-2xl relative">
-      <div class="border-b border-noir-800 pb-4">
-        <div class="text-xs font-bold tracking-widest text-slate-400 uppercase">SYSTÈME DE MODÉRATION</div>
-        <div class="text-xl font-bold tracking-tight text-white mt-1">ZYBOT // AUTH</div>
-      </div>
-
-      <div id="loginError" class="hidden p-3 bg-red-950/40 border border-red-800/80 text-red-300 text-[11px]">
-        Mot de passe incorrect.
-      </div>
-
-      <form id="loginForm" class="space-y-4">
-        <div class="space-y-1.5">
-          <label class="block text-[10px] uppercase tracking-widest text-slate-400">Mot de passe</label>
-          <input 
-            type="password" 
-            id="passwordInput" 
-            placeholder="••••••••••••" 
-            required
-            class="w-full px-3 py-2.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white transition-colors"
-          >
+  <div id="publicScreen" class="flex-1 flex flex-col">
+    <!-- Barre supérieure publique -->
+    <header class="bg-noir-900 border-b border-noir-800 sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
+        
+        <div class="flex items-center gap-3">
+          <span class="w-2 h-2 bg-emerald-400 animate-pulse"></span>
+          <span class="font-bold tracking-wider text-white">ZYBOT</span>
+          <span class="text-slate-600">//</span>
+          <span class="text-slate-300 font-medium tracking-wide">REGISTRE PUBLIC DES WARNS</span>
         </div>
 
         <button 
-          type="submit" 
-          class="w-full py-2.5 px-4 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors"
+          id="btnOpenLoginModal"
+          class="px-3 py-1.5 border border-noir-700 hover:border-white text-slate-300 hover:text-white uppercase font-bold tracking-wider transition-colors flex items-center gap-2"
         >
-          Déverrouiller ➔
+          <span>🔒</span>
+          <span>ADMIN // LOGIN ➔</span>
         </button>
-      </form>
 
-      <div class="text-[10px] text-slate-600 tracking-wider">
-        STATUS : VERROUILLÉ • V1.27
       </div>
-    </div>
+    </header>
+
+    <!-- Contenu Public -->
+    <main class="max-w-6xl mx-auto w-full px-4 py-8 flex-1 space-y-6">
+      
+      <!-- En-tête et moteur de recherche public -->
+      <div class="bg-noir-900 border border-noir-800 p-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-noir-800 pb-4">
+          <div>
+            <h1 class="text-base font-bold text-white uppercase tracking-wider">Casier Communautaire</h1>
+            <p class="text-slate-400 text-[11px] mt-0.5">
+              Consultation libre du nombre d'avertissements attribués par la modération.
+            </p>
+          </div>
+          <div class="flex items-center gap-3 text-[11px]">
+            <span class="text-slate-500">MEMBRES AU CASIER :</span>
+            <span class="font-bold text-amber-400 font-mono text-sm" id="publicTotalUsers">0</span>
+          </div>
+        </div>
+
+        <!-- Recherche par pseudo -->
+        <div class="relative">
+          <input 
+            type="text" 
+            id="publicSearchInput" 
+            placeholder="Rechercher par pseudo (ex: Hugo, Axel, Mme chaise Ikea)..." 
+            class="w-full px-4 py-2.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-xs font-mono"
+          >
+        </div>
+      </div>
+
+      <!-- Tableau public épuré (Pseudo et Warns uniquement) -->
+      <div class="bg-noir-900 border border-noir-800 overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-noir-850 text-slate-400 border-b border-noir-800 uppercase tracking-wider text-[10px]">
+              <tr>
+                <th class="py-3 px-4 w-12 font-mono">#</th>
+                <th class="py-3 px-4 font-bold">MEMBRE (PSEUDO)</th>
+                <th class="py-3 px-4 text-right font-bold w-48">STATUT / WARNS</th>
+              </tr>
+            </thead>
+            <tbody id="publicWarnsTableBody" class="divide-y divide-noir-800/60 font-sans">
+              <tr>
+                <td colspan="3" class="py-8 text-center text-slate-500 font-mono">
+                  Chargement du casier...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="text-[10px] text-slate-600 text-center tracking-wider font-mono">
+        ZYBOT MODÉRATION TAVERNE • SYSTÈME DISCRET & STRICT
+      </div>
+    </main>
   </div>
 
   <!-- ======================================================== -->
-  <!-- 2. APPLICATION PRINCIPALE                                -->
+  <!-- 2. APPLICATION D'ADMINISTRATION (VERROUILLÉE)            -->
   <!-- ======================================================== -->
   <div id="appScreen" class="hidden flex-1 flex flex-col">
     
-    <!-- Barre supérieure compacte -->
+    <!-- Barre supérieure compacte Admin -->
     <header class="bg-noir-900 border-b border-noir-800 sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
         
@@ -114,7 +161,7 @@
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 bg-emerald-400 animate-pulse" id="statusDot"></span>
-            <span class="font-bold tracking-wider text-white">ZYBOT</span>
+            <span class="font-bold tracking-wider text-white">ZYBOT ADMIN</span>
             <span class="text-slate-500">/</span>
             <span id="waPhoneText" class="text-slate-300 font-medium">Chargement...</span>
           </div>
@@ -122,29 +169,32 @@
           <div class="text-slate-400 text-[11px] hidden sm:block" id="uptimeDisplay">UPTIME: --</div>
         </div>
 
-        <!-- Navigation épurée & Déconnexion -->
+        <!-- Navigation Admin & Déconnexion -->
         <div class="flex items-center gap-2">
           <button class="nav-tab active px-3 py-1.5 border border-white bg-white text-black font-bold tracking-wider uppercase transition-colors" data-tab="tab-warns">
             WARNS (<span id="tabWarnCount">0</span>)
+          </button>
+          <button class="nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors" data-tab="tab-perms">
+            PERMISSIONS (<span id="tabPermsCount">0</span>)
           </button>
           <button class="nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors" data-tab="tab-top">
             ACTIVITÉ & TOP
           </button>
           <button class="nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors" data-tab="tab-logs">
-            LOGS CONSOLE
+            LOGS
           </button>
-          <button id="logoutBtn" title="Déconnexion" class="px-2.5 py-1.5 border border-noir-800 hover:border-red-600/60 text-slate-500 hover:text-red-400 uppercase transition-colors ml-2">
+          <button id="logoutBtn" title="Retour à la vue publique" class="px-2.5 py-1.5 border border-noir-800 hover:border-red-600/60 text-slate-400 hover:text-red-400 uppercase transition-colors ml-2 font-bold">
             SORTIR
           </button>
         </div>
       </div>
     </header>
 
-    <!-- Contenu Principal -->
+    <!-- Contenu Principal Admin -->
     <main class="max-w-7xl mx-auto w-full px-4 py-5 flex-1 space-y-4">
 
       <!-- ====================================================== -->
-      <!-- SECTION 1 : GESTION DES WARNS (ESSENTIEL)              -->
+      <!-- SECTION 1 : GESTION DÉTAILLÉE DES WARNS (ADMIN)        -->
       <!-- ====================================================== -->
       <section id="tab-warns" class="tab-content space-y-4">
         
@@ -179,7 +229,6 @@
         <!-- Barre d'outils et stats minimalistes -->
         <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
           
-          <!-- Compteurs carrés -->
           <div class="flex items-center gap-4 text-[11px]">
             <div>
               <span class="text-slate-500">MEMBRES AVERTIS:</span>
@@ -204,7 +253,7 @@
                 type="text" 
                 id="warnSearchInput" 
                 placeholder="Filtrer (numéro, pseudo, raison)..." 
-                class="w-full px-3 py-1.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-xs"
+                class="w-full px-3 py-1.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-xs font-mono"
               >
             </div>
             <button id="btnOpenAddWarnModal" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors whitespace-nowrap">
@@ -216,22 +265,22 @@
           </div>
         </div>
 
-        <!-- Tableau carré épuré des avertissements -->
-        <div class="bg-noir-900 border border-noir-800 overflow-hidden">
+        <!-- Tableau carré complet des avertissements pour l'administrateur -->
+        <div class="bg-noir-900 border border-noir-800 overflow-hidden shadow-2xl">
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs border-collapse">
               <thead class="bg-noir-850 text-slate-400 border-b border-noir-800 uppercase tracking-wider text-[10px]">
                 <tr>
-                  <th class="py-2.5 px-3">Identifiant (Numéro / LID)</th>
-                  <th class="py-2.5 px-3">Pseudo</th>
-                  <th class="py-2.5 px-3">Statut / Niveau</th>
-                  <th class="py-2.5 px-3">Dernière Raison</th>
-                  <th class="py-2.5 px-3">Groupe</th>
-                  <th class="py-2.5 px-3 text-right">Actions</th>
+                  <th class="py-2.5 px-3 font-mono">CIBLE (NUMÉRO / LID)</th>
+                  <th class="py-2.5 px-3">PSEUDO</th>
+                  <th class="py-2.5 px-3">WARNS</th>
+                  <th class="py-2.5 px-3">DERNIER MOTIF</th>
+                  <th class="py-2.5 px-3">GROUPE</th>
+                  <th class="py-2.5 px-3 text-right">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody id="warnsTableBody" class="divide-y divide-noir-800">
-                <tr><td colspan="6" class="py-8 text-center text-slate-600">Chargement des données...</td></tr>
+              <tbody id="warnsTableBody" class="divide-y divide-noir-800/60 font-sans">
+                <!-- Rempli par JavaScript -->
               </tbody>
             </table>
           </div>
@@ -239,7 +288,56 @@
       </section>
 
       <!-- ====================================================== -->
-      <!-- SECTION 2 : ACTIVITÉ & TOP DES GROUPES                 -->
+      <!-- SECTION 2 : GESTION DES PERMISSIONS (/trust & /untrust) -->
+      <!-- ====================================================== -->
+      <section id="tab-perms" class="tab-content hidden space-y-4">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
+          <div>
+            <div class="font-bold text-white uppercase tracking-wider">Gestion des permissions (/trust & /untrust)</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">
+              Autorise ou révoque l'utilisation de <code class="text-white bg-noir-950 px-1 border border-noir-700">/warn</code> et <code class="text-white bg-noir-950 px-1 border border-noir-700">/texte</code>.
+            </div>
+          </div>
+          <button id="btnOpenAddPermModal" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors whitespace-nowrap">
+            + ACCORDER PERMISSION
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Membres de confiance -->
+          <div class="bg-noir-900 border border-noir-800 p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-noir-800 pb-2">
+              <span class="font-bold uppercase tracking-wider text-emerald-400">⭐ Membres de confiance (Trusted)</span>
+              <span class="text-[10px] text-slate-500 font-mono" id="countTrustedBadge">0</span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              Ces membres peuvent utiliser <b>/warn</b> et <b>/texte</b> même s'ils ne sont pas admins dans la taverne.
+            </div>
+            <div id="trustedListContainer" class="space-y-1.5 max-h-96 overflow-y-auto custom-scroll pr-1 font-mono text-xs">
+              <div class="text-slate-600 text-center py-4">Aucun membre ajouté manuellement.</div>
+            </div>
+          </div>
+
+          <!-- Membres expressément révoqués -->
+          <div class="bg-noir-900 border border-noir-800 p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-noir-800 pb-2">
+              <span class="font-bold uppercase tracking-wider text-red-400">🚫 Membres révoqués (Interdits)</span>
+              <span class="text-[10px] text-slate-500 font-mono" id="countRevokedBadge">0</span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              Ces membres sont strictement bloqués : ils ne peuvent exécuter ni <b>/warn</b> ni <b>/texte</b> même s'ils sont dans la taverne.
+            </div>
+            <div id="revokedListContainer" class="space-y-1.5 max-h-96 overflow-y-auto custom-scroll pr-1 font-mono text-xs">
+              <div class="text-slate-600 text-center py-4">Aucun membre révoqué.</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- SECTION 3 : ACTIVITÉ & TOP DES GROUPES                 -->
       <!-- ====================================================== -->
       <section id="tab-top" class="tab-content hidden space-y-4">
         <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
@@ -259,12 +357,11 @@
               <span class="text-slate-400 text-[10px]">SYNC TEMPS RÉEL (2.5s)</span>
             </div>
           </div>
-          <div class="text-[10px] text-slate-500 uppercase tracking-wider">
-            COMMANDE WHATSAPP : <code class="text-white bg-noir-950 px-1.5 py-0.5 border border-noir-700 font-mono">/top</code>
+          <div class="text-[10px] text-slate-500 uppercase tracking-wider font-mono">
+            COMMANDE WHATSAPP : <code class="text-white bg-noir-950 px-1.5 py-0.5 border border-noir-700">/top</code>
           </div>
         </div>
 
-        <!-- Grille des classements par groupe -->
         <div id="groupsActivityContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div class="p-8 bg-noir-900 border border-noir-800 text-slate-500 text-center col-span-full font-mono text-xs">
             Chargement de l'activité des groupes...
@@ -273,11 +370,9 @@
       </section>
 
       <!-- ====================================================== -->
-      <!-- SECTION 3 : LOGS CONSOLE (COPIABLE)                    -->
+      <!-- SECTION 4 : LOGS CONSOLE (COPIABLE)                    -->
       <!-- ====================================================== -->
       <section id="tab-logs" class="tab-content hidden space-y-3">
-        
-        <!-- Barre de contrôle des logs -->
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2">
@@ -289,7 +384,7 @@
               type="text" 
               id="logFilterInput" 
               placeholder="Filtrer les lignes..." 
-              class="px-2.5 py-1 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-[11px] w-48"
+              class="px-2.5 py-1 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-[11px] w-48 font-mono"
             >
           </div>
 
@@ -307,7 +402,6 @@
           </div>
         </div>
 
-        <!-- Fenêtre terminal noire carrée -->
         <div id="terminalWindow" class="w-full h-[650px] p-4 bg-black border border-noir-800 font-mono text-[11px] text-slate-300 overflow-y-auto custom-scroll space-y-0.5 select-text">
           <div class="text-slate-600">// Flux de logs en cours de synchronisation...</div>
         </div>
@@ -317,7 +411,46 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- MODALE : AJOUTER UN WARN (CARRÉE & MINIMALISTE)          -->
+  <!-- MODALE : CONNEXION ADMINISTRATEUR                        -->
+  <!-- ======================================================== -->
+  <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
+    <div class="w-full max-w-sm bg-noir-900 border border-noir-700 p-8 space-y-6 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
+        <div>
+          <div class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">AUTHENTIFICATION</div>
+          <div class="text-lg font-bold text-white tracking-wide mt-0.5">ACCÈS ADMINISTRATEUR</div>
+        </div>
+        <button onclick="closeModal('loginModal')" class="text-slate-500 hover:text-white px-2">✕</button>
+      </div>
+
+      <div id="loginError" class="hidden p-3 bg-red-950/40 border border-red-800/80 text-red-300 text-[11px]">
+        Mot de passe incorrect.
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div class="space-y-1.5">
+          <label class="block text-[10px] uppercase tracking-widest text-slate-400">Mot de passe Admin</label>
+          <input 
+            type="password" 
+            id="passwordInput" 
+            placeholder="••••••••••••" 
+            required
+            class="w-full px-3 py-2.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white font-mono text-xs"
+          >
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full py-2.5 px-4 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors"
+        >
+          Déverrouiller le panel ➔
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODALE : AJOUTER UN WARN (ADMIN)                         -->
   <!-- ======================================================== -->
   <div id="addWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
     <div class="w-full max-w-md bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl">
@@ -383,7 +516,59 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- MODALE : HISTORIQUE D'UN MEMBRE                          -->
+  <!-- MODALE : AJOUTER UNE PERMISSION (/trust ou /untrust)     -->
+  <!-- ======================================================== -->
+  <div id="addPermModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
+    <div class="w-full max-w-md bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
+        <span class="font-bold uppercase tracking-wider text-white">+ ACCORDER / RÉVOQUER PERMISSION</span>
+        <button onclick="closeModal('addPermModal')" class="text-slate-500 hover:text-white px-2">✕</button>
+      </div>
+
+      <form id="addPermForm" class="space-y-3">
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Action</label>
+          <select id="modalPermAction" class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white text-xs focus:outline-none focus:border-white">
+            <option value="trust">⭐ Autoriser (Trusted - accès à /warn et /texte)</option>
+            <option value="untrust">🚫 Révoquer (Bloquer totalement /warn et /texte)</option>
+          </select>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Numéro ou LID</label>
+          <input 
+            type="text" 
+            id="modalPermTarget" 
+            placeholder="Ex: 33612345678" 
+            required
+            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white font-mono text-xs"
+          >
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Nom / Pseudo (Optionnel)</label>
+          <input 
+            type="text" 
+            id="modalPermName" 
+            placeholder="Ex: Hugo, Alexandre..." 
+            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white text-xs"
+          >
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-noir-800">
+          <button type="button" onclick="closeModal('addPermModal')" class="px-3 py-1.5 border border-noir-700 hover:border-slate-500 text-slate-300 uppercase">
+            Annuler
+          </button>
+          <button type="submit" class="px-4 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider">
+            Valider
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODALE : HISTORIQUE D'UN MEMBRE (ADMIN)                  -->
   <!-- ======================================================== -->
   <div id="detailsWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
     <div class="w-full max-w-xl bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
@@ -411,11 +596,14 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- JAVASCRIPT TEMPS RÉEL MINIMALISTE                        -->
+  <!-- JAVASCRIPT TEMPS RÉEL (VUE PUBLIQUE + PANEL ADMIN)       -->
   <!-- ======================================================== -->
   <script>
     let currentAuthToken = localStorage.getItem('zybot_token') || null;
+    let publicWarnsData = [];
     let allWarnsData = [];
+    let allGroupsActivity = [];
+    let allPermissionsData = { trusted: [], revoked: [] };
     let rawLogsList = [];
     let activeTab = 'tab-warns';
     let pollInterval = null;
@@ -429,45 +617,111 @@
       
       const res = await fetch(endpoint, { ...options, headers });
       if (res.status === 401 && !endpoint.includes('/api/auth/')) {
-        showLogin();
+        showPublic();
         throw new Error('Non authentifié');
       }
       return res;
     }
 
-    function showLogin() {
-      document.getElementById('loginScreen').classList.remove('hidden');
+    function showPublic() {
+      document.getElementById('publicScreen').classList.remove('hidden');
       document.getElementById('appScreen').classList.add('hidden');
+      document.getElementById('loginModal').classList.add('hidden');
       if (pollInterval) clearInterval(pollInterval);
+      fetchPublicData();
+      pollInterval = setInterval(fetchPublicData, 3000);
     }
 
-    function showApp() {
-      document.getElementById('loginScreen').classList.add('hidden');
+    function showAdmin() {
+      document.getElementById('publicScreen').classList.add('hidden');
       document.getElementById('appScreen').classList.remove('hidden');
-      fetchAllData();
-      startRealTimeEngine();
+      document.getElementById('loginModal').classList.add('hidden');
+      if (pollInterval) clearInterval(pollInterval);
+      fetchAllAdminData();
+      pollInterval = setInterval(fetchAllAdminData, 2500);
     }
 
     // Initialisation
     window.addEventListener('DOMContentLoaded', async () => {
+      setupTabs();
+      setupEvents();
+
+      // Vérifier si une session admin valide existe déjà
       try {
         const res = await apiFetch('api/auth/check');
         const data = await res.json();
         if (data.authenticated) {
-          showApp();
-        } else {
-          showLogin();
+          showAdmin();
+          return;
         }
-      } catch {
-        showLogin();
-      }
+      } catch {}
 
-      setupTabs();
-      setupEvents();
+      showPublic();
     });
 
-    // Formulaire Login
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    // ══════════════════════════════════════════════════════════
+    // LOGIQUE VUE PUBLIQUE
+    // ══════════════════════════════════════════════════════════
+    async function fetchPublicData() {
+      try {
+        const res = await fetch('api/public/warns');
+        const data = await res.json();
+        publicWarnsData = data.users || [];
+        document.getElementById('publicTotalUsers').textContent = publicWarnsData.length;
+        renderPublicWarns();
+      } catch (err) {
+        console.error('Erreur fetchPublicData:', err);
+      }
+    }
+
+    function renderPublicWarns() {
+      const q = (document.getElementById('publicSearchInput')?.value || '').toLowerCase().trim();
+      const filtered = q ? publicWarnsData.filter(u => (u.pseudo || '').toLowerCase().includes(q)) : publicWarnsData;
+
+      const tbody = document.getElementById('publicWarnsTableBody');
+      if (!tbody) return;
+
+      if (!filtered.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="py-8 text-center text-slate-500 font-mono">
+              ${q ? `Aucun membre correspondant à "${escapeHtml(q)}".` : 'Aucun avertissement enregistré pour le moment.'}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((u, i) => {
+        const count = u.count;
+        let badge = `<span class="px-2 py-0.5 border border-yellow-800 bg-yellow-950/40 text-yellow-300 font-bold font-mono">1 AVERTISSEMENT</span>`;
+        if (count === 2) {
+          badge = `<span class="px-2 py-0.5 border border-orange-800 bg-orange-950/40 text-orange-300 font-bold font-mono">2 AVERTISSEMENTS</span>`;
+        } else if (count >= 3) {
+          badge = `<span class="px-2 py-0.5 border border-red-700 bg-red-950/70 text-red-300 font-bold font-mono animate-pulse">⛔ BAN (${count}/3)</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-white/[0.02] border-b border-noir-800/40">
+            <td class="py-3 px-4 font-mono text-slate-500">${i + 1}</td>
+            <td class="py-3 px-4 text-white font-medium text-sm font-sans">${escapeHtml(u.pseudo || 'Membre Taverne')}</td>
+            <td class="py-3 px-4 text-right">${badge}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('publicSearchInput')?.addEventListener('input', renderPublicWarns);
+
+    // ══════════════════════════════════════════════════════════
+    // AUTHENTIFICATION & MODALE LOGIN
+    // ══════════════════════════════════════════════════════════
+    document.getElementById('btnOpenLoginModal')?.addEventListener('click', () => {
+      document.getElementById('loginModal').classList.remove('hidden');
+      document.getElementById('passwordInput').focus();
+    });
+
+    document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const pwd = document.getElementById('passwordInput').value;
       const errBox = document.getElementById('loginError');
@@ -484,7 +738,7 @@
         if (res.ok && data.success) {
           currentAuthToken = data.token;
           localStorage.setItem('zybot_token', data.token);
-          showApp();
+          showAdmin();
         } else {
           errBox.classList.remove('hidden');
           errBox.textContent = data.error || 'Mot de passe incorrect.';
@@ -495,15 +749,16 @@
       }
     });
 
-    // Déconnexion
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
       try { await apiFetch('api/auth/logout', { method: 'POST' }); } catch {}
       currentAuthToken = null;
       localStorage.removeItem('zybot_token');
-      showLogin();
+      showPublic();
     });
 
-    // Navigation entre les 2 onglets essentiels
+    // ══════════════════════════════════════════════════════════
+    // LOGIQUE PANEL ADMIN
+    // ══════════════════════════════════════════════════════════
     function setupTabs() {
       document.querySelectorAll('.nav-tab').forEach((tab) => {
         tab.addEventListener('click', () => {
@@ -526,16 +781,14 @@
       });
     }
 
-    // Récupération globale et mise à jour en temps réel
-    async function fetchAllData() {
-      await Promise.all([updateStatus(), updateWarns(), updateGroupsActivity(), updateLogs()]);
-    }
-
-    function startRealTimeEngine() {
-      if (pollInterval) clearInterval(pollInterval);
-      pollInterval = setInterval(() => {
-        fetchAllData();
-      }, 2500); // Mise à jour automatique toutes les 2.5 secondes
+    async function fetchAllAdminData() {
+      await Promise.all([
+        updateStatus(),
+        updateWarns(),
+        updatePermissions(),
+        updateGroupsActivity(),
+        updateLogs()
+      ]);
     }
 
     // 1. Statut
@@ -578,7 +831,7 @@
       } catch {}
     }
 
-    // 2. Warns
+    // 2. Warns (Admin)
     async function updateWarns() {
       try {
         const res = await apiFetch('api/warns');
@@ -589,7 +842,7 @@
     }
 
     function renderWarns() {
-      const q = document.getElementById('warnSearchInput').value.toLowerCase().trim();
+      const q = (document.getElementById('warnSearchInput')?.value || '').toLowerCase().trim();
       const filtered = q ? allWarnsData.filter((u) => {
         return (
           u.number.includes(q) ||
@@ -599,6 +852,8 @@
       }) : allWarnsData;
 
       const tbody = document.getElementById('warnsTableBody');
+      if (!tbody) return;
+
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-600">Aucun avertissement enregistré.</td></tr>';
         return;
@@ -642,11 +897,83 @@
       }).join('');
     }
 
-    document.getElementById('warnSearchInput').addEventListener('input', renderWarns);
+    document.getElementById('warnSearchInput')?.addEventListener('input', renderWarns);
 
-    // 3. Activité et Classements des groupes
-    let allGroupsActivity = [];
+    // 3. Permissions (/trust & /untrust)
+    async function updatePermissions() {
+      try {
+        const res = await apiFetch('api/permissions');
+        const data = await res.json();
+        allPermissionsData = {
+          trusted: data.trusted || [],
+          revoked: data.revoked || []
+        };
+        const countBadge = document.getElementById('tabPermsCount');
+        if (countBadge) countBadge.textContent = allPermissionsData.trusted.length;
+        renderPermissions();
+      } catch {}
+    }
 
+    function renderPermissions() {
+      const trustedContainer = document.getElementById('trustedListContainer');
+      const revokedContainer = document.getElementById('revokedListContainer');
+      const countTrusted = document.getElementById('countTrustedBadge');
+      const countRevoked = document.getElementById('countRevokedBadge');
+
+      if (countTrusted) countTrusted.textContent = `${allPermissionsData.trusted.length} membre(s)`;
+      if (countRevoked) countRevoked.textContent = `${allPermissionsData.revoked.length} membre(s)`;
+
+      if (trustedContainer) {
+        if (!allPermissionsData.trusted.length) {
+          trustedContainer.innerHTML = '<div class="text-slate-600 text-center py-4">Aucun membre ajouté manuellement (seuls les admins taverne ont accès).</div>';
+        } else {
+          trustedContainer.innerHTML = allPermissionsData.trusted.map(u => `
+            <div class="flex items-center justify-between p-2 bg-noir-950 border border-noir-800">
+              <div>
+                <div class="text-white font-medium">${escapeHtml(u.name || 'Inconnu')}</div>
+                <div class="text-[10px] text-slate-500">+${u.number}</div>
+              </div>
+              <button onclick="removePermission('${u.number}')" class="px-2 py-0.5 border border-red-900 hover:bg-red-950/40 text-red-400 text-[10px] uppercase">
+                Retirer
+              </button>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (revokedContainer) {
+        if (!allPermissionsData.revoked.length) {
+          revokedContainer.innerHTML = '<div class="text-slate-600 text-center py-4">Aucun membre révoqué.</div>';
+        } else {
+          revokedContainer.innerHTML = allPermissionsData.revoked.map(u => `
+            <div class="flex items-center justify-between p-2 bg-noir-950 border border-noir-800">
+              <div>
+                <div class="text-white font-medium">${escapeHtml(u.name || 'Inconnu')}</div>
+                <div class="text-[10px] text-slate-500">+${u.number}</div>
+              </div>
+              <button onclick="removePermission('${u.number}')" class="px-2 py-0.5 border border-emerald-900 hover:bg-emerald-950/40 text-emerald-400 text-[10px] uppercase">
+                Débloquer
+              </button>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    async function removePermission(target) {
+      if (!confirm(`Supprimer les permissions pour ${target} ?`)) return;
+      try {
+        await apiFetch('api/permissions/remove', {
+          method: 'POST',
+          body: JSON.stringify({ target })
+        });
+        await updatePermissions();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // 4. Activité & Classements Groupes
     async function updateGroupsActivity() {
       try {
         const res = await apiFetch('api/groups/activity');
@@ -750,7 +1077,7 @@
       }).join('');
     }
 
-    // 4. Logs et Copie dans le presse-papier
+    // 5. Logs & Copie
     async function updateLogs() {
       try {
         const res = await apiFetch('api/logs?limit=150');
@@ -761,184 +1088,238 @@
     }
 
     function renderLogs() {
-      const term = document.getElementById('terminalWindow');
-      const filter = document.getElementById('logFilterInput').value.toLowerCase();
-      const filtered = filter ? rawLogsList.filter((l) => l.text.toLowerCase().includes(filter)) : rawLogsList;
+      const filter = (document.getElementById('logFilterInput')?.value || '').toLowerCase().trim();
+      const filtered = filter ? rawLogsList.filter(l => l.toLowerCase().includes(filter)) : rawLogsList;
+      const win = document.getElementById('terminalWindow');
+      if (!win) return;
 
       if (!filtered.length) {
-        term.innerHTML = '<div class="text-slate-600">// Aucun log disponible.</div>';
+        win.innerHTML = '<div class="text-slate-600">// Aucun log disponible.</div>';
         return;
       }
 
-      term.innerHTML = filtered.map((l) => {
-        let color = 'text-slate-300';
-        if (l.type === 'error' || l.text.includes('Error') || l.text.includes('❌')) {
-          color = 'text-red-400 font-semibold';
-        } else if (l.text.includes('WARNING') || l.text.includes('⚠️')) {
-          color = 'text-yellow-400';
-        } else if (l.text.includes('✅') || l.text.includes('CONNECTÉ')) {
-          color = 'text-emerald-400 font-semibold';
-        } else if (l.text.includes('[Commande]')) {
-          color = 'text-cyan-300';
+      win.innerHTML = filtered.map((line) => {
+        let colorClass = 'text-slate-300';
+        if (line.includes('ERROR') || line.includes('Erreur') || line.includes('❌') || line.includes('Code: 1')) {
+          colorClass = 'text-red-400 bg-red-950/20';
+        } else if (line.includes('WARNING') || line.includes('⚠️')) {
+          colorClass = 'text-amber-300';
+        } else if (line.includes('✅') || line.includes('CONNECTÉ') || line.includes('SUCCESS')) {
+          colorClass = 'text-emerald-300';
+        } else if (line.includes('[Commande]')) {
+          colorClass = 'text-indigo-300 font-bold';
         }
-        return `<div class="${color} leading-relaxed break-all">${escapeHtml(l.text)}</div>`;
+        return `<div class="${colorClass} leading-tight whitespace-pre-wrap">${escapeHtml(line)}</div>`;
       }).join('');
-
-      term.scrollTop = term.scrollHeight;
     }
 
-    document.getElementById('logFilterInput').addEventListener('input', renderLogs);
+    document.getElementById('logFilterInput')?.addEventListener('input', renderLogs);
 
-    // BOUTON COPIER TOUS LES LOGS DANS LE PRESSE-PAPIER
-    document.getElementById('btnCopyLogs').addEventListener('click', () => {
-      if (!rawLogsList.length) return;
-      const text = rawLogsList.map((l) => l.text).join('\n');
-      navigator.clipboard.writeText(text).then(() => {
-        const btnText = document.getElementById('btnCopyLogsText');
-        const prev = btnText.textContent;
+    // Bouton Copier les logs
+    document.getElementById('btnCopyLogs')?.addEventListener('click', async () => {
+      const textToCopy = rawLogsList.join('\n');
+      const btnText = document.getElementById('btnCopyLogsText');
+      try {
+        await navigator.clipboard.writeText(textToCopy);
         btnText.textContent = 'COPIÉ !';
-        setTimeout(() => { btnText.textContent = prev; }, 2000);
-      });
-    });
-
-    document.getElementById('btnClearLogs').addEventListener('click', () => {
-      document.getElementById('terminalWindow').innerHTML = '<div class="text-slate-600">// Vue nettoyée.</div>';
-    });
-
-    // 4. Modales & Actions
-    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-    document.getElementById('btnOpenAddWarnModal').addEventListener('click', () => openModal('addWarnModal'));
-
-    document.getElementById('addWarnForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const target = document.getElementById('modalWarnTarget').value.trim();
-      const pseudo = document.getElementById('modalWarnPseudo').value.trim();
-      const reason = document.getElementById('modalWarnReason').value.trim();
-      const admin = document.getElementById('modalWarnAdmin').value.trim();
-
-      try {
-        const res = await apiFetch('api/warns/add', {
-          method: 'POST',
-          body: JSON.stringify({ target, pushName: pseudo, reason, admin })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          closeModal('addWarnModal');
-          document.getElementById('addWarnForm').reset();
-          fetchAllData();
-        } else {
-          alert(`Erreur : ${data.error || 'Échec ajout warn'}`);
-        }
+        setTimeout(() => { btnText.textContent = 'COPIER LES LOGS'; }, 2000);
       } catch {
-        alert('Erreur réseau');
+        const ta = document.createElement('textarea');
+        ta.value = textToCopy;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btnText.textContent = 'COPIÉ !';
+        setTimeout(() => { btnText.textContent = 'COPIER LES LOGS'; }, 2000);
       }
     });
 
-    async function deleteMemberWarns(target) {
-      if (!confirm(`Effacer TOUS les avertissements de ${target} ?`)) return;
-      try {
-        await apiFetch('api/warns/delete', { method: 'POST', body: JSON.stringify({ target }) });
-        fetchAllData();
-        closeModal('detailsWarnModal');
-      } catch {
-        alert('Erreur suppression');
-      }
-    }
-
-    function openMemberDetails(target) {
-      const user = allWarnsData.find((u) => u.number === target);
-      if (!user) return;
-
-      document.getElementById('modalDetailsTitle').textContent = `WARNS // ${user.pushName || ''} (+${user.number})`;
-      document.getElementById('modalDetailsSubtitle').textContent = `TOTAL : ${user.count} AVERTISSEMENT(S)`;
-
-      const listDiv = document.getElementById('modalDetailsList');
-      listDiv.innerHTML = user.warns.map((w, idx) => {
-        const dateStr = new Date(w.timestamp).toLocaleString('fr-FR');
-        return `
-          <div class="p-3 bg-noir-950 border border-noir-800 flex items-start justify-between gap-3 font-mono">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2 text-[10px]">
-                <span class="text-amber-400 font-bold">#${idx + 1}</span>
-                <span class="text-slate-500">[${dateStr}]</span>
-                <span class="text-slate-400">${w.groupName || 'Taverne'}</span>
-              </div>
-              <div class="text-white font-sans text-xs">"${escapeHtml(w.reason)}"</div>
-              <div class="text-[10px] text-slate-500">Par : ${w.admin || 'Admin'}</div>
-            </div>
-            <button onclick="deleteSingleWarn('${user.number}', '${w.id}')" title="Supprimer cet avertissement" class="text-red-400 hover:text-red-300 text-xs px-1">
-              ✕
-            </button>
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('modalDetailsResetAllBtn').onclick = () => deleteMemberWarns(user.number);
-      openModal('detailsWarnModal');
-    }
-
-    async function deleteSingleWarn(target, warnId) {
-      if (!confirm('Supprimer cet avertissement précis ?')) return;
-      try {
-        await apiFetch('api/warns/delete', { method: 'POST', body: JSON.stringify({ target, warnId }) });
-        fetchAllData();
-        openMemberDetails(target);
-      } catch {}
-    }
-
-    // Scan Taverne
-    document.getElementById('btnScanTaverne').addEventListener('click', async () => {
-      const btn = document.getElementById('btnScanTaverne');
-      btn.textContent = 'SCAN EN COURS...';
-      btn.disabled = true;
-      try {
-        const res = await apiFetch('api/warns/scan', { method: 'POST' });
-        const data = await res.json();
-        alert(`Scan terminé : ${data.resolvedCount} membres identifiés (${data.appliedWarns} warns synchronisés).`);
-        fetchAllData();
-      } catch {
-        alert('Erreur scan Taverne');
-      } finally {
-        btn.textContent = 'SCAN TAVERNE';
-        btn.disabled = false;
-      }
+    document.getElementById('btnClearLogs')?.addEventListener('click', () => {
+      rawLogsList = [];
+      renderLogs();
     });
 
-    // Restart PM2
-    document.getElementById('btnRestartBot').addEventListener('click', async () => {
-      if (!confirm('Confirmez-vous le redémarrage PM2 de ZyBot ?')) return;
+    document.getElementById('btnRestartBot')?.addEventListener('click', async () => {
+      if (!confirm('Voulez-vous redémarrer le bot ZyBot sous PM2 ?')) return;
       try {
         await apiFetch('api/bot/restart', { method: 'POST' });
         alert('Redémarrage en cours...');
-      } catch {}
-    });
-
-    // Générer un nouveau QR Code / Réinitialiser la session WhatsApp
-    document.getElementById('btnReauth').addEventListener('click', async () => {
-      const btn = document.getElementById('btnReauth');
-      btn.textContent = 'RÉINITIALISATION...';
-      btn.disabled = true;
-      try {
-        await apiFetch('api/bot/reauth', { method: 'POST' });
-        setTimeout(() => {
-          fetchAllData();
-          btn.textContent = '🔄 GÉNÉRER UN NOUVEAU QR';
-          btn.disabled = false;
-        }, 2000);
-      } catch {
-        btn.textContent = '🔄 GÉNÉRER UN NOUVEAU QR';
-        btn.disabled = false;
+      } catch (err) {
+        alert(err.message);
       }
     });
 
-    function copyText(str, el) {
-      navigator.clipboard.writeText(str).then(() => {
-        const prev = el.textContent;
-        el.textContent = '✓';
-        setTimeout(() => { el.textContent = prev; }, 1200);
+    document.getElementById('btnReauth')?.addEventListener('click', async () => {
+      if (!confirm('Générer une nouvelle session WhatsApp ?')) return;
+      try {
+        await apiFetch('api/bot/reauth', { method: 'POST' });
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // ══════════════════════════════════════════════════════════
+    // GESTION DES MODALES
+    // ══════════════════════════════════════════════════════════
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function setupEvents() {
+      // Modale Ajout Warn
+      document.getElementById('btnOpenAddWarnModal')?.addEventListener('click', () => {
+        document.getElementById('addWarnModal').classList.remove('hidden');
+        document.getElementById('modalWarnTarget').focus();
       });
+
+      document.getElementById('addWarnForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const target = document.getElementById('modalWarnTarget').value.trim();
+        const pushName = document.getElementById('modalWarnPseudo').value.trim();
+        const reason = document.getElementById('modalWarnReason').value.trim();
+        const admin = document.getElementById('modalWarnAdmin').value.trim();
+
+        try {
+          const res = await apiFetch('api/warns/add', {
+            method: 'POST',
+            body: JSON.stringify({ target, pushName, reason, admin })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            closeModal('addWarnModal');
+            document.getElementById('addWarnForm').reset();
+            await updateWarns();
+          } else {
+            alert(data.error || 'Erreur lors de l\'ajout du warn.');
+          }
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      // Modale Ajout Permission
+      document.getElementById('btnOpenAddPermModal')?.addEventListener('click', () => {
+        document.getElementById('addPermModal').classList.remove('hidden');
+        document.getElementById('modalPermTarget').focus();
+      });
+
+      document.getElementById('addPermForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const action = document.getElementById('modalPermAction').value;
+        const target = document.getElementById('modalPermTarget').value.trim();
+        const name = document.getElementById('modalPermName').value.trim();
+
+        const endpoint = action === 'trust' ? 'api/permissions/trust' : 'api/permissions/untrust';
+
+        try {
+          const res = await apiFetch(endpoint, {
+            method: 'POST',
+            body: JSON.stringify({ target, name })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            closeModal('addPermModal');
+            document.getElementById('addPermForm').reset();
+            await updatePermissions();
+          } else {
+            alert(data.error || 'Erreur lors de la modification des permissions.');
+          }
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      // Scan Taverne
+      document.getElementById('btnScanTaverne')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btnScanTaverne');
+        btn.textContent = 'SCAN EN COURS...';
+        btn.disabled = true;
+
+        try {
+          const res = await apiFetch('api/warns/scan-taverne', { method: 'POST' });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            alert(`Scan terminé avec succès !\n• Cibles historiques : ${data.targetsCount}\n• Résolus : ${data.resolvedCount}\n• Introuvables : ${data.notFoundCount}`);
+            await updateWarns();
+          } else {
+            alert(data.error || 'Erreur scan taverne');
+          }
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          btn.textContent = 'SCAN TAVERNE';
+          btn.disabled = false;
+        }
+      });
+    }
+
+    // Détails & Suppression Warn
+    async function openMemberDetails(targetNumber) {
+      const user = allWarnsData.find(u => u.number === targetNumber);
+      if (!user) return;
+
+      document.getElementById('modalDetailsTitle').textContent = user.pushName ? `CASIER : ${user.pushName}` : `CASIER : +${user.number}`;
+      document.getElementById('modalDetailsSubtitle').textContent = `IDENTIFIANT : ${user.number} • TOTAL : ${user.count} AVERTISSEMENT(S)`;
+
+      const listDiv = document.getElementById('modalDetailsList');
+      if (!user.warns || !user.warns.length) {
+        listDiv.innerHTML = '<div class="text-slate-600 text-center py-4">Aucun avertissement actif.</div>';
+      } else {
+        listDiv.innerHTML = user.warns.map((w, idx) => `
+          <div class="p-3 bg-noir-950 border border-noir-800 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-amber-400 font-bold">AVERTISSEMENT #${idx + 1}</span>
+              <span class="text-slate-500 font-mono text-[10px]">${new Date(w.timestamp).toLocaleString('fr-FR')}</span>
+            </div>
+            <div class="text-white text-xs font-sans">"${escapeHtml(w.reason || 'Non spécifié')}"</div>
+            <div class="text-[10px] text-slate-500 flex items-center justify-between pt-1">
+              <span>Admin : ${escapeHtml(w.admin || 'Système')}</span>
+              <button onclick="deleteSingleWarnRecord('${user.number}', ${w.timestamp})" class="text-red-400 hover:text-red-300 uppercase">
+                Supprimer ce warn ✕
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('modalDetailsResetAllBtn').onclick = () => {
+        deleteMemberWarns(user.number);
+      };
+
+      document.getElementById('detailsWarnModal').classList.remove('hidden');
+    }
+
+    async function deleteSingleWarnRecord(targetNumber, timestamp) {
+      if (!confirm('Supprimer cet avertissement spécifique ?')) return;
+      try {
+        await apiFetch('api/warns/delete-single', {
+          method: 'POST',
+          body: JSON.stringify({ target: targetNumber, timestamp })
+        });
+        await updateWarns();
+        openMemberDetails(targetNumber);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteMemberWarns(targetNumber) {
+      if (!confirm(`Supprimer tous les avertissements de ${targetNumber} ?`)) return;
+      try {
+        await apiFetch(`api/warns/clear/${targetNumber}`, { method: 'DELETE' });
+        closeModal('detailsWarnModal');
+        await updateWarns();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function copyText(txt, btn) {
+      navigator.clipboard.writeText(txt);
+      const orig = btn.textContent;
+      btn.textContent = '✓';
+      setTimeout(() => { btn.textContent = orig; }, 1500);
     }
 
     function escapeHtml(str) {
@@ -950,8 +1331,6 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
-
-    function setupEvents() {}
   </script>
 </body>
 </html>

@@ -12,6 +12,7 @@ import { getCachedGroupMetadata } from '../utils/groupCache.js';
 import { recordGroupMessage } from '../services/groupActivityStore.js';
 import { checkAndTrackPseudo } from '../services/contactStore.js';
 import { handlePseudoChange } from '../services/groupEvents.js';
+import { canUserExecuteCommand } from '../services/permissionStore.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -199,24 +200,20 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
             continue;
           }
 
-          // 2. Les administrateurs de groupe ont accès aux commandes de modération (adminOnly)
-          if (command.adminOnly && jid.endsWith('@g.us')) {
-            const senderJid = msg.key.participant || msg.key.remoteJid;
-            let isGroupAdmin = false;
-            try {
-              const meta = await getCachedGroupMetadata(sock, jid);
-              const senderClean = senderJid ? senderJid.split('@')[0].split(':')[0] : '';
-              const participant = meta?.participants?.find((p) => p.id.split('@')[0].split(':')[0] === senderClean);
-              isGroupAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin';
-            } catch (err) {
-              console.warn('[AdminCheck] Erreur vérification admin:', err.message);
-            }
+          // 2. Vérification des permissions pour les membres délégués / modérateurs (Trusted ou Admins Taverne)
+          const senderJid = msg.key.participant || msg.key.remoteJid;
+          const isPermitted = await canUserExecuteCommand({
+            sock,
+            senderJid,
+            commandName,
+            groupJid: jid,
+            isOwner: false
+          });
 
-            if (isGroupAdmin) {
-              console.log(`[Commande] Exécution de la commande admin ${prefix}${commandName} par un admin de groupe (+${senderJid.split('@')[0]})`);
-              await command.execute({ sock, msg, jid, args, restartClient, isOwner: false, isAdmin: true });
-              continue;
-            }
+          if (isPermitted) {
+            console.log(`[Commande] Exécution de ${prefix}${commandName} par un membre autorisé (+${senderJid.split('@')[0]})`);
+            await command.execute({ sock, msg, jid, args, restartClient, isOwner: false, isAdmin: true });
+            continue;
           }
         }
       }

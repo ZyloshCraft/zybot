@@ -16,13 +16,13 @@ import { getCachedGroupMetadata, invalidateGroupMetadataCache } from '../src/uti
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 33 commandes actives et de la version v1.27
+// Test 1: Vérification des 34 commandes actives et de la version v1.27
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'vv', 'reboot', 'edit', 'calc',
   'meteo', 'id', 'groupe', 'alias', 'temp', 'recap', 'ntfy', 'update',
   'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
-  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top'
+  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top', 'trust'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -49,6 +49,9 @@ assert.ok(getCommand('avatar'), 'L\'alias "avatar" pour pfp doit exister');
 assert.ok(getCommand('classement'), 'L\'alias "classement" pour top doit exister');
 assert.ok(getCommand('leaderboard'), 'L\'alias "leaderboard" pour top doit exister');
 assert.ok(getCommand('activite'), 'L\'alias "activite" pour top doit exister');
+assert.ok(getCommand('trusted'), 'L\'alias "trusted" pour trust doit exister');
+assert.ok(getCommand('untrust'), 'L\'alias "untrust" pour trust doit exister');
+assert.ok(getCommand('perms'), 'L\'alias "perms" pour trust doit exister');
 
 // Vérification stricte des commandes supprimées
 assert.strictEqual(getCommand('rappel'), undefined, 'rappel doit être supprimé');
@@ -60,7 +63,7 @@ assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé
 
 const currentVersion = getBotVersion();
 assert.ok(currentVersion.includes('1.27'), `La version doit être v1.27 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 33 commandes actives enregistrées, version ${currentVersion} validée.`);
+console.log(`✅ Test 1 réussi : 34 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -287,5 +290,38 @@ assert.ok(pseudoChange, 'Le changement de pseudo doit être détecté');
 assert.strictEqual(pseudoChange.oldName, 'AncienPseudo');
 assert.strictEqual(pseudoChange.newName, 'NouveauPseudo');
 console.log('✅ Test 15 réussi : Traqueur d\'activité de groupe (/top) et détection des changements de pseudo validés.');
+
+// Test 16: Système de permissions (/trust, /untrust) et validation des droits
+const { addTrustedUser, isUserTrusted, removeTrustedUser, revokeUser, isUserRevoked, unrevokeUser, canUserExecuteCommand } = await import('../src/services/permissionStore.js');
+
+addTrustedUser({ target: '33688990011', name: 'TrustedUser' });
+assert.strictEqual(isUserTrusted('33688990011'), true, 'L\'utilisateur doit être reconnu comme trusted');
+
+revokeUser({ target: '33677889900', name: 'RevokedUser' });
+assert.strictEqual(isUserRevoked('33677889900'), true, 'L\'utilisateur doit être reconnu comme révoqué');
+
+// Vérification de canUserExecuteCommand
+const allowedTrusted = await canUserExecuteCommand({
+  sock: null,
+  senderJid: '33688990011@s.whatsapp.net',
+  commandName: 'warn',
+  groupJid: '120363424594930135@g.us',
+  isOwner: false
+});
+assert.strictEqual(allowedTrusted, true, 'Un membre trusted doit pouvoir exécuter /warn');
+
+const deniedRevoked = await canUserExecuteCommand({
+  sock: null,
+  senderJid: '33677889900@s.whatsapp.net',
+  commandName: 'warn',
+  groupJid: '120363424594930135@g.us',
+  isOwner: false
+});
+assert.strictEqual(deniedRevoked, false, 'Un membre révoqué NE doit PAS pouvoir exécuter /warn');
+
+removeTrustedUser('33688990011');
+unrevokeUser('33677889900');
+assert.strictEqual(isUserTrusted('33688990011'), false, 'Après suppression, l\'utilisateur ne doit plus être trusted');
+console.log('✅ Test 16 réussi : Système de permissions (/trust, /untrust, révocation) validé.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

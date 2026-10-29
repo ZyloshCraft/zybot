@@ -31,6 +31,7 @@ import musicCmd from './music.js';
 import toimgCmd from './toimg.js';
 import pfpCmd from './pfp.js';
 import topCmd from './top.js';
+import trustCmd from './trust.js';
 
 const commands = new Map();
 
@@ -76,6 +77,7 @@ registerCommand(musicCmd);
 registerCommand(toimgCmd);
 registerCommand(pfpCmd);
 registerCommand(topCmd);
+registerCommand(trustCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

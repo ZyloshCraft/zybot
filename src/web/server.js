@@ -11,6 +11,13 @@ import { getAllWarnedUsers, getWarns, addWarn, clearWarns, deleteSingleWarn } fr
 import { getAllContacts } from '../services/contactStore.js';
 import { HISTORIC_TARGETS, resolveHistoricMembers, applyHistoricWarns } from '../services/warnResolver.js';
 import { getAllGroupsActivity } from '../services/groupActivityStore.js';
+import {
+  getAllPermissions,
+  addTrustedUser,
+  removeTrustedUser,
+  revokeUser,
+  unrevokeUser
+} from '../services/permissionStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -228,6 +235,23 @@ export function startWebServer() {
         });
       }
 
+      // 4. GET /api/public/warns : Consultation publique anonymisée (pseudo & nb de warns uniquement)
+      if (pathname === '/api/public/warns' && method === 'GET') {
+        const users = getAllWarnedUsers();
+        const publicList = users.map((u) => {
+          const count = u.count || 0;
+          let status = `${count} avertissement${count > 1 ? 's' : ''}`;
+          if (count >= 3) status = 'BAN';
+          return {
+            pseudo: u.pushName || 'Membre Taverne',
+            count,
+            status
+          };
+        });
+        publicList.sort((a, b) => b.count - a.count);
+        return sendJson(res, 200, { success: true, count: publicList.length, users: publicList });
+      }
+
       // ══════════════════════════════════════════════
       // VÉRIFICATION D'AUTHENTIFICATION SUR TOUTES LES AUTRES ROUTES API
       // ══════════════════════════════════════════════
@@ -282,6 +306,40 @@ export function startWebServer() {
       if (pathname === '/api/groups/activity' && method === 'GET') {
         const groups = getAllGroupsActivity();
         return sendJson(res, 200, { success: true, count: groups.length, groups });
+      }
+
+      // GET /api/permissions : Liste des membres autorisés et révoqués
+      if (pathname === '/api/permissions' && method === 'GET') {
+        const perms = getAllPermissions();
+        return sendJson(res, 200, { success: true, ...perms });
+      }
+
+      // POST /api/permissions/trust : Accorder la permission
+      if (pathname === '/api/permissions/trust' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { target, name } = body;
+        if (!target) return sendJson(res, 400, { error: 'Cible requise.' });
+        const ok = addTrustedUser({ target, name });
+        return sendJson(res, 200, { success: ok });
+      }
+
+      // POST /api/permissions/untrust : Révoquer l'accès
+      if (pathname === '/api/permissions/untrust' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { target, name } = body;
+        if (!target) return sendJson(res, 400, { error: 'Cible requise.' });
+        const ok = revokeUser({ target, name });
+        return sendJson(res, 200, { success: ok });
+      }
+
+      // POST /api/permissions/remove : Supprimer des listes
+      if (pathname === '/api/permissions/remove' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { target } = body;
+        if (!target) return sendJson(res, 400, { error: 'Cible requise.' });
+        removeTrustedUser(target);
+        unrevokeUser(target);
+        return sendJson(res, 200, { success: true });
       }
 
       // GET /api/warns : Liste complète de tous les avertissements
