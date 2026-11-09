@@ -380,23 +380,43 @@ export function startWebServer() {
         return sendJson(res, 200, { success: true, user: cleanNumber, warns: updated });
       }
 
-      // POST /api/warns/delete : Supprimer un ou tous les avertissements d'un membre
-      if (pathname === '/api/warns/delete' && method === 'POST') {
+      // POST /api/warns/delete & POST /api/warns/delete-single : Supprimer un ou tous les avertissements d'un membre
+      if ((pathname === '/api/warns/delete' || pathname === '/api/warns/delete-single') && method === 'POST') {
         const body = await parseJsonBody(req);
-        const { target, warnId } = body;
+        const { target, warnId, timestamp } = body;
 
         if (!target) {
           return sendJson(res, 400, { error: 'Cible requise.' });
         }
 
         const cleanNumber = target.replace(/[^0-9]/g, '');
-        if (warnId) {
-          const removed = deleteSingleWarn(cleanNumber, warnId);
+        const idToDelete = warnId || timestamp;
+
+        if (idToDelete) {
+          const removed = deleteSingleWarn(cleanNumber, idToDelete);
           return sendJson(res, 200, { success: true, removedSingle: removed });
         } else {
           const deletedCount = clearWarns(cleanNumber);
           return sendJson(res, 200, { success: true, deletedCount });
         }
+      }
+
+      // DELETE ou POST /api/warns/clear /api/warns/clear/:target
+      if (
+        (pathname.startsWith('/api/warns/clear') || pathname.startsWith('/api/warns/delete/')) &&
+        (method === 'DELETE' || method === 'POST')
+      ) {
+        let target = pathname.split('/').pop();
+        if (target === 'clear' || !target) {
+          const body = await parseJsonBody(req);
+          target = body.target;
+        }
+        if (!target) {
+          return sendJson(res, 400, { error: 'Cible requise.' });
+        }
+        const cleanNumber = target.replace(/[^0-9]/g, '');
+        const deletedCount = clearWarns(cleanNumber);
+        return sendJson(res, 200, { success: true, deletedCount });
       }
 
       // GET /api/warns/historic : Liste des 60 membres historiques et statut de résolution
@@ -517,6 +537,11 @@ export function startWebServer() {
       // ══════════════════════════════════════════════
       // DISTRIBUTION DES FICHIERS STATIQUES (UI WEB)
       // ══════════════════════════════════════════════
+
+      // Sécurité : Ne jamais servir index.html pour une route /api/ non reconnue
+      if (pathname.startsWith('/api/')) {
+        return sendJson(res, 404, { error: `Route API introuvable : ${method} ${pathname}` });
+      }
 
       let filePath = path.join(PUBLIC_DIR, pathname === '/' ? 'index.html' : pathname);
 

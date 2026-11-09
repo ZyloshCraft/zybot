@@ -131,7 +131,7 @@ export function deleteSingleWarn(userNumber, warnId) {
 
   const list = inMemoryWarns.get(cleanNumber);
   const initialLength = list.length;
-  const filtered = list.filter((w) => w.id !== warnId);
+  const filtered = list.filter((w) => w.id !== warnId && String(w.timestamp) !== String(warnId));
 
   if (filtered.length === 0) {
     inMemoryWarns.delete(cleanNumber);

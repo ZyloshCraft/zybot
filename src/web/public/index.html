@@ -596,6 +596,32 @@
   </div>
 
   <!-- ======================================================== -->
+  <!-- MODALE : CONFIRMATION INTÉGRÉE (PAS DE POPUP BROWSER)    -->
+  <!-- ======================================================== -->
+  <div id="confirmModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4 bg-black/85">
+    <div class="w-full max-w-sm bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
+        <span class="font-bold uppercase tracking-wider text-white" id="confirmModalTitle">CONFIRMATION</span>
+        <button id="confirmModalCloseBtn" class="text-slate-500 hover:text-white px-2">✕</button>
+      </div>
+      <div class="text-xs text-slate-300 font-sans leading-relaxed" id="confirmModalMessage">
+        Confirmer cette action ?
+      </div>
+      <div class="pt-3 border-t border-noir-800 flex items-center justify-end gap-2 font-mono">
+        <button id="confirmModalCancelBtn" class="px-3 py-1.5 border border-noir-700 hover:border-slate-500 text-slate-300 hover:text-white uppercase text-[10px] font-medium transition-colors">
+          Annuler
+        </button>
+        <button id="confirmModalOkBtn" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold uppercase text-[10px] tracking-wider transition-colors">
+          Confirmer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION INTÉGRÉ -->
+  <div id="toastNotification" class="hidden fixed top-4 right-4 z-[80] px-4 py-2.5 border font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-2xl"></div>
+
+  <!-- ======================================================== -->
   <!-- JAVASCRIPT TEMPS RÉEL (VUE PUBLIQUE + PANEL ADMIN)       -->
   <!-- ======================================================== -->
   <script>
@@ -621,6 +647,70 @@
         throw new Error('Non authentifié');
       }
       return res;
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // SYSTÈME DE MODALE DE CONFIRMATION ET TOASTS INTÉGRÉS
+    // ══════════════════════════════════════════════════════════
+    let confirmModalResolver = null;
+
+    function showConfirmModal({ title = 'CONFIRMATION', message = 'Confirmer cette action ?', confirmText = 'CONFIRMER', danger = false }) {
+      return new Promise((resolve) => {
+        confirmModalResolver = resolve;
+        const modal = document.getElementById('confirmModal');
+        document.getElementById('confirmModalTitle').textContent = title;
+        document.getElementById('confirmModalMessage').textContent = message;
+        const okBtn = document.getElementById('confirmModalOkBtn');
+        okBtn.textContent = confirmText;
+        if (danger) {
+          okBtn.className = 'px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold uppercase text-[10px] tracking-wider transition-colors';
+        } else {
+          okBtn.className = 'px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-[10px] tracking-wider transition-colors';
+        }
+        modal.classList.remove('hidden');
+      });
+    }
+
+    function closeConfirmModal(result = false) {
+      const modal = document.getElementById('confirmModal');
+      if (modal) modal.classList.add('hidden');
+      if (confirmModalResolver) {
+        confirmModalResolver(result);
+        confirmModalResolver = null;
+      }
+    }
+
+    document.getElementById('confirmModalOkBtn')?.addEventListener('click', () => closeConfirmModal(true));
+    document.getElementById('confirmModalCancelBtn')?.addEventListener('click', () => closeConfirmModal(false));
+    document.getElementById('confirmModalCloseBtn')?.addEventListener('click', () => closeConfirmModal(false));
+    document.getElementById('confirmModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'confirmModal') closeConfirmModal(false);
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('confirmModal');
+        if (modal && !modal.classList.contains('hidden')) {
+          closeConfirmModal(false);
+        }
+      }
+    });
+
+    let toastTimer = null;
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      if (!toast) return;
+      if (toastTimer) clearTimeout(toastTimer);
+
+      toast.textContent = message;
+      if (type === 'error') {
+        toast.className = 'fixed top-4 right-4 z-[80] px-4 py-2.5 border border-red-500 bg-noir-900 text-red-400 font-mono text-xs uppercase tracking-wider shadow-2xl transition-all duration-300';
+      } else {
+        toast.className = 'fixed top-4 right-4 z-[80] px-4 py-2.5 border border-emerald-500 bg-noir-900 text-emerald-400 font-mono text-xs uppercase tracking-wider shadow-2xl transition-all duration-300';
+      }
+      toast.classList.remove('hidden');
+      toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
     }
 
     function showPublic() {
@@ -961,15 +1051,23 @@
     }
 
     async function removePermission(target) {
-      if (!confirm(`Supprimer les permissions pour ${target} ?`)) return;
+      const ok = await showConfirmModal({
+        title: 'RÉVOQUER PERMISSION',
+        message: `Supprimer les autorisations/restrictions pour ${target} ?`,
+        confirmText: 'SUPPRIMER ✕',
+        danger: true
+      });
+      if (!ok) return;
+
       try {
         await apiFetch('api/permissions/remove', {
           method: 'POST',
           body: JSON.stringify({ target })
         });
+        showToast('Permission mise à jour.');
         await updatePermissions();
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
@@ -1141,21 +1239,36 @@
     });
 
     document.getElementById('btnRestartBot')?.addEventListener('click', async () => {
-      if (!confirm('Voulez-vous redémarrer le bot ZyBot sous PM2 ?')) return;
+      const ok = await showConfirmModal({
+        title: 'REDÉMARRAGE DU BOT',
+        message: 'Redémarrer le processus ZyBot en arrière-plan ?',
+        confirmText: 'REDÉMARRER ⚡',
+        danger: true
+      });
+      if (!ok) return;
+
       try {
         await apiFetch('api/bot/restart', { method: 'POST' });
-        alert('Redémarrage en cours...');
+        showToast('Redémarrage en cours...');
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     });
 
     document.getElementById('btnReauth')?.addEventListener('click', async () => {
-      if (!confirm('Générer une nouvelle session WhatsApp ?')) return;
+      const ok = await showConfirmModal({
+        title: 'NOUVELLE SESSION',
+        message: 'Supprimer la session et régénérer un nouveau QR Code WhatsApp ?',
+        confirmText: 'RÉINITIALISER ⚡',
+        danger: true
+      });
+      if (!ok) return;
+
       try {
         await apiFetch('api/bot/reauth', { method: 'POST' });
+        showToast('Nouvelle session demandée.');
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     });
 
@@ -1275,7 +1388,7 @@
             <div class="text-white text-xs font-sans">"${escapeHtml(w.reason || 'Non spécifié')}"</div>
             <div class="text-[10px] text-slate-500 flex items-center justify-between pt-1">
               <span>Admin : ${escapeHtml(w.admin || 'Système')}</span>
-              <button onclick="deleteSingleWarnRecord('${user.number}', ${w.timestamp})" class="text-red-400 hover:text-red-300 uppercase">
+              <button onclick="deleteSingleWarnRecord('${user.number}', '${w.id || w.timestamp}')" class="text-red-400 hover:text-red-300 uppercase">
                 Supprimer ce warn ✕
               </button>
             </div>
@@ -1290,28 +1403,63 @@
       document.getElementById('detailsWarnModal').classList.remove('hidden');
     }
 
-    async function deleteSingleWarnRecord(targetNumber, timestamp) {
-      if (!confirm('Supprimer cet avertissement spécifique ?')) return;
+    async function deleteSingleWarnRecord(targetNumber, warnIdentifier) {
+      const ok = await showConfirmModal({
+        title: 'SUPPRIMER LE WARN',
+        message: `Supprimer cet avertissement spécifique pour ${targetNumber} ?`,
+        confirmText: 'SUPPRIMER ✕',
+        danger: true
+      });
+      if (!ok) return;
+
       try {
-        await apiFetch('api/warns/delete-single', {
+        const res = await apiFetch('api/warns/delete', {
           method: 'POST',
-          body: JSON.stringify({ target: targetNumber, timestamp })
+          body: JSON.stringify({
+            target: targetNumber,
+            warnId: String(warnIdentifier),
+            timestamp: warnIdentifier
+          })
         });
-        await updateWarns();
-        openMemberDetails(targetNumber);
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('Avertissement supprimé.');
+          await updateWarns();
+          const updatedUser = allWarnsData.find(u => u.number === targetNumber);
+          if (updatedUser && updatedUser.warns && updatedUser.warns.length > 0) {
+            openMemberDetails(targetNumber);
+          } else {
+            closeModal('detailsWarnModal');
+          }
+        } else {
+          showToast(data.error || 'Erreur lors de la suppression.', 'error');
+        }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
     async function deleteMemberWarns(targetNumber) {
-      if (!confirm(`Supprimer tous les avertissements de ${targetNumber} ?`)) return;
+      const ok = await showConfirmModal({
+        title: 'EFFACER TOUS LES WARNS',
+        message: `Voulez-vous vraiment effacer la totalité des avertissements de ${targetNumber} ?`,
+        confirmText: 'TOUT EFFACER ✕',
+        danger: true
+      });
+      if (!ok) return;
+
       try {
-        await apiFetch(`api/warns/clear/${targetNumber}`, { method: 'DELETE' });
-        closeModal('detailsWarnModal');
-        await updateWarns();
+        const res = await apiFetch(`api/warns/clear/${targetNumber}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('Casier entièrement réinitialisé.');
+          closeModal('detailsWarnModal');
+          await updateWarns();
+        } else {
+          showToast(data.error || 'Erreur lors de la réinitialisation.', 'error');
+        }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
