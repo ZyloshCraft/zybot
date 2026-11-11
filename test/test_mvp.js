@@ -26,13 +26,13 @@ import {
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 35 commandes actives et de la version v1.28
+// Test 1: Vérification des 36 commandes actives et de la version v1.28
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'vv', 'reboot', 'edit', 'calc',
   'meteo', 'id', 'groupe', 'alias', 'temp', 'recap', 'ntfy', 'update',
   'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
-  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top', 'trust', 'gw'
+  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top', 'trust', 'gw', 'bref'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -48,6 +48,7 @@ assert.ok(getCommand('telecharger'), 'L\'alias "telecharger" pour dl doit existe
 assert.ok(getCommand('av'), 'L\'alias "av" pour warn doit exister');
 assert.ok(getCommand('aliases'), 'L\'alias "aliases" pour alias doit exister');
 assert.ok(getCommand('summary'), 'L\'alias "summary" pour resume doit exister');
+assert.ok(getCommand('tldr'), 'L\'alias "tldr" pour bref doit exister');
 assert.ok(getCommand('nsfw'), 'L\'alias "nsfw" pour antinsfw doit exister');
 assert.ok(getCommand('mp3'), 'L\'alias "mp3" pour music doit exister');
 assert.ok(getCommand('song'), 'L\'alias "song" pour music doit exister');
@@ -74,7 +75,7 @@ assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé
 
 const currentVersion = getBotVersion();
 assert.ok(currentVersion.includes('1.28'), `La version doit être v1.28 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 35 commandes actives enregistrées, version ${currentVersion} validée.`);
+console.log(`✅ Test 1 réussi : 36 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -510,5 +511,30 @@ assert.ok(banGroupMsg, 'Le message d expulsion doit être envoyé dans le groupe
 clearMemberAntiRaid(testGroup, newMember);
 
 console.log('✅ Test 18 réussi : Protection Anti-Raid / Anti-Lien (< 10 min, mentions, 5 avertissements, ban) validée.');
+
+// Test 19: Commande /bref (résumé express de pavés et messages)
+const brefCmd = getCommand('bref');
+assert.ok(brefCmd, 'La commande bref doit être disponible');
+
+// 1. Test message trop court (pas besoin d appel IA)
+let brefSent = null;
+const brefMockSock = {
+  user: { id: '33766337937:1@s.whatsapp.net' },
+  sendMessage: async (dest, content) => {
+    brefSent = { dest, content };
+  }
+};
+
+await brefCmd.execute({
+  sock: brefMockSock,
+  msg: { key: { remoteJid: '33612345678@s.whatsapp.net', fromMe: false } },
+  jid: '33612345678@s.whatsapp.net',
+  args: ['Salut ca va ?']
+});
+
+assert.ok(brefSent, 'Un message doit être envoyé pour le texte court');
+assert.ok(brefSent.content.text.includes('déjà très court'), 'Le message doit indiquer qu il est déjà très court');
+
+console.log('✅ Test 19 réussi : Commande /bref et alias /tldr validés.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

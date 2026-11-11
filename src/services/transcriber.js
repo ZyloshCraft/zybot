@@ -51,7 +51,7 @@ export async function convertOggToWav(audioBuffer) {
 /**
  * Récupère les clés API configurées (depuis config.json ou les fichiers .env possibles)
  */
-function getSpeechKeys() {
+export function getSpeechKeys() {
   const possiblePaths = [
     path.resolve(process.cwd(), '.env'),
     path.resolve(os.homedir(), '.env'),
@@ -153,4 +153,74 @@ export async function transcribeAudioFile(wavPath) {
   throw new Error(
     'Pour activer la transcription vocale instantanée, ajoutez votre clé gratuite Groq (Whisper) ou Gemini dans config.json ("speech": { "groqApiKey": "..." }).'
   );
+}
+
+/**
+ * Résume un message ou un texte vocal en 1 à 2 phrases directes et naturelles
+ * @param {string} text - Contenu à résumer
+ * @returns {Promise<string>}
+ */
+export async function summarizeBriefly(text) {
+  if (!text || typeof text !== 'string' || text.trim().length === 0) {
+    throw new Error('Aucun texte à résumer.');
+  }
+
+  const cleanText = text.trim();
+  if (cleanText.length < 25) {
+    return cleanText;
+  }
+
+  const { groqKey, geminiKey } = getSpeechKeys();
+  const prompt = `Voici un message (ou la transcription d'une note vocale) reçu sur WhatsApp :\n"""\n${cleanText}\n"""\n\nRésume en 1 à 2 phrases directes et naturelles en français ce que la personne veut, demande ou dit d'important. Reste très concis, sans fioritures ni formule de politesse.`;
+
+  // 1. Tenter Groq (ultra-rapide, ~0.2s)
+  if (groqKey) {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 180,
+          temperature: 0.3
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const content = data.choices?.[0]?.message?.content?.trim();
+        if (content) return content;
+      }
+    } catch {}
+  }
+
+  // 2. Tenter Gemini
+  if (geminiKey) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            maxOutputTokens: 180,
+            temperature: 0.3
+          }
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (content) return content;
+      }
+    } catch {}
+  }
+
+  throw new Error('Pour utiliser /bref, ajoutez une clé gratuite Groq ou Gemini dans config.json ("speech": { "groqApiKey": "..." ou "geminiApiKey": "..." }).');
 }

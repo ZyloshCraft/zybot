@@ -33,6 +33,7 @@ import pfpCmd from './pfp.js';
 import topCmd from './top.js';
 import trustCmd from './trust.js';
 import gwCmd from './gw.js';
+import brefCmd from './bref.js';
 
 const commands = new Map();
 
@@ -80,6 +81,7 @@ registerCommand(pfpCmd);
 registerCommand(topCmd);
 registerCommand(trustCmd);
 registerCommand(gwCmd);
+registerCommand(brefCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

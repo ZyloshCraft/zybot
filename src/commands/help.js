@@ -97,6 +97,7 @@ export default {
       `• ${p}dl <lien> : Télécharge une vidéo TikTok, Insta, Twitter, YouTube (avec progressbar)`,
       `• ${p}pfp [@membre|groupe] : Récupère la photo de profil en pleine résolution (alias: ${p}pp)`,
       `• ${p}texte : Transcrit une note vocale en texte (alias: ${p}transcrire)`,
+      `• ${p}bref : Résumé express en 1 phrase d'un pavé ou d'un long vocal (alias: ${p}tldr)`,
       `• ${p}resume [nb] : Résumé IA ultra-rapide des échanges (défaut 50, max 200)`,
       `• ${p}top [nb] : Classement des membres les plus actifs par messages envoyés`,
       `• ${p}gw [<lot> ; <durée>|end|reroll] : Tirage au sort, fin anticipée et reroll (alias: ${p}giveaway)`,
