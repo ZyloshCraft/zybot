@@ -56,6 +56,7 @@ export function isKeywordMatched(text, keyword, strict = true) {
  */
 export async function handleKeywordAlert({ sock, msg, jid, text }) {
   const config = getConfig();
+  if (config.notifications?.keywordAlerts === false) return;
   if (!config.alerts?.enabled || !config.alerts?.words?.length) {
     return;
   }

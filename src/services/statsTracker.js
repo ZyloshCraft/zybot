@@ -137,6 +137,7 @@ export function initDailyRecapScheduler(sock) {
       if (hours === 23 && minutes === 0 && !recapScheduledToday) {
         recapScheduledToday = true;
         const config = getConfig();
+        if (config.notifications?.dailyRecap === false) return;
         const target = config.hub?.systemNotifs;
         if (target && sock) {
           const stats = getTodayStats();

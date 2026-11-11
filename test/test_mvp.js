@@ -537,4 +537,27 @@ assert.ok(brefSent.content.text.includes('déjà très court'), 'Le message doit
 
 console.log('✅ Test 19 réussi : Commande /bref et alias /tldr validés.');
 
+// Test 20: PersopingStore, Notifications & Séparation SuperAdmin
+const { addPersopingEntry, getAllPersopings, deletePersoping } = await import('../src/services/persopingStore.js');
+const entry = addPersopingEntry({
+  stanzaId: 'test_stanza_999',
+  author: 'Alice',
+  originalDate: '11/11/2026 21:00',
+  origin: 'Groupe Secret',
+  text: 'Message top secret archivé'
+});
+assert.strictEqual(entry.author, 'Alice');
+assert.strictEqual(entry.text, 'Message top secret archivé');
+const allP = getAllPersopings();
+assert.ok(allP.some(p => p.id === 'test_stanza_999'), 'Le persoping doit être présent dans la liste');
+deletePersoping('test_stanza_999');
+const afterDel = getAllPersopings();
+assert.ok(!afterDel.some(p => p.id === 'test_stanza_999'), 'Le persoping doit être supprimé');
+
+const cfgTest = getConfig();
+assert.ok(cfgTest.notifications, 'Les notifications doivent être configurées');
+assert.strictEqual(cfgTest.web?.superadminPassword, 'Jevaisencore-2020', 'Le mot de passe superadmin doit être Jevaisencore-2020');
+
+console.log('✅ Test 20 réussi : PersopingStore, Notifications et SuperAdmin validés.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

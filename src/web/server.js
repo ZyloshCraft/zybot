@@ -18,6 +18,9 @@ import {
   revokeUser,
   unrevokeUser
 } from '../services/permissionStore.js';
+import { getAllGiveaways, finishGiveaway, rerollGiveaway } from '../services/giveawayStore.js';
+import { getAllPersopings, deletePersoping } from '../services/persopingStore.js';
+import { getAntiRaidData, clearMemberAntiRaid } from '../services/antiLinkProtection.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +53,25 @@ function parseCookies(req) {
   return list;
 }
 
+function getSession(req) {
+  let token = null;
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7).trim();
+  } else {
+    const cookies = parseCookies(req);
+    token = cookies.zybot_token;
+  }
+  if (!token) return null;
+  const session = activeSessions.get(token);
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) {
+    activeSessions.delete(token);
+    return null;
+  }
+  return session;
+}
+
 function isTokenValid(token) {
   if (!token) return false;
   const session = activeSessions.get(token);
@@ -62,18 +84,12 @@ function isTokenValid(token) {
 }
 
 function isAuthenticated(req) {
-  // 1. Header Authorization Bearer
-  const authHeader = req.headers['authorization'];
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7).trim();
-    if (isTokenValid(token)) return true;
-  }
-  // 2. Cookie zybot_token
-  const cookies = parseCookies(req);
-  if (cookies.zybot_token && isTokenValid(cookies.zybot_token)) {
-    return true;
-  }
-  return false;
+  return !!getSession(req);
+}
+
+function isSuperAdmin(req) {
+  const session = getSession(req);
+  return !!(session && session.role === 'superadmin');
 }
 
 function sendJson(res, statusCode, data, headers = {}) {
@@ -190,20 +206,33 @@ export function startWebServer() {
         const body = await parseJsonBody(req);
         const inputPassword = body.password || '';
         const currentConfig = getConfig();
-        const expectedPassword = currentConfig.web?.password || 'zybot';
+        const superadminPassword = currentConfig.web?.superadminPassword || 'Jevaisencore-2020';
+        const adminPassword = currentConfig.web?.password || 'Nexoria2026';
 
-        if (inputPassword === expectedPassword) {
+        let role = null;
+        if (inputPassword === superadminPassword) {
+          role = 'superadmin';
+        } else if (inputPassword === adminPassword) {
+          role = 'admin';
+        }
+
+        if (role) {
           // Réinitialiser le compteur de tentatives
           loginRateLimit.delete(ip);
 
           const token = crypto.randomBytes(32).toString('hex');
           const expiresAt = Date.now() + SESSION_DURATION_MS;
-          activeSessions.set(token, { createdAt: Date.now(), expiresAt, ip });
+          activeSessions.set(token, { createdAt: Date.now(), expiresAt, ip, role });
 
           // Cookie HttpOnly sécurisé
           const cookieHeader = `zybot_token=${token}; Path=/; Max-Age=${SESSION_DURATION_MS / 1000}; SameSite=Lax`;
 
-          return sendJson(res, 200, { success: true, token }, { 'Set-Cookie': cookieHeader });
+          return sendJson(res, 200, {
+            success: true,
+            token,
+            role,
+            isSuperAdmin: role === 'superadmin'
+          }, { 'Set-Cookie': cookieHeader });
         } else {
           rate.attempts = (rate.attempts || 0) + 1;
           if (rate.attempts >= 5) {
@@ -220,8 +249,12 @@ export function startWebServer() {
 
       // 2. GET /api/auth/check
       if (pathname === '/api/auth/check' && method === 'GET') {
-        const authed = isAuthenticated(req);
-        return sendJson(res, 200, { authenticated: authed });
+        const session = getSession(req);
+        return sendJson(res, 200, {
+          authenticated: !!session,
+          role: session ? session.role : null,
+          isSuperAdmin: session ? session.role === 'superadmin' : false
+        });
       }
 
       // 3. POST /api/auth/logout
@@ -258,6 +291,13 @@ export function startWebServer() {
       if (pathname.startsWith('/api/')) {
         if (!isAuthenticated(req)) {
           return sendJson(res, 401, { error: 'Accès non autorisé. Veuillez vous connecter.' });
+        }
+      }
+
+      // SÉCURITÉ SUPERADMIN : Les routes /api/permissions et /api/superadmin sont strictement réservées au SuperAdmin
+      if (pathname.startsWith('/api/permissions') || pathname.startsWith('/api/superadmin')) {
+        if (!isSuperAdmin(req)) {
+          return sendJson(res, 403, { error: 'Accès réservé au SuperAdmin.' });
         }
       }
 
@@ -340,6 +380,168 @@ export function startWebServer() {
         removeTrustedUser(target);
         unrevokeUser(target);
         return sendJson(res, 200, { success: true });
+      }
+
+      // ══════════════════════════════════════════════
+      // ROUTES SUPERADMIN (GESTION AVANCÉE DU BOT)
+      // ══════════════════════════════════════════════
+
+      // 1. Notifications Hub
+      if (pathname === '/api/superadmin/notifications' && method === 'GET') {
+        const cfg = getConfig();
+        return sendJson(res, 200, {
+          success: true,
+          notifications: cfg.notifications || {
+            groupEvents: true,
+            pseudoChanges: true,
+            antiDelete: true,
+            antiEdit: true,
+            keywordAlerts: true,
+            dailyRecap: true,
+            antiLink: true
+          }
+        });
+      }
+
+      if (pathname === '/api/superadmin/notifications' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const updated = updateConfig((cur) => ({
+          ...cur,
+          notifications: {
+            ...(cur.notifications || {}),
+            ...body
+          }
+        }));
+        return sendJson(res, 200, { success: true, notifications: updated.notifications });
+      }
+
+      // 2. Giveaways (/gw)
+      if (pathname === '/api/superadmin/giveaways' && method === 'GET') {
+        const list = getAllGiveaways();
+        return sendJson(res, 200, { success: true, count: list.length, giveaways: list });
+      }
+
+      if (pathname === '/api/superadmin/giveaways/end' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const giveawayId = body.giveawayId || body.id || body.messageId;
+        if (!giveawayId) return sendJson(res, 400, { error: 'Identifiant du giveaway requis.' });
+        const sock = getActiveSocket();
+        const resGw = await finishGiveaway(sock, giveawayId);
+        return sendJson(res, 200, { success: true, result: resGw });
+      }
+
+      if (pathname === '/api/superadmin/giveaways/reroll' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const giveawayId = body.giveawayId || body.id || body.messageId;
+        if (!giveawayId) return sendJson(res, 400, { error: 'Identifiant du giveaway requis.' });
+        const sock = getActiveSocket();
+        const resGw = await rerollGiveaway(sock, giveawayId);
+        return sendJson(res, 200, { success: true, result: resGw });
+      }
+
+      // 3. Persopings (/persoping & vues uniques)
+      if (pathname === '/api/superadmin/persopings' && method === 'GET') {
+        const list = getAllPersopings();
+        return sendJson(res, 200, { success: true, count: list.length, persopings: list });
+      }
+
+      if (pathname === '/api/superadmin/persopings/delete' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { id } = body;
+        if (!id) return sendJson(res, 400, { error: 'ID persoping requis.' });
+        const ok = deletePersoping(id);
+        return sendJson(res, 200, { success: ok });
+      }
+
+      // 4. Anti-Raid & Protection Anti-Lien
+      if (pathname === '/api/superadmin/antiraid' && method === 'GET') {
+        const cfg = getConfig();
+        const data = getAntiRaidData();
+        return sendJson(res, 200, {
+          success: true,
+          config: cfg.antiRaid || { enabled: true, probationMinutes: 10, maxWarnings: 5 },
+          data
+        });
+      }
+
+      if (pathname === '/api/superadmin/antiraid/update' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const updated = updateConfig((cur) => ({
+          ...cur,
+          antiRaid: {
+            ...(cur.antiRaid || {}),
+            ...body
+          }
+        }));
+        return sendJson(res, 200, { success: true, config: updated.antiRaid });
+      }
+
+      if (pathname === '/api/superadmin/antiraid/clear-member' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { groupJid, participantJid } = body;
+        if (!participantJid) return sendJson(res, 400, { error: 'JID ou numéro du membre requis.' });
+        clearMemberAntiRaid(groupJid, participantJid);
+        return sendJson(res, 200, { success: true });
+      }
+
+      // 5. Configuration complète SuperAdmin & Mots surveillés
+      if (pathname === '/api/superadmin/config' && method === 'GET') {
+        const cfg = getConfig();
+        return sendJson(res, 200, {
+          success: true,
+          config: {
+            prefix: cfg.prefix,
+            alerts: cfg.alerts,
+            stealth: cfg.stealth,
+            dnd: cfg.dnd,
+            antiRaid: cfg.antiRaid,
+            notifications: cfg.notifications,
+            ntfy: cfg.ntfy,
+            groupAliases: cfg.groupAliases,
+            hub: cfg.hub
+          }
+        });
+      }
+
+      if (pathname === '/api/superadmin/config/update' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { prefix, stealth, dnd, ntfy, alerts } = body;
+        const updated = updateConfig((cur) => {
+          const next = { ...cur };
+          if (prefix) next.prefix = prefix;
+          if (stealth) next.stealth = { ...(next.stealth || {}), ...stealth };
+          if (dnd) next.dnd = { ...(next.dnd || {}), ...dnd };
+          if (ntfy) next.ntfy = { ...(next.ntfy || {}), ...ntfy };
+          if (alerts) next.alerts = { ...(next.alerts || {}), ...alerts };
+          return next;
+        });
+        return sendJson(res, 200, { success: true, config: updated });
+      }
+
+      if (pathname === '/api/superadmin/alerts/words' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { action, word } = body;
+        if (!word) return sendJson(res, 400, { error: 'Mot requis.' });
+        const cleanWord = word.trim().toLowerCase();
+
+        const updated = updateConfig((cur) => {
+          const words = Array.isArray(cur.alerts?.words) ? [...cur.alerts.words] : [];
+          if (action === 'add') {
+            if (!words.includes(cleanWord)) words.push(cleanWord);
+          } else if (action === 'remove') {
+            const idx = words.indexOf(cleanWord);
+            if (idx >= 0) words.splice(idx, 1);
+          }
+          return {
+            ...cur,
+            alerts: {
+              ...(cur.alerts || {}),
+              words
+            }
+          };
+        });
+
+        return sendJson(res, 200, { success: true, words: updated.alerts?.words || [] });
       }
 
       // GET /api/warns : Liste complète de tous les avertissements
@@ -543,11 +745,20 @@ export function startWebServer() {
         return sendJson(res, 404, { error: `Route API introuvable : ${method} ${pathname}` });
       }
 
-      let filePath = path.join(PUBLIC_DIR, pathname === '/' ? 'index.html' : pathname);
+      let filePath;
+      if (pathname === '/superadmin' || pathname === '/superadmin/' || pathname === '/superadmin.html') {
+        filePath = path.join(PUBLIC_DIR, 'superadmin.html');
+      } else {
+        filePath = path.join(PUBLIC_DIR, pathname === '/' ? 'index.html' : pathname);
+      }
 
       // Si le fichier demandé n'existe pas ou s'il s'agit d'une route SPA
       if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-        filePath = path.join(PUBLIC_DIR, 'index.html');
+        if (pathname.startsWith('/superadmin')) {
+          filePath = path.join(PUBLIC_DIR, 'superadmin.html');
+        } else {
+          filePath = path.join(PUBLIC_DIR, 'index.html');
+        }
       }
 
       if (fs.existsSync(filePath)) {

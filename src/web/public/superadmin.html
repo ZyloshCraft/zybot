@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZyBot // SuperAdmin Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+          },
+          colors: {
+            tremor: {
+              background: {
+                muted: '#090d16',
+                subtle: '#0f172a',
+                DEFAULT: '#020617',
+                emphasis: '#1e293b'
+              },
+              border: {
+                DEFAULT: '#1e293b'
+              },
+              ring: {
+                DEFAULT: '#334155'
+              },
+              content: {
+                subtle: '#64748b',
+                DEFAULT: '#94a3b8',
+                emphasis: '#e2e8f0',
+                strong: '#f8fafc'
+              }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #020617;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #020617;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    /* Tremor Switch Component */
+    .switch-bg {
+      transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .switch-dot {
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col text-sm antialiased selection:bg-indigo-500/20 selection:text-indigo-300">
+
+  <!-- ======================================================== -->
+  <!-- BARRE SUPÉRIEURE (TREMOR NAVBAR)                         -->
+  <!-- ======================================================== -->
+  <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Badges -->
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2 group">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform">
+            ⚡
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-base text-white tracking-tight">ZyBot</span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"></span>
+                SuperAdmin
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-none">Console propriétaire exclusive</p>
+          </div>
+        </a>
+
+        <div class="hidden md:flex items-center gap-2 ml-4 pl-4 border-l border-slate-800 text-xs text-slate-400">
+          <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-800/60 text-slate-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-400" id="topStatusDot"></span>
+            <span id="topPhoneText">En ligne</span>
+          </span>
+          <span class="text-slate-500">•</span>
+          <span id="topUptime">Uptime: --</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <a href="/" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors">
+          <span>←</span>
+          <span>Panel Admin Standard</span>
+        </a>
+
+        <button id="superLogoutBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-900/30 bg-red-950/20 hover:bg-red-900/40 text-red-400 text-xs font-medium transition-colors">
+          <span>Déconnexion</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MODAL AUTHENTIFICATION SUPERADMIN                        -->
+  <!-- ======================================================== -->
+  <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-7 max-w-md w-full shadow-2xl relative overflow-hidden">
+      <!-- Glow effect -->
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-violet-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="text-center space-y-2 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-400 flex items-center justify-center mx-auto text-xl">
+          👑
+        </div>
+        <h2 class="text-lg font-bold text-white tracking-tight">Accès SuperAdmin</h2>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto">
+          Espace strictement réservé au propriétaire du bot. Mot de passe maître requis.
+        </p>
+      </div>
+
+      <form id="authForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">Mot de passe SuperAdmin</label>
+          <input 
+            type="password" 
+            id="superPasswordInput" 
+            placeholder="••••••••••••••" 
+            class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-800 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-white placeholder-slate-600 text-sm font-mono transition-colors outline-none"
+            required
+            autofocus
+          >
+        </div>
+
+        <div id="authErrorMsg" class="hidden text-xs text-rose-400 bg-rose-950/30 border border-rose-900/40 rounded-lg p-2.5 text-center"></div>
+
+        <button 
+          type="submit" 
+          id="btnSubmitAuth"
+          class="w-full py-2.5 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-medium text-sm transition-colors shadow-lg shadow-violet-600/20 flex items-center justify-center gap-2"
+        >
+          <span>Déverrouiller l'espace SuperAdmin</span>
+          <span>➔</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- CONTENU PRINCIPAL SUPERADMIN                             -->
+  <!-- ======================================================== -->
+  <main id="mainContent" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 space-y-6">
+
+    <!-- KPI Metric Cards (Tremor Style) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 shadow-sm backdrop-blur-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Statut Bot</span>
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" id="kpiStatusBadge">ONLINE</span>
+        </div>
+        <div class="mt-2 text-xl sm:text-2xl font-bold text-white tracking-tight" id="kpiPhone">--</div>
+        <div class="mt-1 text-xs text-slate-400" id="kpiPushName">ZyBot</div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 shadow-sm backdrop-blur-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Membres Trust</span>
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">SÉCURISÉ</span>
+        </div>
+        <div class="mt-2 text-xl sm:text-2xl font-bold text-white tracking-tight" id="kpiTrustedCount">0</div>
+        <div class="mt-1 text-xs text-slate-400"><span id="kpiRevokedCount">0</span> révoqués</div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 shadow-sm backdrop-blur-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Giveaways Actifs</span>
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20" id="kpiGwBadge">EN COURS</span>
+        </div>
+        <div class="mt-2 text-xl sm:text-2xl font-bold text-white tracking-tight" id="kpiGwCount">0</div>
+        <div class="mt-1 text-xs text-slate-400"><span id="kpiGwParticipants">0</span> participants totaux</div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 shadow-sm backdrop-blur-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Persopings Sauvegardés</span>
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">ARCHIVES</span>
+        </div>
+        <div class="mt-2 text-xl sm:text-2xl font-bold text-white tracking-tight" id="kpiPersoCount">0</div>
+        <div class="mt-1 text-xs text-slate-400">Notes & Vues Uniques</div>
+      </div>
+
+    </div>
+
+    <!-- Navigation par Onglets (Tremor TabList) -->
+    <div class="border-b border-slate-800">
+      <div class="flex space-x-1 sm:space-x-2 overflow-x-auto pb-px custom-scroll">
+        <button class="super-tab active px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-indigo-500 text-white bg-slate-900/40 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-perms">
+          <span>🔒</span>
+          <span>Permissions & Sécurité</span>
+        </button>
+        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-notifs">
+          <span>🔔</span>
+          <span>Notifications Hub</span>
+        </button>
+        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-giveaways">
+          <span>🎉</span>
+          <span>Giveaways</span>
+        </button>
+        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-persopings">
+          <span>📌</span>
+          <span>Persopings & Vues</span>
+        </button>
+        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-antiraid">
+          <span>🛡️</span>
+          <span>Anti-Raid & Liens</span>
+        </button>
+        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-settings">
+          <span>⚙️</span>
+          <span>Réglages Bot & Alertes</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 1 : PERMISSIONS & SÉCURITÉ                           -->
+    <!-- ======================================================== -->
+    <section id="tab-perms" class="tab-panel space-y-6">
+      
+      <!-- Tremor Card : Ajouter une permission -->
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm">
+        <h3 class="text-sm font-semibold text-white tracking-tight mb-1">Gérer les Autorisations Membres</h3>
+        <p class="text-xs text-slate-400 mb-4">
+          Ajoutez un membre dans la liste blanche (<span class="font-mono text-indigo-400">/trust</span>) pour l'autoriser à exécuter les commandes du bot ou révoquez-le (<span class="font-mono text-rose-400">/untrust</span>).
+        </p>
+
+        <form id="permActionForm" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div class="sm:col-span-2">
+            <input 
+              type="text" 
+              id="permTargetInput" 
+              placeholder="Numéro WhatsApp ou LID (ex: 33612345678)" 
+              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white placeholder-slate-600 text-xs font-mono outline-none"
+              required
+            >
+          </div>
+          <div>
+            <input 
+              type="text" 
+              id="permNameInput" 
+              placeholder="Nom ou note (optionnel)" 
+              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white placeholder-slate-600 text-xs outline-none"
+            >
+          </div>
+          <div class="flex gap-2">
+            <button 
+              type="button" 
+              id="btnTrustAction" 
+              class="flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors"
+            >
+              + Autoriser (Trust)
+            </button>
+            <button 
+              type="button" 
+              id="btnUntrustAction" 
+              class="flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium transition-colors"
+            >
+              - Révoquer
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Deux colonnes : Membres Autorisés & Membres Révoqués -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Table Membres de Confiance -->
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl overflow-hidden shadow-sm">
+          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <h4 class="text-xs font-bold text-white uppercase tracking-wider">Membres Autorisés (Trust)</h4>
+            </div>
+            <span class="text-xs text-slate-400 font-mono" id="trustedTotalCount">0</span>
+          </div>
+
+          <div class="max-h-96 overflow-y-auto custom-scroll">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 text-[11px]">
+                <tr>
+                  <th class="py-2.5 px-4 font-medium">IDENTIFIANT</th>
+                  <th class="py-2.5 px-4 font-medium">NOM</th>
+                  <th class="py-2.5 px-4 text-right font-medium">ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="trustedTableBody" class="divide-y divide-slate-800/60">
+                <tr><td colspan="3" class="py-6 text-center text-slate-500">Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Table Membres Révoqués -->
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl overflow-hidden shadow-sm">
+          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+              <h4 class="text-xs font-bold text-white uppercase tracking-wider">Membres Révoqués (Untrusted)</h4>
+            </div>
+            <span class="text-xs text-slate-400 font-mono" id="revokedTotalCount">0</span>
+          </div>
+
+          <div class="max-h-96 overflow-y-auto custom-scroll">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 text-[11px]">
+                <tr>
+                  <th class="py-2.5 px-4 font-medium">IDENTIFIANT</th>
+                  <th class="py-2.5 px-4 font-medium">NOM</th>
+                  <th class="py-2.5 px-4 text-right font-medium">ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="revokedTableBody" class="divide-y divide-slate-800/60">
+                <tr><td colspan="3" class="py-6 text-center text-slate-500">Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2 : NOTIFICATIONS HUB                                -->
+    <!-- ======================================================== -->
+    <section id="tab-notifs" class="tab-panel hidden space-y-6">
+      
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm">
+        <h3 class="text-sm font-semibold text-white tracking-tight mb-1">Routage des Notifications vers le Hub</h3>
+        <p class="text-xs text-slate-400 mb-6">
+          Sélectionnez précisément les événements qui sont retransmis dans votre groupe de notifications (<span class="font-mono text-indigo-400">notifds / admintaverne / hub</span>). Les fonctionnalités continuent d'opérer, seuls les transferts d'alertes sont ajustés.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="notificationsTogglesContainer">
+          
+          <!-- Toggle 1: Alertes Mots-clés -->
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <div class="font-medium text-white text-xs sm:text-sm">🔔 Alertes Mots-Clés</div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Notification instantanée quand votre nom ou un mot surveillé est cité.</p>
+            </div>
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="keywordAlerts" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <!-- Toggle 2: Anti-Delete -->
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <div class="font-medium text-white text-xs sm:text-sm">🗑️ Messages Supprimés (Anti-Delete)</div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Capture et transmission des messages effacés par les membres.</p>
+            </div>
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="antiDelete" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <!-- Toggle 3: Anti-Edit -->
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <div class="font-medium text-white text-xs sm:text-sm">✏️ Messages Modifiés (Anti-Edit)</div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Historique des modifications de messages avant/après.</p>
+            </div>
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="antiEdit" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <!-- Toggle 4: Événements Groupes (Arrivées / Départs) -->
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <div class="font-medium text-white text-xs sm:text-sm">🚪 Arrivées & Départs de Membres</div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Alertes lors des nouveaux membres, sorties ou expulsions de groupes.</p>
+            </div>
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="groupEvents" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <!-- Toggle 5: Changements de Pseudo -->
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <div class="font-medium text-white text-xs sm:text-sm">🏷️ Changements de Pseudo WhatsApp</div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Détection et journalisation des modifications de PushName.</p>
+            </div>
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="pseudoChanges" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <!-- Toggle 6: Récapitulatif quotidien à 23h -->
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <div class="font-medium text-white text-xs sm:text-sm">📊 Récapitulatif Quotidien (23:00)</div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Bilan quotidien des messages, top parleurs et stats des groupes.</p>
+            </div>
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="dailyRecap" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <!-- Toggle 7: Alertes Anti-Raid & Liens -->
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div>
+              <div class="font-medium text-white text-xs sm:text-sm">🛡️ Alertes Anti-Raid & Liens</div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Alerte discrète lors de l'expulsion d'un spammeur de liens.</p>
+            </div>
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="antiLink" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button id="btnSaveNotifications" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors shadow-sm">
+            Sauvegarder les Préférences de Notifications
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3 : GESTION DES GIVEAWAYS                            -->
+    <!-- ======================================================== -->
+    <section id="tab-giveaways" class="tab-panel hidden space-y-6">
+      
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 class="text-sm font-semibold text-white tracking-tight">Giveaways WhatsApp (/gw)</h3>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Suivi des tirages au sort en direct, participants réels inscrits par emoji, tirage anticipé et reroll.
+          </p>
+        </div>
+        <button id="btnRefreshGiveaways" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors">
+          ↻ Actualiser les Giveaways
+        </button>
+      </div>
+
+      <div id="giveawaysContainer" class="space-y-4">
+        <div class="p-8 text-center text-slate-500">Chargement des giveaways...</div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4 : PERSOPINGS & VUES UNIQUES                        -->
+    <!-- ======================================================== -->
+    <section id="tab-persopings" class="tab-panel hidden space-y-6">
+      
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 class="text-sm font-semibold text-white tracking-tight">Persopings & Archives de Vues Uniques</h3>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Messages et citations sauvegardés via la commande <span class="font-mono text-purple-400">/persoping</span> ou transférés depuis vos discussions.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input 
+            type="text" 
+            id="searchPersopingInput" 
+            placeholder="Filtrer les notes..." 
+            class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs outline-none focus:border-purple-500 font-mono"
+          >
+          <button id="btnRefreshPersopings" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors">
+            ↻
+          </button>
+        </div>
+      </div>
+
+      <!-- Grille des cartes persoping -->
+      <div id="persopingsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="col-span-full p-8 text-center text-slate-500">Chargement des persopings...</div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5 : ANTI-RAID & PROTECTION ANTI-LIEN                 -->
+    <!-- ======================================================== -->
+    <section id="tab-antiraid" class="tab-panel hidden space-y-6">
+      
+      <!-- Réglages Anti-Raid -->
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm">
+        <h3 class="text-sm font-semibold text-white tracking-tight mb-1">Configuration du Protocole Anti-Raid</h3>
+        <p class="text-xs text-slate-400 mb-6">
+          Protège les groupes contre les raids et le spam instantané : les nouveaux arrivants ne peuvent poster aucun lien durant leur période probatoire.
+        </p>
+
+        <form id="antiRaidConfigForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          
+          <div class="flex items-center justify-between p-3.5 rounded-lg bg-slate-950 border border-slate-800">
+            <div>
+              <div class="text-xs font-medium text-white">Module Activé</div>
+              <div class="text-[10px] text-slate-400">Filtrage strict des liens</div>
+            </div>
+            <button type="button" id="antiRaidEnabledToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Durée de probation (minutes)</label>
+            <input 
+              type="number" 
+              id="antiRaidProbationInput" 
+              min="1" 
+              max="1440" 
+              value="10" 
+              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white text-xs font-mono outline-none"
+            >
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Avertissements max avant ban</label>
+            <input 
+              type="number" 
+              id="antiRaidMaxWarningsInput" 
+              min="1" 
+              max="20" 
+              value="5" 
+              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white text-xs font-mono outline-none"
+            >
+          </div>
+
+          <div class="sm:col-span-3 flex justify-end">
+            <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors shadow-sm">
+              Enregistrer les Paramètres Anti-Raid
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Membres actuellement sous probation -->
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl overflow-hidden shadow-sm">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Membres Récents sous Surveillance Probatoire</h4>
+          </div>
+          <button id="btnRefreshAntiRaidData" class="text-xs text-slate-400 hover:text-white transition-colors">
+            ↻ Actualiser
+          </button>
+        </div>
+
+        <div class="max-h-96 overflow-y-auto custom-scroll">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 text-[11px]">
+              <tr>
+                <th class="py-2.5 px-4 font-medium">MEMBRE</th>
+                <th class="py-2.5 px-4 font-medium">GROUPE</th>
+                <th class="py-2.5 px-4 font-medium">ARRIVÉE</th>
+                <th class="py-2.5 px-4 font-medium">LIENS TENTÉS</th>
+                <th class="py-2.5 px-4 text-right font-medium">ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="antiRaidMembersTableBody" class="divide-y divide-slate-800/60">
+              <tr><td colspan="5" class="py-6 text-center text-slate-500">Aucun membre en période de probation.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 6 : RÉGLAGES BOT & ALERTES MOTS-CLÉS                 -->
+    <!-- ======================================================== -->
+    <section id="tab-settings" class="tab-panel hidden space-y-6">
+      
+      <!-- Mots-clés surveillés -->
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm">
+        <h3 class="text-sm font-semibold text-white tracking-tight mb-1">Mots-Clés Surveillés (Alerte Immédiate)</h3>
+        <p class="text-xs text-slate-400 mb-4">
+          Le bot vous prévient dès que l'un de ces mots est mentionné dans n'importe quel groupe où il est présent.
+        </p>
+
+        <div class="flex flex-wrap gap-2 mb-4" id="watchedWordsContainer">
+          <!-- Badges des mots -->
+        </div>
+
+        <form id="addWordForm" class="flex gap-2 max-w-md">
+          <input 
+            type="text" 
+            id="newWordInput" 
+            placeholder="Nouveau mot à surveiller..." 
+            class="flex-1 px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white text-xs outline-none"
+            required
+          >
+          <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors">
+            + Ajouter
+          </button>
+        </form>
+      </div>
+
+      <!-- Réglages Furtivité & DND -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Furtivité (Stealth typing) -->
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-sm font-semibold text-white tracking-tight">Furtivité & Frappe Humaine</h4>
+              <p class="text-[11px] text-slate-400">Simule la présence en ligne et la saisie naturelle.</p>
+            </div>
+            <button type="button" id="stealthToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Typing Min (ms)</label>
+              <input type="number" id="stealthMinInput" value="1500" step="100" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Typing Max (ms)</label>
+              <input type="number" id="stealthMaxInput" value="3500" step="100" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- DND (Ne Pas Déranger) -->
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-sm font-semibold text-white tracking-tight">Mode Nuit (DND)</h4>
+              <p class="text-[11px] text-slate-400">Désactive les notifications sonores pendant ces heures.</p>
+            </div>
+            <button type="button" id="dndToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" aria-checked="true">
+              <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Début (ex: 23:00)</label>
+              <input type="text" id="dndStartInput" value="23:00" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Fin (ex: 06:00)</label>
+              <input type="text" id="dndEndInput" value="06:00" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono outline-none">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Actions Système (Redémarrage & Session) -->
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h4 class="text-sm font-semibold text-white tracking-tight">Opérations Système</h4>
+          <p class="text-xs text-slate-400 mt-0.5">Redémarrer le processus PM2 ou réinitialiser la session WhatsApp (re-scanner un QR).</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnRestartBot" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-colors shadow-sm">
+            ⚡ Redémarrer PM2
+          </button>
+          <button id="btnReauthSession" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium transition-colors shadow-sm">
+            🔄 Réinitialiser Session QR
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- SCRIPT CLIENT JAVASCRIPT DU SUPERADMIN                   -->
+  <!-- ======================================================== -->
+  <script>
+    const API_BASE = '/api';
+    let currentAuth = null;
+    let currentConfig = {};
+    let currentNotifications = {};
+
+    // 1. Initialisation & Vérification du rôle SuperAdmin
+    async function checkSuperAuth() {
+      try {
+        const res = await fetch(`${API_BASE}/auth/check`);
+        const data = await res.json();
+        if (data.authenticated && data.isSuperAdmin) {
+          currentAuth = data;
+          document.getElementById('authOverlay').classList.add('hidden');
+          loadAllSuperAdminData();
+        } else {
+          document.getElementById('authOverlay').classList.remove('hidden');
+        }
+      } catch (err) {
+        document.getElementById('authOverlay').classList.remove('hidden');
+      }
+    }
+
+    // Gestion de la soumission du mot de passe SuperAdmin
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pwd = document.getElementById('superPasswordInput').value;
+      const errBox = document.getElementById('authErrorMsg');
+      errBox.classList.add('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pwd })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.isSuperAdmin) {
+          document.getElementById('authOverlay').classList.add('hidden');
+          loadAllSuperAdminData();
+        } else {
+          errBox.textContent = data.error || (data.role === 'admin' ? 'Ce mot de passe donne un accès Admin standard, pas SuperAdmin.' : 'Mot de passe incorrect.');
+          errBox.classList.remove('hidden');
+        }
+      } catch (err) {
+        errBox.textContent = 'Erreur de connexion au serveur.';
+        errBox.classList.remove('hidden');
+      }
+    });
+
+    // Déconnexion
+    document.getElementById('superLogoutBtn').addEventListener('click', async () => {
+      await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+      window.location.href = '/';
+    });
+
+    // 2. Gestion des onglets
+    document.querySelectorAll('.super-tab').forEach(tabBtn => {
+      tabBtn.addEventListener('click', () => {
+        document.querySelectorAll('.super-tab').forEach(b => {
+          b.classList.remove('active', 'border-indigo-500', 'text-white', 'bg-slate-900/40');
+          b.classList.add('border-transparent', 'text-slate-400');
+        });
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+
+        tabBtn.classList.add('active', 'border-indigo-500', 'text-white', 'bg-slate-900/40');
+        tabBtn.classList.remove('border-transparent', 'text-slate-400');
+        
+        const targetId = tabBtn.getAttribute('data-tab');
+        document.getElementById(targetId)?.classList.remove('hidden');
+      });
+    });
+
+    // 3. Chargement global des données SuperAdmin
+    async function loadAllSuperAdminData() {
+      loadStatus();
+      loadPermissions();
+      loadNotifications();
+      loadGiveaways();
+      loadPersopings();
+      loadAntiRaid();
+      loadSuperConfig();
+    }
+
+    // A. Statut du Bot & KPI
+    async function loadStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/status`);
+        const data = await res.json();
+        if (data.bot) {
+          const isOnline = data.bot.status === 'connected';
+          document.getElementById('topStatusDot').className = `w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`;
+          document.getElementById('topPhoneText').textContent = data.bot.phone ? `+${data.bot.phone}` : (isOnline ? 'Connecté' : 'Hors ligne');
+          
+          const uptimeSec = data.bot.uptime || 0;
+          const uptimeHours = (uptimeSec / 3600).toFixed(1);
+          document.getElementById('topUptime').textContent = `Uptime: ${uptimeHours}h`;
+
+          document.getElementById('kpiStatusBadge').textContent = isOnline ? 'ONLINE' : 'OFFLINE';
+          document.getElementById('kpiStatusBadge').className = `px-2 py-0.5 rounded-md text-[10px] font-semibold border ${isOnline ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`;
+          document.getElementById('kpiPhone').textContent = data.bot.phone ? `+${data.bot.phone}` : (isOnline ? 'Prêt' : 'Déconnecté');
+          document.getElementById('kpiPushName').textContent = data.bot.pushName || 'ZyBot';
+        }
+      } catch (err) {}
+    }
+
+    // B. Permissions & Sécurité
+    async function loadPermissions() {
+      try {
+        const res = await fetch(`${API_BASE}/permissions`);
+        const data = await res.json();
+
+        const trusted = data.trustedUsers || [];
+        const revoked = data.revokedUsers || [];
+
+        document.getElementById('kpiTrustedCount').textContent = trusted.length;
+        document.getElementById('kpiRevokedCount').textContent = revoked.length;
+        document.getElementById('trustedTotalCount').textContent = `${trusted.length} membre${trusted.length > 1 ? 's' : ''}`;
+        document.getElementById('revokedTotalCount').textContent = `${revoked.length} membre${revoked.length > 1 ? 's' : ''}`;
+
+        // Rendu Membres Autorisés
+        const trustedTbody = document.getElementById('trustedTableBody');
+        if (trusted.length === 0) {
+          trustedTbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-slate-500">Aucun membre autorisé pour le moment.</td></tr>';
+        } else {
+          trustedTbody.innerHTML = trusted.map(u => `
+            <tr class="hover:bg-slate-800/40 transition-colors">
+              <td class="py-2.5 px-4 font-mono font-medium text-slate-300">${u.target}</td>
+              <td class="py-2.5 px-4 text-slate-400">${u.name || '—'}</td>
+              <td class="py-2.5 px-4 text-right">
+                <button onclick="removePerm('${u.target}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 text-[11px] transition-colors">
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+
+        // Rendu Membres Révoqués
+        const revokedTbody = document.getElementById('revokedTableBody');
+        if (revoked.length === 0) {
+          revokedTbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-slate-500">Aucun membre révoqué.</td></tr>';
+        } else {
+          revokedTbody.innerHTML = revoked.map(u => `
+            <tr class="hover:bg-slate-800/40 transition-colors">
+              <td class="py-2.5 px-4 font-mono font-medium text-slate-300">${u.target}</td>
+              <td class="py-2.5 px-4 text-slate-400">${u.name || '—'}</td>
+              <td class="py-2.5 px-4 text-right">
+                <button onclick="removePerm('${u.target}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-emerald-900/40 text-slate-400 hover:text-emerald-400 text-[11px] transition-colors">
+                  Réhabiliter
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (err) {}
+    }
+
+    document.getElementById('btnTrustAction').addEventListener('click', async () => {
+      const target = document.getElementById('permTargetInput').value.trim();
+      const name = document.getElementById('permNameInput').value.trim();
+      if (!target) return alert('Veuillez renseigner un numéro ou un identifiant.');
+
+      await fetch(`${API_BASE}/permissions/trust`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target, name })
+      });
+      document.getElementById('permTargetInput').value = '';
+      document.getElementById('permNameInput').value = '';
+      loadPermissions();
+    });
+
+    document.getElementById('btnUntrustAction').addEventListener('click', async () => {
+      const target = document.getElementById('permTargetInput').value.trim();
+      const name = document.getElementById('permNameInput').value.trim();
+      if (!target) return alert('Veuillez renseigner un numéro ou un identifiant.');
+
+      await fetch(`${API_BASE}/permissions/untrust`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target, name })
+      });
+      document.getElementById('permTargetInput').value = '';
+      document.getElementById('permNameInput').value = '';
+      loadPermissions();
+    });
+
+    window.removePerm = async (target) => {
+      if (!confirm(`Supprimer la règle pour ${target} ?`)) return;
+      await fetch(`${API_BASE}/permissions/remove`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target })
+      });
+      loadPermissions();
+    };
+
+    // C. Centre de Notifications Hub
+    async function loadNotifications() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/notifications`);
+        const data = await res.json();
+        currentNotifications = data.notifications || {};
+
+        document.querySelectorAll('.notif-toggle').forEach(btn => {
+          const key = btn.getAttribute('data-key');
+          const isEnabled = currentNotifications[key] !== false; // Actif par défaut
+          setSwitchVisual(btn, isEnabled);
+        });
+      } catch (err) {}
+    }
+
+    function setSwitchVisual(btn, isChecked) {
+      btn.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+      const dot = btn.querySelector('.switch-dot');
+      if (isChecked) {
+        btn.classList.remove('bg-slate-800');
+        btn.classList.add('bg-indigo-600');
+        dot.classList.add('translate-x-5');
+        dot.classList.remove('translate-x-0');
+      } else {
+        btn.classList.remove('bg-indigo-600');
+        btn.classList.add('bg-slate-800');
+        dot.classList.add('translate-x-0');
+        dot.classList.remove('translate-x-5');
+      }
+    }
+
+    document.querySelectorAll('.notif-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const current = btn.getAttribute('aria-checked') === 'true';
+        setSwitchVisual(btn, !current);
+      });
+    });
+
+    document.getElementById('btnSaveNotifications').addEventListener('click', async () => {
+      const payload = {};
+      document.querySelectorAll('.notif-toggle').forEach(btn => {
+        const key = btn.getAttribute('data-key');
+        payload[key] = btn.getAttribute('aria-checked') === 'true';
+      });
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          alert('✅ Préférences de notifications enregistrées avec succès.');
+        }
+      } catch (err) {
+        alert('Erreur lors de la sauvegarde.');
+      }
+    });
+
+    // D. Gestion des Giveaways
+    async function loadGiveaways() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/giveaways`);
+        const data = await res.json();
+        const list = data.giveaways || [];
+
+        const activeCount = list.filter(g => g.status === 'active').length;
+        const totalParticipants = list.reduce((sum, g) => sum + (g.participants?.length || 0), 0);
+
+        document.getElementById('kpiGwCount').textContent = activeCount;
+        document.getElementById('kpiGwParticipants').textContent = totalParticipants;
+
+        const container = document.getElementById('giveawaysContainer');
+        if (list.length === 0) {
+          container.innerHTML = '<div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-8 text-center text-slate-500">Aucun giveaway enregistré. Lancez-en un avec /gw dans un groupe WhatsApp.</div>';
+          return;
+        }
+
+        container.innerHTML = list.slice().reverse().map(gw => {
+          const isActive = gw.status === 'active';
+          const remainingMs = Math.max(0, (gw.endsAt || 0) - Date.now());
+          const remainingSec = Math.floor(remainingMs / 1000);
+          const remainingMin = Math.floor(remainingSec / 60);
+
+          return `
+            <div class="bg-slate-900/70 border ${isActive ? 'border-indigo-500/40 shadow-indigo-500/5' : 'border-slate-800'} rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold border ${isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'}">
+                    ${isActive ? 'ACTIF' : 'TERMINÉ'}
+                  </span>
+                  <h4 class="text-sm font-bold text-white tracking-tight">🎁 ${gw.prize}</h4>
+                </div>
+                <div class="text-xs text-slate-400">
+                  ${isActive ? `Temps restant : <span class="font-mono text-indigo-400 font-bold">${remainingMin}m</span>` : `Gagnant : <span class="font-bold text-amber-400">@${gw.winner?.number || 'Aucun'}</span> (${gw.winner?.name || '—'})`}
+                </div>
+              </div>
+
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs text-slate-400">
+                <div class="space-y-1">
+                  <div>Groupe : <span class="font-mono text-slate-300">${gw.groupJid}</span></div>
+                  <div>Participants réels inscrits : <span class="font-bold text-white">${gw.participants?.length || 0}</span></div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  ${isActive ? `
+                    <button onclick="endGiveaway('${gw.id}')" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors shadow-sm">
+                      Terminer & Tirer Maintenant
+                    </button>
+                  ` : `
+                    <button onclick="rerollGiveaway('${gw.id}')" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-colors shadow-sm">
+                      Reroll (Nouveau Gagnant)
+                    </button>
+                  `}
+                </div>
+              </div>
+
+              <!-- Liste des participants réels -->
+              ${gw.participants?.length > 0 ? `
+                <div class="mt-2 pt-3 border-t border-slate-800/50">
+                  <div class="text-[11px] font-medium text-slate-400 mb-2">Participants enregistrés :</div>
+                  <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto custom-scroll">
+                    ${gw.participants.map(p => `
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950 text-slate-300 border border-slate-800 text-[11px]">
+                        <span>👤</span>
+                        <span class="font-medium">${p.name || p.number}</span>
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {}
+    }
+
+    document.getElementById('btnRefreshGiveaways').addEventListener('click', loadGiveaways);
+
+    window.endGiveaway = async (giveawayId) => {
+      if (!confirm('Clôturer ce giveaway et tirer un gagnant immédiatement ?')) return;
+      await fetch(`${API_BASE}/superadmin/giveaways/end`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ giveawayId })
+      });
+      loadGiveaways();
+    };
+
+    window.rerollGiveaway = async (giveawayId) => {
+      if (!confirm('Tirer un nouveau gagnant pour ce giveaway ?')) return;
+      await fetch(`${API_BASE}/superadmin/giveaways/reroll`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ giveawayId })
+      });
+      loadGiveaways();
+    };
+
+    // E. Persopings & Vues Uniques
+    let persopingsList = [];
+
+    async function loadPersopings() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/persopings`);
+        const data = await res.json();
+        persopingsList = data.persopings || [];
+        document.getElementById('kpiPersoCount').textContent = persopingsList.length;
+        renderPersopings(persopingsList);
+      } catch (err) {}
+    }
+
+    function renderPersopings(list) {
+      const container = document.getElementById('persopingsContainer');
+      if (list.length === 0) {
+        container.innerHTML = '<div class="col-span-full bg-slate-900/70 border border-slate-800/80 rounded-xl p-8 text-center text-slate-500">Aucun persoping sauvegardé. Enregistrez-en avec /persoping dans WhatsApp.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map(p => `
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm flex flex-col justify-between space-y-3">
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span class="font-medium text-purple-400">Par ${p.author}</span>
+              <span class="font-mono text-slate-500">${p.originalDate}</span>
+            </div>
+            <div class="text-[11px] text-slate-500">Origine: ${p.origin}</div>
+            <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 whitespace-pre-wrap font-sans">
+              ${p.text || '<i class="text-slate-500">Aucun texte</i>'}
+            </div>
+          </div>
+          <div class="flex justify-end pt-2 border-t border-slate-800/50">
+            <button onclick="deletePerso('${p.id}')" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition-colors">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('searchPersopingInput').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      const filtered = persopingsList.filter(p => 
+        (p.text && p.text.toLowerCase().includes(q)) ||
+        (p.author && p.author.toLowerCase().includes(q))
+      );
+      renderPersopings(filtered);
+    });
+
+    document.getElementById('btnRefreshPersopings').addEventListener('click', loadPersopings);
+
+    window.deletePerso = async (id) => {
+      if (!confirm('Supprimer cette note persoping ?')) return;
+      await fetch(`${API_BASE}/superadmin/persopings/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      loadPersopings();
+    };
+
+    // F. Anti-Raid & Protection Anti-Lien
+    async function loadAntiRaid() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/antiraid`);
+        const data = await res.json();
+        
+        const cfg = data.config || {};
+        document.getElementById('antiRaidProbationInput').value = cfg.probationMinutes || 10;
+        document.getElementById('antiRaidMaxWarningsInput').value = cfg.maxWarnings || 5;
+        
+        const isEnabled = cfg.enabled !== false;
+        setSwitchVisual(document.getElementById('antiRaidEnabledToggle'), isEnabled);
+
+        // Membres sous surveillance
+        const joins = data.data?.recentJoins || {};
+        const warnings = data.data?.linkWarnings || {};
+        const tbody = document.getElementById('antiRaidMembersTableBody');
+
+        const rows = [];
+        for (const [groupJid, members] of Object.entries(joins)) {
+          for (const [partJid, timestamp] of Object.entries(members)) {
+            const warnCount = warnings[groupJid]?.[partJid] || 0;
+            const elapsedMin = Math.floor((Date.now() - timestamp) / 60000);
+            const cleanNum = partJid.split('@')[0].split(':')[0];
+
+            rows.push(`
+              <tr class="hover:bg-slate-800/40 transition-colors">
+                <td class="py-2.5 px-4 font-mono font-medium text-slate-300">+${cleanNum}</td>
+                <td class="py-2.5 px-4 text-slate-400 font-mono text-[11px]">${groupJid.split('@')[0].substring(0, 15)}...</td>
+                <td class="py-2.5 px-4 text-slate-400">Il y a ${elapsedMin} min</td>
+                <td class="py-2.5 px-4">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${warnCount > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-slate-800 text-slate-400'}">
+                    ${warnCount} avertissement${warnCount > 1 ? 's' : ''}
+                  </span>
+                </td>
+                <td class="py-2.5 px-4 text-right">
+                  <button onclick="clearAntiRaidMember('${groupJid}', '${partJid}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-emerald-900/40 text-slate-400 hover:text-emerald-400 text-[11px] transition-colors">
+                    Lever Surveillance
+                  </button>
+                </td>
+              </tr>
+            `);
+          }
+        }
+
+        if (rows.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500">Aucun membre sous période probatoire active.</td></tr>';
+        } else {
+          tbody.innerHTML = rows.join('');
+        }
+      } catch (err) {}
+    }
+
+    document.getElementById('antiRaidEnabledToggle').addEventListener('click', () => {
+      const btn = document.getElementById('antiRaidEnabledToggle');
+      const isChecked = btn.getAttribute('aria-checked') === 'true';
+      setSwitchVisual(btn, !isChecked);
+    });
+
+    document.getElementById('antiRaidConfigForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const enabled = document.getElementById('antiRaidEnabledToggle').getAttribute('aria-checked') === 'true';
+      const probationMinutes = parseInt(document.getElementById('antiRaidProbationInput').value, 10);
+      const maxWarnings = parseInt(document.getElementById('antiRaidMaxWarningsInput').value, 10);
+
+      await fetch(`${API_BASE}/superadmin/antiraid/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, probationMinutes, maxWarnings })
+      });
+      alert('✅ Paramètres Anti-Raid sauvegardés.');
+      loadAntiRaid();
+    });
+
+    document.getElementById('btnRefreshAntiRaidData').addEventListener('click', loadAntiRaid);
+
+    window.clearAntiRaidMember = async (groupJid, participantJid) => {
+      await fetch(`${API_BASE}/superadmin/antiraid/clear-member`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupJid, participantJid })
+      });
+      loadAntiRaid();
+    };
+
+    // G. Réglages Bot & Mots-Clés
+    async function loadSuperConfig() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/config`);
+        const data = await res.json();
+        currentConfig = data.config || {};
+
+        // Mots-clés
+        renderWords(currentConfig.alerts?.words || []);
+
+        // Furtivité
+        const isStealth = currentConfig.stealth?.enabled !== false;
+        setSwitchVisual(document.getElementById('stealthToggle'), isStealth);
+        document.getElementById('stealthMinInput').value = currentConfig.stealth?.humanTypingMinMs || 1500;
+        document.getElementById('stealthMaxInput').value = currentConfig.stealth?.humanTypingMaxMs || 3500;
+
+        // DND
+        const isDnd = currentConfig.dnd?.enabled !== false;
+        setSwitchVisual(document.getElementById('dndToggle'), isDnd);
+        document.getElementById('dndStartInput').value = currentConfig.dnd?.start || '23:00';
+        document.getElementById('dndEndInput').value = currentConfig.dnd?.end || '06:00';
+      } catch (err) {}
+    }
+
+    function renderWords(words) {
+      const container = document.getElementById('watchedWordsContainer');
+      if (words.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-500">Aucun mot-clé configuré.</span>';
+        return;
+      }
+      container.innerHTML = words.map(w => `
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-mono">
+          <span>${w}</span>
+          <button onclick="removeWord('${w}')" class="text-indigo-400 hover:text-rose-400 transition-colors font-bold ml-1">×</button>
+        </span>
+      `).join('');
+    }
+
+    document.getElementById('addWordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('newWordInput');
+      const word = input.value.trim();
+      if (!word) return;
+
+      const res = await fetch(`${API_BASE}/superadmin/alerts/words`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', word })
+      });
+      const data = await res.json();
+      input.value = '';
+      renderWords(data.words || []);
+    });
+
+    window.removeWord = async (word) => {
+      const res = await fetch(`${API_BASE}/superadmin/alerts/words`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'remove', word })
+      });
+      const data = await res.json();
+      renderWords(data.words || []);
+    };
+
+    // Toggle switches DND & Stealth
+    document.getElementById('stealthToggle').addEventListener('click', () => {
+      const btn = document.getElementById('stealthToggle');
+      setSwitchVisual(btn, btn.getAttribute('aria-checked') !== 'true');
+      saveGeneralConfig();
+    });
+
+    document.getElementById('dndToggle').addEventListener('click', () => {
+      const btn = document.getElementById('dndToggle');
+      setSwitchVisual(btn, btn.getAttribute('aria-checked') !== 'true');
+      saveGeneralConfig();
+    });
+
+    document.getElementById('stealthMinInput').addEventListener('change', saveGeneralConfig);
+    document.getElementById('stealthMaxInput').addEventListener('change', saveGeneralConfig);
+    document.getElementById('dndStartInput').addEventListener('change', saveGeneralConfig);
+    document.getElementById('dndEndInput').addEventListener('change', saveGeneralConfig);
+
+    async function saveGeneralConfig() {
+      const stealthEnabled = document.getElementById('stealthToggle').getAttribute('aria-checked') === 'true';
+      const dndEnabled = document.getElementById('dndToggle').getAttribute('aria-checked') === 'true';
+
+      await fetch(`${API_BASE}/superadmin/config/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stealth: {
+            enabled: stealthEnabled,
+            humanTypingMinMs: parseInt(document.getElementById('stealthMinInput').value, 10) || 1500,
+            humanTypingMaxMs: parseInt(document.getElementById('stealthMaxInput').value, 10) || 3500
+          },
+          dnd: {
+            enabled: dndEnabled,
+            start: document.getElementById('dndStartInput').value || '23:00',
+            end: document.getElementById('dndEndInput').value || '06:00'
+          }
+        })
+      });
+    }
+
+    // Redémarrage & Réauthentification
+    document.getElementById('btnRestartBot').addEventListener('click', async () => {
+      if (!confirm('Redémarrer le bot ZyBot via PM2 ?')) return;
+      await fetch(`${API_BASE}/bot/restart`, { method: 'POST' });
+      alert('⚡ Commande de redémarrage envoyée.');
+    });
+
+    document.getElementById('btnReauthSession').addEventListener('click', async () => {
+      if (!confirm('Attention : cela supprimera la session WhatsApp actuelle et générera un nouveau QR code. Continuer ?')) return;
+      await fetch(`${API_BASE}/bot/reauth`, { method: 'POST' });
+      alert('🔄 Session réinitialisée. Rendez-vous sur le panel standard pour scanner le nouveau QR code.');
+    });
+
+    // Démarrage
+    checkSuperAuth();
+  </script>
+</body>
+</html>

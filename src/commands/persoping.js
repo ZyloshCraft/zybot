@@ -3,6 +3,7 @@ import { replyOrEditTemporary, replyOrEdit, markChatUnread } from '../utils/stea
 import { findMessageById } from '../services/messageStore.js';
 import { getConfig } from '../config.js';
 import { getCachedGroupMetadata } from '../utils/groupCache.js';
+import { addPersopingEntry } from '../services/persopingStore.js';
 
 export default {
   name: 'persoping',
@@ -97,6 +98,33 @@ export default {
 
       // Marquer le groupe comme non lu (pastille verte)
       await markChatUnread(sock, targetPersoJid, sentMeta?.key);
+
+      // Mémoriser dans le store des persopings pour consultation WebGUI SuperAdmin
+      try {
+        const textPreview =
+          quotedMessage.conversation ||
+          quotedMessage.extendedTextMessage?.text ||
+          quotedMessage.imageMessage?.caption ||
+          quotedMessage.videoMessage?.caption ||
+          quotedMessage.documentMessage?.caption ||
+          'Média / Message sauvegardé';
+
+        let mediaType = 'text';
+        if (quotedMessage.imageMessage) mediaType = 'image';
+        else if (quotedMessage.videoMessage) mediaType = 'video';
+        else if (quotedMessage.audioMessage) mediaType = 'audio';
+        else if (quotedMessage.stickerMessage) mediaType = 'sticker';
+        else if (quotedMessage.documentMessage) mediaType = 'document';
+
+        addPersopingEntry({
+          stanzaId,
+          author: `+${authorNumber}`,
+          originalDate: originalDateStr,
+          origin: originName,
+          text: textPreview,
+          mediaType
+        });
+      } catch {}
 
       // 3. Modifier la commande en "Sauvegardé en privé", puis la supprimer après 5 secondes pour tout le monde (sauf hub/privé)
       await replyOrEditTemporary(sock, jid, msg, 'Sauvegardé', 5000);

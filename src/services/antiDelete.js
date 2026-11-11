@@ -38,6 +38,8 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
   if (revokedKey.fromMe) return;
 
   const config = getConfig();
+  if (config.notifications?.antiDelete === false) return;
+
   const targetJid = config.hub?.antiDelete || config.groupAliases?.antidelete;
   if (!targetJid) return;
 
@@ -221,6 +223,8 @@ export async function handleEditedMessage({ sock, targetKey, newText, newRawMess
   }
 
   const config = getConfig();
+  if (config.notifications?.antiEdit === false) return;
+
   const targetJid = config.hub?.antiDelete || config.groupAliases?.antidelete;
   if (!targetJid) return;
 

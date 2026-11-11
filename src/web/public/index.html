@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -15,18 +15,8 @@
       theme: {
         extend: {
           fontFamily: {
-            mono: ['"JetBrains Mono"', 'monospace', 'ui-monospace'],
-            sans: ['"JetBrains Mono"', 'monospace']
-          },
-          colors: {
-            noir: {
-              950: '#07080a',
-              900: '#0d0f14',
-              850: '#12151c',
-              800: '#1a1e28',
-              700: '#262a36',
-              600: '#383e4e'
-            }
+            sans: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
           }
         }
       }
@@ -34,116 +24,124 @@
   </script>
 
   <style>
-    * {
-      border-radius: 0px !important;
-    }
     body {
-      background-color: #07080a;
-      color: #e2e8f0;
-      font-family: 'JetBrains Mono', monospace;
-    }
-    .grid-bg {
-      background-size: 32px 32px;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-color: #020617;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, sans-serif;
     }
     .custom-scroll::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     .custom-scroll::-webkit-scrollbar-track {
-      background: #07080a;
+      background: #020617;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-      background: #262a36;
+      background: #1e293b;
+      border-radius: 9999px;
     }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-      background: #6366f1;
+      background: #334155;
     }
   </style>
 </head>
-<body class="grid-bg min-h-screen flex flex-col text-xs select-none">
+<body class="min-h-screen flex flex-col text-sm antialiased selection:bg-indigo-500/20 selection:text-indigo-300">
 
   <!-- ======================================================== -->
   <!-- 1. VUE PUBLIQUE (ACCESSIBLE À TOUS SANS MOT DE PASSE)    -->
   <!-- ======================================================== -->
   <div id="publicScreen" class="flex-1 flex flex-col">
     <!-- Barre supérieure publique -->
-    <header class="bg-noir-900 border-b border-noir-800 sticky top-0 z-40">
-      <div class="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         
         <div class="flex items-center gap-3">
-          <span class="w-2 h-2 bg-emerald-400 animate-pulse"></span>
-          <span class="font-bold tracking-wider text-white">ZYBOT</span>
-          <span class="text-slate-600">//</span>
-          <span class="text-slate-300 font-medium tracking-wide">REGISTRE PUBLIC DES WARNS</span>
+          <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            🛡️
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-base text-white tracking-tight">ZyBot</span>
+              <span class="text-slate-500 text-xs">/</span>
+              <span class="text-slate-300 text-xs font-medium">Casier Public</span>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-none">Registre communautaire de modération</p>
+          </div>
         </div>
 
-        <button 
-          id="btnOpenLoginModal"
-          class="px-3 py-1.5 border border-noir-700 hover:border-white text-slate-300 hover:text-white uppercase font-bold tracking-wider transition-colors flex items-center gap-2"
-        >
-          <span>🔒</span>
-          <span>ADMIN // LOGIN ➔</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <a 
+            href="/superadmin"
+            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 text-xs font-medium transition-colors"
+          >
+            <span>👑</span>
+            <span>SuperAdmin ➔</span>
+          </a>
+
+          <button 
+            id="btnOpenLoginModal"
+            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition-colors shadow-sm"
+          >
+            <span>🔒</span>
+            <span>Connexion Admin</span>
+          </button>
+        </div>
 
       </div>
     </header>
 
     <!-- Contenu Public -->
-    <main class="max-w-6xl mx-auto w-full px-4 py-8 flex-1 space-y-6">
+    <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 space-y-6">
       
-      <!-- En-tête et moteur de recherche public -->
-      <div class="bg-noir-900 border border-noir-800 p-6 space-y-4">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-noir-800 pb-4">
+      <!-- Hero & Recherche -->
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
           <div>
-            <h1 class="text-base font-bold text-white uppercase tracking-wider">Casier Communautaire</h1>
-            <p class="text-slate-400 text-[11px] mt-0.5">
-              Consultation libre du nombre d'avertissements attribués par la modération.
+            <h1 class="text-lg font-bold text-white tracking-tight">Casier Communautaire de Modération</h1>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Consultation libre du nombre d'avertissements attribués aux membres par les modérateurs de la Taverne.
             </p>
           </div>
-          <div class="flex items-center gap-3 text-[11px]">
-            <span class="text-slate-500">MEMBRES AU CASIER :</span>
-            <span class="font-bold text-amber-400 font-mono text-sm" id="publicTotalUsers">0</span>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400">Membres répertoriés :</span>
+            <span class="px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 font-bold text-amber-400 text-sm font-mono" id="publicTotalUsers">0</span>
           </div>
         </div>
 
         <!-- Recherche par pseudo -->
         <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">🔍</span>
           <input 
             type="text" 
             id="publicSearchInput" 
             placeholder="Rechercher par pseudo (ex: Hugo, Axel, Mme chaise Ikea)..." 
-            class="w-full px-4 py-2.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-xs font-mono"
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white placeholder-slate-600 text-xs sm:text-sm font-sans outline-none transition-colors"
           >
         </div>
       </div>
 
-      <!-- Tableau public épuré (Pseudo et Warns uniquement) -->
-      <div class="bg-noir-900 border border-noir-800 overflow-hidden shadow-2xl">
+      <!-- Tableau public (Tremor Style) -->
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-noir-850 text-slate-400 border-b border-noir-800 uppercase tracking-wider text-[10px]">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-950/60 text-slate-400 border-b border-slate-800 text-[11px] uppercase tracking-wider font-medium">
               <tr>
                 <th class="py-3 px-4 w-12 font-mono">#</th>
-                <th class="py-3 px-4 font-bold">MEMBRE (PSEUDO)</th>
-                <th class="py-3 px-4 text-right font-bold w-48">STATUT / WARNS</th>
+                <th class="py-3 px-4 font-semibold">Membre (Pseudo)</th>
+                <th class="py-3 px-4 text-right font-semibold w-48">Statut Modération</th>
               </tr>
             </thead>
-            <tbody id="publicWarnsTableBody" class="divide-y divide-noir-800/60 font-sans">
+            <tbody id="publicWarnsTableBody" class="divide-y divide-slate-800/60">
               <tr>
-                <td colspan="3" class="py-8 text-center text-slate-500 font-mono">
-                  Chargement du casier...
-                </td>
+                <td colspan="3" class="py-8 text-center text-slate-500">Chargement du casier...</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="text-[10px] text-slate-600 text-center tracking-wider font-mono">
-        ZYBOT MODÉRATION TAVERNE • SYSTÈME DISCRET & STRICT
+      <div class="text-[11px] text-slate-500 text-center tracking-wide font-sans">
+        ZyBot • Modération Discrète & Stricte pour WhatsApp
       </div>
     </main>
   </div>
@@ -153,45 +151,66 @@
   <!-- ======================================================== -->
   <div id="appScreen" class="hidden flex-1 flex flex-col">
     
-    <!-- Barre supérieure compacte Admin -->
-    <header class="bg-noir-900 border-b border-noir-800 sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
+    <!-- Barre supérieure Admin (Tremor Navbar) -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         
-        <!-- Titre & Statut direct -->
+        <!-- Titre & Statut -->
         <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-emerald-400 animate-pulse" id="statusDot"></span>
-            <span class="font-bold tracking-wider text-white">ZYBOT ADMIN</span>
-            <span class="text-slate-500">/</span>
-            <span id="waPhoneText" class="text-slate-300 font-medium">Chargement...</span>
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+              ⚡
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-base text-white tracking-tight">ZyBot</span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" id="statusDot"></span>
+                  Admin
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-none" id="waPhoneText">Chargement...</p>
+            </div>
           </div>
-          <span class="text-slate-700 hidden sm:inline">|</span>
-          <div class="text-slate-400 text-[11px] hidden sm:block" id="uptimeDisplay">UPTIME: --</div>
+          <span class="text-slate-700 hidden md:inline">|</span>
+          <div class="text-slate-400 text-xs hidden md:block" id="uptimeDisplay">UPTIME: --</div>
         </div>
 
-        <!-- Navigation Admin & Déconnexion -->
-        <div class="flex items-center gap-2">
-          <button class="nav-tab active px-3 py-1.5 border border-white bg-white text-black font-bold tracking-wider uppercase transition-colors" data-tab="tab-warns">
-            WARNS (<span id="tabWarnCount">0</span>)
+        <!-- Navigation Tabs & Accès SuperAdmin -->
+        <div class="flex items-center gap-2 overflow-x-auto custom-scroll">
+          
+          <button class="nav-tab active px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-600/10 text-indigo-300 font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap" data-tab="tab-warns">
+            <span>⚠️</span>
+            <span>Warns (<span id="tabWarnCount">0</span>)</span>
           </button>
-          <button class="nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors" data-tab="tab-perms">
-            PERMISSIONS (<span id="tabPermsCount">0</span>)
+
+          <button class="nav-tab px-3 py-1.5 rounded-lg border border-transparent hover:border-slate-800 text-slate-400 hover:text-white font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap" data-tab="tab-top">
+            <span>📊</span>
+            <span>Activité Groupes</span>
           </button>
-          <button class="nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors" data-tab="tab-top">
-            ACTIVITÉ & TOP
+
+          <button class="nav-tab px-3 py-1.5 rounded-lg border border-transparent hover:border-slate-800 text-slate-400 hover:text-white font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap" data-tab="tab-logs">
+            <span>📜</span>
+            <span>Logs PM2</span>
           </button>
-          <button class="nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors" data-tab="tab-logs">
-            LOGS
-          </button>
-          <button id="logoutBtn" title="Retour à la vue publique" class="px-2.5 py-1.5 border border-noir-800 hover:border-red-600/60 text-slate-400 hover:text-red-400 uppercase transition-colors ml-2 font-bold">
-            SORTIR
+
+          <a 
+            href="/superadmin"
+            class="px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap ml-1"
+          >
+            <span>👑</span>
+            <span>SuperAdmin ➔</span>
+          </a>
+
+          <button id="logoutBtn" title="Retour à la vue publique" class="px-2.5 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-rose-400 text-xs font-medium transition-colors ml-1">
+            Sortir
           </button>
         </div>
       </div>
     </header>
 
     <!-- Contenu Principal Admin -->
-    <main class="max-w-7xl mx-auto w-full px-4 py-5 flex-1 space-y-4">
+    <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6">
 
       <!-- ====================================================== -->
       <!-- SECTION 1 : GESTION DÉTAILLÉE DES WARNS (ADMIN)        -->
@@ -199,212 +218,176 @@
       <section id="tab-warns" class="tab-content space-y-4">
         
         <!-- ALERTE / CARTE SCAN QR CODE (VISIBLE UNIQUEMENT SI DÉCONNECTÉ) -->
-        <div id="qrCodeCard" class="hidden bg-noir-900 border border-amber-600/70 p-6 flex flex-col sm:flex-row items-center gap-6 shadow-2xl">
-          <div class="bg-white p-3 border border-slate-700 shrink-0">
+        <div id="qrCodeCard" class="hidden bg-slate-900 border border-amber-500/50 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xl">
+          <div class="bg-white p-3 rounded-xl border border-slate-700 shrink-0">
             <img id="qrCodeImg" src="" alt="QR Code WhatsApp" class="w-48 h-48 block">
             <div id="qrLoadingText" class="w-48 h-48 flex items-center justify-center text-black font-bold text-xs text-center hidden">
               Génération du QR Code...
             </div>
           </div>
           <div class="space-y-3 flex-1 text-center sm:text-left">
-            <div class="inline-flex items-center gap-1.5 px-2 py-0.5 border border-amber-500/40 bg-amber-950/40 text-amber-400 font-bold uppercase text-[10px]">
-              ⚠️ RECONNEXION REQUISE (CODE 401)
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-500/40 bg-amber-950/40 text-amber-400 font-semibold text-xs">
+              ⚠️ RECONNEXION REQUISE (SESSION FERMÉE)
             </div>
-            <div class="text-sm font-bold text-white uppercase tracking-wider">
+            <div class="text-sm font-bold text-white tracking-tight">
               Scannez ce QR Code avec votre WhatsApp
             </div>
             <div class="text-slate-400 text-xs space-y-1">
-              <div>1. Ouvrez WhatsApp sur votre téléphone (+33 7 66 33 79 37).</div>
+              <div>1. Ouvrez WhatsApp sur votre téléphone.</div>
               <div>2. Allez dans <b>Appareils connectés</b> &gt; <b>Connecter un appareil</b>.</div>
               <div>3. Pointez votre caméra vers ce QR code pour reconnecter ZyBot.</div>
             </div>
             <div class="pt-2 flex items-center justify-center sm:justify-start gap-2">
-              <button id="btnReauth" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase text-[10px] tracking-wider transition-colors">
-                🔄 GÉNÉRER UN NOUVEAU QR
+              <button id="btnReauth" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-200 text-black font-medium text-xs transition-colors">
+                🔄 Générer un nouveau QR
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Barre d'outils et stats minimalistes -->
-        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
+        <!-- KPI Metrics & Barre d'outils -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           
-          <div class="flex items-center gap-4 text-[11px]">
-            <div>
-              <span class="text-slate-500">MEMBRES AVERTIS:</span>
-              <span class="font-bold text-amber-400 ml-1" id="statUsersCount">0</span>
+          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm">
+            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Membres Avertis</div>
+            <div class="mt-2 text-2xl font-bold text-white tracking-tight" id="statUsersCount">0</div>
+            <div class="mt-1 text-xs text-slate-400">Total au casier</div>
+          </div>
+
+          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm">
+            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Avertissements Émis</div>
+            <div class="mt-2 text-2xl font-bold text-white tracking-tight" id="statTotalWarns">0</div>
+            <div class="mt-1 text-xs text-slate-400">Cumul tous membres</div>
+          </div>
+
+          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm">
+            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Synchronisation</div>
+            <div class="mt-2 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-lg font-bold text-emerald-400">Temps Réel</span>
             </div>
-            <span class="text-slate-700">•</span>
-            <div>
-              <span class="text-slate-500">TOTAL WARNS:</span>
-              <span class="font-bold text-white ml-1" id="statTotalWarns">0</span>
-            </div>
-            <span class="text-slate-700">•</span>
-            <div class="flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              <span class="text-slate-400 text-[10px]">SYNC TEMPS RÉEL (2.5s)</span>
+            <div class="mt-1 text-xs text-slate-400">Intervalle : 2.5s</div>
+          </div>
+
+          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Actions Rapides</div>
+            <div class="flex items-center gap-2 mt-2">
+              <button id="btnScanTaverne" class="flex-1 px-3 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-300 text-xs font-medium transition-colors">
+                🔍 Sync 60 Cibles
+              </button>
+              <button id="btnOpenAddWarnModal" class="flex-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors">
+                + Ajouter
+              </button>
             </div>
           </div>
 
-          <!-- Actions -->
+        </div>
+
+        <!-- Recherche et Filtres -->
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">🔍</span>
+            <input 
+              type="text" 
+              id="adminSearchInput" 
+              placeholder="Filtrer par nom, pseudo ou numéro..." 
+              class="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white placeholder-slate-600 text-xs outline-none font-sans"
+            >
+          </div>
           <div class="flex items-center gap-2">
-            <div class="relative flex-1 sm:w-64">
-              <input 
-                type="text" 
-                id="warnSearchInput" 
-                placeholder="Filtrer (numéro, pseudo, raison)..." 
-                class="w-full px-3 py-1.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-xs font-mono"
-              >
-            </div>
-            <button id="btnOpenAddWarnModal" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors whitespace-nowrap">
-              + AVERTIR
-            </button>
-            <button id="btnScanTaverne" title="Analyser participants de la taverne" class="px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-300 uppercase transition-colors whitespace-nowrap">
-              SCAN TAVERNE
-            </button>
+            <select id="filterBanSelect" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs outline-none focus:border-indigo-500">
+              <option value="all">Tous les membres</option>
+              <option value="active">Sous avertissements (< 3)</option>
+              <option value="ban">Bannis (3+ warns)</option>
+            </select>
           </div>
         </div>
 
-        <!-- Tableau carré complet des avertissements pour l'administrateur -->
-        <div class="bg-noir-900 border border-noir-800 overflow-hidden shadow-2xl">
+        <!-- Tableau des Warns Admin (Tremor Style) -->
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border-collapse">
-              <thead class="bg-noir-850 text-slate-400 border-b border-noir-800 uppercase tracking-wider text-[10px]">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950/60 text-slate-400 border-b border-slate-800 text-[11px] uppercase tracking-wider font-medium">
                 <tr>
-                  <th class="py-2.5 px-3 font-mono">CIBLE (NUMÉRO / LID)</th>
-                  <th class="py-2.5 px-3">PSEUDO</th>
-                  <th class="py-2.5 px-3">WARNS</th>
-                  <th class="py-2.5 px-3">DERNIER MOTIF</th>
-                  <th class="py-2.5 px-3">GROUPE</th>
-                  <th class="py-2.5 px-3 text-right">ACTIONS</th>
+                  <th class="py-3 px-4 font-semibold">Membre & Identifiant</th>
+                  <th class="py-3 px-4 font-semibold">Dernier Motif</th>
+                  <th class="py-3 px-4 font-semibold">Date & Heure</th>
+                  <th class="py-3 px-4 font-semibold">Statut</th>
+                  <th class="py-3 px-4 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody id="warnsTableBody" class="divide-y divide-noir-800/60 font-sans">
-                <!-- Rempli par JavaScript -->
+              <tbody id="adminWarnsTableBody" class="divide-y divide-slate-800/60">
+                <tr>
+                  <td colspan="5" class="py-8 text-center text-slate-500">Chargement des données de modération...</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
+
       </section>
 
       <!-- ====================================================== -->
-      <!-- SECTION 2 : GESTION DES PERMISSIONS (/trust & /untrust) -->
+      <!-- SECTION 2 : ACTIVITÉ DES GROUPES & TOP PARLEURS        -->
       <!-- ====================================================== -->
-      <section id="tab-perms" class="tab-content hidden space-y-4">
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
+      <section id="tab-top" class="tab-content hidden space-y-4">
+        
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div class="font-bold text-white uppercase tracking-wider">Gestion des permissions (/trust & /untrust)</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">
-              Autorise ou révoque l'utilisation de <code class="text-white bg-noir-950 px-1 border border-noir-700">/warn</code> et <code class="text-white bg-noir-950 px-1 border border-noir-700">/texte</code>.
-            </div>
+            <h3 class="text-sm font-semibold text-white tracking-tight">Activité & Classement des Groupes</h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Volumes de messages échangés, top parleurs en direct et statistiques des conversations.
+            </p>
           </div>
-          <button id="btnOpenAddPermModal" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors whitespace-nowrap">
-            + ACCORDER PERMISSION
+          <button id="btnRefreshActivity" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors">
+            ↻ Actualiser
           </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          <!-- Membres de confiance -->
-          <div class="bg-noir-900 border border-noir-800 p-4 space-y-3">
-            <div class="flex items-center justify-between border-b border-noir-800 pb-2">
-              <span class="font-bold uppercase tracking-wider text-emerald-400">⭐ Membres de confiance (Trusted)</span>
-              <span class="text-[10px] text-slate-500 font-mono" id="countTrustedBadge">0</span>
-            </div>
-            <div class="text-[11px] text-slate-400">
-              Ces membres peuvent utiliser <b>/warn</b> et <b>/texte</b> même s'ils ne sont pas admins dans la taverne.
-            </div>
-            <div id="trustedListContainer" class="space-y-1.5 max-h-96 overflow-y-auto custom-scroll pr-1 font-mono text-xs">
-              <div class="text-slate-600 text-center py-4">Aucun membre ajouté manuellement.</div>
-            </div>
-          </div>
-
-          <!-- Membres expressément révoqués -->
-          <div class="bg-noir-900 border border-noir-800 p-4 space-y-3">
-            <div class="flex items-center justify-between border-b border-noir-800 pb-2">
-              <span class="font-bold uppercase tracking-wider text-red-400">🚫 Membres révoqués (Interdits)</span>
-              <span class="text-[10px] text-slate-500 font-mono" id="countRevokedBadge">0</span>
-            </div>
-            <div class="text-[11px] text-slate-400">
-              Ces membres sont strictement bloqués : ils ne peuvent exécuter ni <b>/warn</b> ni <b>/texte</b> même s'ils sont dans la taverne.
-            </div>
-            <div id="revokedListContainer" class="space-y-1.5 max-h-96 overflow-y-auto custom-scroll pr-1 font-mono text-xs">
-              <div class="text-slate-600 text-center py-4">Aucun membre révoqué.</div>
-            </div>
-          </div>
-
+        <div id="groupsActivityContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="col-span-full p-8 text-center text-slate-500">Chargement de l'activité des groupes...</div>
         </div>
+
       </section>
 
       <!-- ====================================================== -->
-      <!-- SECTION 3 : ACTIVITÉ & TOP DES GROUPES                 -->
+      <!-- SECTION 3 : LOGS PM2 EN DIRECT                         -->
       <!-- ====================================================== -->
-      <section id="tab-top" class="tab-content hidden space-y-4">
-        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
-          <div class="flex items-center gap-4 text-[11px]">
-            <div>
-              <span class="text-slate-500">GROUPES SUIVIS:</span>
-              <span class="font-bold text-white ml-1" id="statGroupsCount">0</span>
-            </div>
-            <span class="text-slate-700">•</span>
-            <div>
-              <span class="text-slate-500">TOTAL MESSAGES ENREGISTRÉS:</span>
-              <span class="font-bold text-emerald-400 ml-1" id="statTotalGroupMsgs">0</span>
-            </div>
-            <span class="text-slate-700">•</span>
-            <div class="flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              <span class="text-slate-400 text-[10px]">SYNC TEMPS RÉEL (2.5s)</span>
-            </div>
-          </div>
-          <div class="text-[10px] text-slate-500 uppercase tracking-wider font-mono">
-            COMMANDE WHATSAPP : <code class="text-white bg-noir-950 px-1.5 py-0.5 border border-noir-700">/top</code>
-          </div>
-        </div>
-
-        <div id="groupsActivityContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="p-8 bg-noir-900 border border-noir-800 text-slate-500 text-center col-span-full font-mono text-xs">
-            Chargement de l'activité des groupes...
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================== -->
-      <!-- SECTION 4 : LOGS CONSOLE (COPIABLE)                    -->
-      <!-- ====================================================== -->
-      <section id="tab-logs" class="tab-content hidden space-y-3">
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-noir-900 border border-noir-800 p-3">
+      <section id="tab-logs" class="tab-content hidden space-y-4">
+        
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2">
-              <span class="w-2 h-2 bg-emerald-400 animate-pulse"></span>
-              <span class="text-[11px] font-bold text-white uppercase tracking-wider">FLUX EN DIRECT (PM2)</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-semibold text-white">Flux en direct (PM2)</span>
             </div>
             <span class="text-slate-700">|</span>
             <input 
               type="text" 
               id="logFilterInput" 
               placeholder="Filtrer les lignes..." 
-              class="px-2.5 py-1 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white text-[11px] w-48 font-mono"
+              class="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs w-48 font-mono outline-none focus:border-indigo-500"
             >
           </div>
 
           <div class="flex items-center gap-2">
-            <button id="btnCopyLogs" class="px-3 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5">
+            <button id="btnCopyLogs" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-200 text-black font-medium text-xs transition-colors flex items-center gap-1.5">
               <span>📋</span>
-              <span id="btnCopyLogsText">COPIER LES LOGS</span>
+              <span id="btnCopyLogsText">Copier</span>
             </button>
-            <button id="btnClearLogs" class="px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white uppercase transition-colors">
-              VIDER
+            <button id="btnClearLogs" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-medium transition-colors">
+              Vider
             </button>
-            <button id="btnRestartBot" class="px-3 py-1.5 border border-red-800/80 hover:bg-red-950/40 text-red-400 uppercase transition-colors">
-              RESTART PM2
+            <button id="btnRestartBot" class="px-3 py-1.5 rounded-lg border border-rose-900/30 bg-rose-950/20 hover:bg-rose-900/40 text-rose-400 text-xs font-medium transition-colors">
+              Restart PM2
             </button>
           </div>
         </div>
 
-        <div id="terminalWindow" class="w-full h-[650px] p-4 bg-black border border-noir-800 font-mono text-[11px] text-slate-300 overflow-y-auto custom-scroll space-y-0.5 select-text">
+        <div id="terminalWindow" class="w-full h-[650px] p-4 rounded-2xl bg-black border border-slate-800 font-mono text-[11px] text-slate-300 overflow-y-auto custom-scroll space-y-0.5 select-text shadow-inner">
           <div class="text-slate-600">// Flux de logs en cours de synchronisation...</div>
         </div>
+
       </section>
 
     </main>
@@ -413,35 +396,35 @@
   <!-- ======================================================== -->
   <!-- MODALE : CONNEXION ADMINISTRATEUR                        -->
   <!-- ======================================================== -->
-  <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
-    <div class="w-full max-w-sm bg-noir-900 border border-noir-700 p-8 space-y-6 shadow-2xl relative">
-      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
+  <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-7 space-y-5 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
-          <div class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">AUTHENTIFICATION</div>
-          <div class="text-lg font-bold text-white tracking-wide mt-0.5">ACCÈS ADMINISTRATEUR</div>
+          <div class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Authentification</div>
+          <div class="text-base font-bold text-white tracking-tight mt-0.5">Accès Administrateur</div>
         </div>
-        <button onclick="closeModal('loginModal')" class="text-slate-500 hover:text-white px-2">✕</button>
+        <button onclick="closeModal('loginModal')" class="text-slate-500 hover:text-white text-lg">✕</button>
       </div>
 
-      <div id="loginError" class="hidden p-3 bg-red-950/40 border border-red-800/80 text-red-300 text-[11px]">
+      <div id="loginError" class="hidden p-3 rounded-lg bg-rose-950/40 border border-rose-800/80 text-rose-300 text-xs">
         Mot de passe incorrect.
       </div>
 
       <form id="loginForm" class="space-y-4">
         <div class="space-y-1.5">
-          <label class="block text-[10px] uppercase tracking-widest text-slate-400">Mot de passe Admin</label>
+          <label class="block text-xs font-medium text-slate-300">Mot de passe Admin</label>
           <input 
             type="password" 
             id="passwordInput" 
             placeholder="••••••••••••" 
             required
-            class="w-full px-3 py-2.5 bg-noir-950 border border-noir-700 text-white placeholder-slate-600 focus:outline-none focus:border-white font-mono text-xs"
+            class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono text-xs"
           >
         </div>
 
         <button 
           type="submit" 
-          class="w-full py-2.5 px-4 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider transition-colors"
+          class="w-full py-2.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors shadow-sm"
         >
           Déverrouiller le panel ➔
         </button>
@@ -452,115 +435,63 @@
   <!-- ======================================================== -->
   <!-- MODALE : AJOUTER UN WARN (ADMIN)                         -->
   <!-- ======================================================== -->
-  <div id="addWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
-    <div class="w-full max-w-md bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
-        <span class="font-bold uppercase tracking-wider text-white">+ NOUVEL AVERTISSEMENT</span>
-        <button onclick="closeModal('addWarnModal')" class="text-slate-500 hover:text-white px-2">✕</button>
+  <div id="addWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <span class="font-bold text-sm text-white tracking-tight">+ Nouvel Avertissement</span>
+        <button onclick="closeModal('addWarnModal')" class="text-slate-500 hover:text-white text-lg">✕</button>
       </div>
 
       <form id="addWarnForm" class="space-y-3">
         <div class="space-y-1">
-          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Cible (Numéro ou LID)</label>
+          <label class="block text-xs font-medium text-slate-400">Cible (Numéro ou LID)</label>
           <input 
             type="text" 
             id="modalWarnTarget" 
             placeholder="Ex: 33612345678 ou 218193348006100" 
             required
-            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white font-mono text-xs"
+            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 font-mono text-xs"
           >
         </div>
 
         <div class="space-y-1">
-          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Pseudo (Optionnel)</label>
+          <label class="block text-xs font-medium text-slate-400">Pseudo (Optionnel)</label>
           <input 
             type="text" 
             id="modalWarnPseudo" 
             placeholder="Ex: Hugo, Mme chaise Ikea..." 
-            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white text-xs"
+            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 text-xs"
           >
         </div>
 
         <div class="space-y-1">
-          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Motif de l'avertissement</label>
+          <label class="block text-xs font-medium text-slate-400">Motif de l'avertissement</label>
           <textarea 
             id="modalWarnReason" 
             rows="3" 
             placeholder="Ex: Spam de stickers, insultes, pub non autorisée..." 
             required
-            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white text-xs"
+            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 text-xs"
           ></textarea>
         </div>
 
         <div class="space-y-1">
-          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Admin émetteur</label>
+          <label class="block text-xs font-medium text-slate-400">Admin émetteur</label>
           <input 
             type="text" 
             id="modalWarnAdmin" 
             value="Administrateur Web" 
             required
-            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white text-xs"
+            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 text-xs"
           >
         </div>
 
-        <div class="flex justify-end gap-2 pt-2 border-t border-noir-800">
-          <button type="button" onclick="closeModal('addWarnModal')" class="px-3 py-1.5 border border-noir-700 hover:border-slate-500 text-slate-300 uppercase">
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('addWarnModal')" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-medium transition-colors">
             Annuler
           </button>
-          <button type="submit" class="px-4 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider">
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors shadow-sm">
             Enregistrer
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODALE : AJOUTER UNE PERMISSION (/trust ou /untrust)     -->
-  <!-- ======================================================== -->
-  <div id="addPermModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
-    <div class="w-full max-w-md bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
-        <span class="font-bold uppercase tracking-wider text-white">+ ACCORDER / RÉVOQUER PERMISSION</span>
-        <button onclick="closeModal('addPermModal')" class="text-slate-500 hover:text-white px-2">✕</button>
-      </div>
-
-      <form id="addPermForm" class="space-y-3">
-        <div class="space-y-1">
-          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Action</label>
-          <select id="modalPermAction" class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white text-xs focus:outline-none focus:border-white">
-            <option value="trust">⭐ Autoriser (Trusted - accès à /warn et /texte)</option>
-            <option value="untrust">🚫 Révoquer (Bloquer totalement /warn et /texte)</option>
-          </select>
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Numéro ou LID</label>
-          <input 
-            type="text" 
-            id="modalPermTarget" 
-            placeholder="Ex: 33612345678" 
-            required
-            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white font-mono text-xs"
-          >
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-[10px] uppercase tracking-wider text-slate-400">Nom / Pseudo (Optionnel)</label>
-          <input 
-            type="text" 
-            id="modalPermName" 
-            placeholder="Ex: Hugo, Alexandre..." 
-            class="w-full px-3 py-2 bg-noir-950 border border-noir-700 text-white focus:outline-none focus:border-white text-xs"
-          >
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-noir-800">
-          <button type="button" onclick="closeModal('addPermModal')" class="px-3 py-1.5 border border-noir-700 hover:border-slate-500 text-slate-300 uppercase">
-            Annuler
-          </button>
-          <button type="submit" class="px-4 py-1.5 bg-white hover:bg-slate-200 text-black font-bold uppercase tracking-wider">
-            Valider
           </button>
         </div>
       </form>
@@ -570,25 +501,25 @@
   <!-- ======================================================== -->
   <!-- MODALE : HISTORIQUE D'UN MEMBRE (ADMIN)                  -->
   <!-- ======================================================== -->
-  <div id="detailsWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85">
-    <div class="w-full max-w-xl bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
-      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
+  <div id="detailsWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
-          <span class="font-bold uppercase tracking-wider text-white" id="modalDetailsTitle">HISTORIQUE WARNS</span>
-          <div class="text-[10px] text-slate-500 font-mono mt-0.5" id="modalDetailsSubtitle"></div>
+          <span class="font-bold text-sm text-white tracking-tight" id="modalDetailsTitle">Historique des Avertissements</span>
+          <div class="text-[11px] text-slate-400 font-mono mt-0.5" id="modalDetailsSubtitle"></div>
         </div>
-        <button onclick="closeModal('detailsWarnModal')" class="text-slate-500 hover:text-white px-2">✕</button>
+        <button onclick="closeModal('detailsWarnModal')" class="text-slate-500 hover:text-white text-lg">✕</button>
       </div>
 
-      <div class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-1" id="modalDetailsList">
+      <div class="flex-1 overflow-y-auto custom-scroll space-y-2.5 pr-1" id="modalDetailsList">
         <!-- Rempli par JavaScript -->
       </div>
 
-      <div class="pt-3 border-t border-noir-800 flex items-center justify-between">
-        <button id="modalDetailsResetAllBtn" class="px-3 py-1.5 bg-red-950/60 border border-red-800 hover:bg-red-900 text-red-300 uppercase font-bold tracking-wider text-[10px]">
-          EFFACER TOUS LES WARNS (RESET)
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+        <button id="modalDetailsResetAllBtn" class="px-3 py-1.5 rounded-lg bg-rose-950/40 border border-rose-800/80 hover:bg-rose-900/50 text-rose-300 font-medium text-xs transition-colors">
+          Effacer tous les warns (Reset)
         </button>
-        <button onclick="closeModal('detailsWarnModal')" class="px-3 py-1.5 border border-noir-700 text-slate-300 uppercase text-[10px]">
+        <button onclick="closeModal('detailsWarnModal')" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-medium transition-colors">
           Fermer
         </button>
       </div>
@@ -598,20 +529,20 @@
   <!-- ======================================================== -->
   <!-- MODALE : CONFIRMATION INTÉGRÉE (PAS DE POPUP BROWSER)    -->
   <!-- ======================================================== -->
-  <div id="confirmModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4 bg-black/85">
-    <div class="w-full max-w-sm bg-noir-900 border border-noir-700 p-6 space-y-4 shadow-2xl relative">
-      <div class="flex items-center justify-between border-b border-noir-800 pb-3">
-        <span class="font-bold uppercase tracking-wider text-white" id="confirmModalTitle">CONFIRMATION</span>
-        <button id="confirmModalCloseBtn" class="text-slate-500 hover:text-white px-2">✕</button>
+  <div id="confirmModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <span class="font-bold text-sm text-white tracking-tight" id="confirmModalTitle">Confirmation</span>
+        <button id="confirmModalCloseBtn" class="text-slate-500 hover:text-white text-lg">✕</button>
       </div>
       <div class="text-xs text-slate-300 font-sans leading-relaxed" id="confirmModalMessage">
         Confirmer cette action ?
       </div>
-      <div class="pt-3 border-t border-noir-800 flex items-center justify-end gap-2 font-mono">
-        <button id="confirmModalCancelBtn" class="px-3 py-1.5 border border-noir-700 hover:border-slate-500 text-slate-300 hover:text-white uppercase text-[10px] font-medium transition-colors">
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+        <button id="confirmModalCancelBtn" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-medium transition-colors">
           Annuler
         </button>
-        <button id="confirmModalOkBtn" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold uppercase text-[10px] tracking-wider transition-colors">
+        <button id="confirmModalOkBtn" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs transition-colors shadow-sm">
           Confirmer
         </button>
       </div>
@@ -619,7 +550,7 @@
   </div>
 
   <!-- TOAST NOTIFICATION INTÉGRÉ -->
-  <div id="toastNotification" class="hidden fixed top-4 right-4 z-[80] px-4 py-2.5 border font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-2xl"></div>
+  <div id="toastNotification" class="hidden fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-xl border font-sans text-xs font-medium transition-all duration-300 shadow-2xl"></div>
 
   <!-- ======================================================== -->
   <!-- JAVASCRIPT TEMPS RÉEL (VUE PUBLIQUE + PANEL ADMIN)       -->
@@ -629,7 +560,6 @@
     let publicWarnsData = [];
     let allWarnsData = [];
     let allGroupsActivity = [];
-    let allPermissionsData = { trusted: [], revoked: [] };
     let rawLogsList = [];
     let activeTab = 'tab-warns';
     let pollInterval = null;
@@ -649,167 +579,109 @@
       return res;
     }
 
-    // ══════════════════════════════════════════════════════════
-    // SYSTÈME DE MODALE DE CONFIRMATION ET TOASTS INTÉGRÉS
-    // ══════════════════════════════════════════════════════════
-    let confirmModalResolver = null;
-
-    function showConfirmModal({ title = 'CONFIRMATION', message = 'Confirmer cette action ?', confirmText = 'CONFIRMER', danger = false }) {
-      return new Promise((resolve) => {
-        confirmModalResolver = resolve;
-        const modal = document.getElementById('confirmModal');
-        document.getElementById('confirmModalTitle').textContent = title;
-        document.getElementById('confirmModalMessage').textContent = message;
-        const okBtn = document.getElementById('confirmModalOkBtn');
-        okBtn.textContent = confirmText;
-        if (danger) {
-          okBtn.className = 'px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold uppercase text-[10px] tracking-wider transition-colors';
-        } else {
-          okBtn.className = 'px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-[10px] tracking-wider transition-colors';
-        }
-        modal.classList.remove('hidden');
-      });
-    }
-
-    function closeConfirmModal(result = false) {
+    // Modal Confirmation Dialog
+    function showConfirmModal({ title, message, onConfirm }) {
       const modal = document.getElementById('confirmModal');
-      if (modal) modal.classList.add('hidden');
-      if (confirmModalResolver) {
-        confirmModalResolver(result);
-        confirmModalResolver = null;
-      }
+      document.getElementById('confirmModalTitle').textContent = title || 'Confirmation';
+      document.getElementById('confirmModalMessage').textContent = message || 'Êtes-vous sûr ?';
+      
+      const okBtn = document.getElementById('confirmModalOkBtn');
+      const cancelBtn = document.getElementById('confirmModalCancelBtn');
+      const closeBtn = document.getElementById('confirmModalCloseBtn');
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        okBtn.onclick = null;
+        cancelBtn.onclick = null;
+        closeBtn.onclick = null;
+      };
+
+      okBtn.onclick = async () => {
+        cleanup();
+        if (typeof onConfirm === 'function') {
+          await onConfirm();
+        }
+      };
+
+      cancelBtn.onclick = cleanup;
+      closeBtn.onclick = cleanup;
+
+      modal.classList.remove('hidden');
     }
 
-    document.getElementById('confirmModalOkBtn')?.addEventListener('click', () => closeConfirmModal(true));
-    document.getElementById('confirmModalCancelBtn')?.addEventListener('click', () => closeConfirmModal(false));
-    document.getElementById('confirmModalCloseBtn')?.addEventListener('click', () => closeConfirmModal(false));
-    document.getElementById('confirmModal')?.addEventListener('click', (e) => {
-      if (e.target.id === 'confirmModal') closeConfirmModal(false);
-    });
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        const modal = document.getElementById('confirmModal');
-        if (modal && !modal.classList.contains('hidden')) {
-          closeConfirmModal(false);
-        }
-      }
-    });
-
-    let toastTimer = null;
-    function showToast(message, type = 'success') {
+    function showToast(text, type = 'success') {
       const toast = document.getElementById('toastNotification');
-      if (!toast) return;
-      if (toastTimer) clearTimeout(toastTimer);
-
-      toast.textContent = message;
-      if (type === 'error') {
-        toast.className = 'fixed top-4 right-4 z-[80] px-4 py-2.5 border border-red-500 bg-noir-900 text-red-400 font-mono text-xs uppercase tracking-wider shadow-2xl transition-all duration-300';
+      toast.textContent = text;
+      if (type === 'success') {
+        toast.className = 'fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-xl border bg-emerald-950/80 border-emerald-500/40 text-emerald-300 font-sans text-xs font-medium shadow-2xl';
       } else {
-        toast.className = 'fixed top-4 right-4 z-[80] px-4 py-2.5 border border-emerald-500 bg-noir-900 text-emerald-400 font-mono text-xs uppercase tracking-wider shadow-2xl transition-all duration-300';
+        toast.className = 'fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-xl border bg-rose-950/80 border-rose-500/40 text-rose-300 font-sans text-xs font-medium shadow-2xl';
       }
       toast.classList.remove('hidden');
-      toastTimer = setTimeout(() => {
+      setTimeout(() => {
         toast.classList.add('hidden');
       }, 3500);
+    }
+
+    function closeModal(id) {
+      document.getElementById(id)?.classList.add('hidden');
+    }
+
+    function openModal(id) {
+      document.getElementById(id)?.classList.remove('hidden');
+    }
+
+    // Navigation des onglets Admin
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(b => {
+          b.classList.remove('active', 'border-indigo-500/40', 'bg-indigo-600/10', 'text-indigo-300');
+          b.classList.add('border-transparent', 'text-slate-400');
+        });
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+        btn.classList.add('active', 'border-indigo-500/40', 'bg-indigo-600/10', 'text-indigo-300');
+        btn.classList.remove('border-transparent', 'text-slate-400');
+        
+        const tabId = btn.getAttribute('data-tab');
+        document.getElementById(tabId)?.classList.remove('hidden');
+        activeTab = tabId;
+      });
+    });
+
+    // 1. Initialisation & Auth check
+    async function initApp() {
+      try {
+        const res = await fetch('/api/auth/check');
+        const data = await res.json();
+        if (data.authenticated) {
+          showAdmin();
+        } else {
+          showPublic();
+        }
+      } catch (err) {
+        showPublic();
+      }
     }
 
     function showPublic() {
       document.getElementById('publicScreen').classList.remove('hidden');
       document.getElementById('appScreen').classList.add('hidden');
-      document.getElementById('loginModal').classList.add('hidden');
       if (pollInterval) clearInterval(pollInterval);
-      fetchPublicData();
-      pollInterval = setInterval(fetchPublicData, 3000);
+      loadPublicWarns();
     }
 
     function showAdmin() {
       document.getElementById('publicScreen').classList.add('hidden');
       document.getElementById('appScreen').classList.remove('hidden');
-      document.getElementById('loginModal').classList.add('hidden');
-      if (pollInterval) clearInterval(pollInterval);
-      fetchAllAdminData();
-      pollInterval = setInterval(fetchAllAdminData, 2500);
-    }
-
-    // Initialisation
-    window.addEventListener('DOMContentLoaded', async () => {
-      setupTabs();
-      setupEvents();
-
-      // Vérifier si une session admin valide existe déjà
-      try {
-        const res = await apiFetch('api/auth/check');
-        const data = await res.json();
-        if (data.authenticated) {
-          showAdmin();
-          return;
-        }
-      } catch {}
-
-      showPublic();
-    });
-
-    // ══════════════════════════════════════════════════════════
-    // LOGIQUE VUE PUBLIQUE
-    // ══════════════════════════════════════════════════════════
-    async function fetchPublicData() {
-      try {
-        const res = await fetch('api/public/warns');
-        const data = await res.json();
-        publicWarnsData = data.users || [];
-        document.getElementById('publicTotalUsers').textContent = publicWarnsData.length;
-        renderPublicWarns();
-      } catch (err) {
-        console.error('Erreur fetchPublicData:', err);
+      loadAdminData();
+      if (!pollInterval) {
+        pollInterval = setInterval(loadAdminData, 2500);
       }
     }
 
-    function renderPublicWarns() {
-      const q = (document.getElementById('publicSearchInput')?.value || '').toLowerCase().trim();
-      const filtered = q ? publicWarnsData.filter(u => (u.pseudo || '').toLowerCase().includes(q)) : publicWarnsData;
-
-      const tbody = document.getElementById('publicWarnsTableBody');
-      if (!tbody) return;
-
-      if (!filtered.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="3" class="py-8 text-center text-slate-500 font-mono">
-              ${q ? `Aucun membre correspondant à "${escapeHtml(q)}".` : 'Aucun avertissement enregistré pour le moment.'}
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = filtered.map((u, i) => {
-        const count = u.count;
-        let badge = `<span class="px-2 py-0.5 border border-yellow-800 bg-yellow-950/40 text-yellow-300 font-bold font-mono">1 AVERTISSEMENT</span>`;
-        if (count === 2) {
-          badge = `<span class="px-2 py-0.5 border border-orange-800 bg-orange-950/40 text-orange-300 font-bold font-mono">2 AVERTISSEMENTS</span>`;
-        } else if (count >= 3) {
-          badge = `<span class="px-2 py-0.5 border border-red-700 bg-red-950/70 text-red-300 font-bold font-mono animate-pulse">⛔ BAN (${count}/3)</span>`;
-        }
-
-        return `
-          <tr class="hover:bg-white/[0.02] border-b border-noir-800/40">
-            <td class="py-3 px-4 font-mono text-slate-500">${i + 1}</td>
-            <td class="py-3 px-4 text-white font-medium text-sm font-sans">${escapeHtml(u.pseudo || 'Membre Taverne')}</td>
-            <td class="py-3 px-4 text-right">${badge}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    document.getElementById('publicSearchInput')?.addEventListener('input', renderPublicWarns);
-
-    // ══════════════════════════════════════════════════════════
-    // AUTHENTIFICATION & MODALE LOGIN
-    // ══════════════════════════════════════════════════════════
-    document.getElementById('btnOpenLoginModal')?.addEventListener('click', () => {
-      document.getElementById('loginModal').classList.remove('hidden');
-      document.getElementById('passwordInput').focus();
-    });
+    // Modal Connexion
+    document.getElementById('btnOpenLoginModal')?.addEventListener('click', () => openModal('loginModal'));
 
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -818,168 +690,183 @@
       errBox.classList.add('hidden');
 
       try {
-        const res = await fetch('api/auth/login', {
+        const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password: pwd })
         });
         const data = await res.json();
-
         if (res.ok && data.success) {
           currentAuthToken = data.token;
           localStorage.setItem('zybot_token', data.token);
-          showAdmin();
+          closeModal('loginModal');
+          
+          if (data.isSuperAdmin) {
+            window.location.href = '/superadmin';
+          } else {
+            showAdmin();
+          }
         } else {
-          errBox.classList.remove('hidden');
           errBox.textContent = data.error || 'Mot de passe incorrect.';
+          errBox.classList.remove('hidden');
         }
-      } catch {
+      } catch (err) {
+        errBox.textContent = 'Erreur de connexion.';
         errBox.classList.remove('hidden');
-        errBox.textContent = 'Erreur réseau.';
       }
     });
 
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-      try { await apiFetch('api/auth/logout', { method: 'POST' }); } catch {}
+      await fetch('/api/auth/logout', { method: 'POST' });
       currentAuthToken = null;
       localStorage.removeItem('zybot_token');
       showPublic();
     });
 
-    // ══════════════════════════════════════════════════════════
-    // LOGIQUE PANEL ADMIN
-    // ══════════════════════════════════════════════════════════
-    function setupTabs() {
-      document.querySelectorAll('.nav-tab').forEach((tab) => {
-        tab.addEventListener('click', () => {
-          activeTab = tab.dataset.tab;
-          document.querySelectorAll('.nav-tab').forEach((t) => {
-            if (t.dataset.tab === activeTab) {
-              t.className = 'nav-tab active px-3 py-1.5 border border-white bg-white text-black font-bold tracking-wider uppercase transition-colors';
-            } else {
-              t.className = 'nav-tab px-3 py-1.5 border border-noir-700 hover:border-slate-400 text-slate-400 hover:text-white font-medium tracking-wider uppercase transition-colors';
-            }
-          });
-
-          document.querySelectorAll('.tab-content').forEach((sec) => {
-            if (sec.id === activeTab) sec.classList.remove('hidden');
-            else sec.classList.add('hidden');
-          });
-
-          if (activeTab === 'tab-logs') renderLogs();
-        });
-      });
-    }
-
-    async function fetchAllAdminData() {
-      await Promise.all([
-        updateStatus(),
-        updateWarns(),
-        updatePermissions(),
-        updateGroupsActivity(),
-        updateLogs()
-      ]);
-    }
-
-    // 1. Statut
-    async function updateStatus() {
+    // 2. Vue Publique
+    async function loadPublicWarns() {
       try {
-        const res = await apiFetch('api/status');
+        const res = await fetch('/api/public/warns');
         const data = await res.json();
+        publicWarnsData = data.users || [];
+        document.getElementById('publicTotalUsers').textContent = publicWarnsData.length;
+        renderPublicWarns(publicWarnsData);
+      } catch (err) {}
+    }
 
-        const phoneSpan = document.getElementById('waPhoneText');
-        const dot = document.getElementById('statusDot');
-        const qrCard = document.getElementById('qrCodeCard');
-        const qrImg = document.getElementById('qrCodeImg');
-        const qrLoad = document.getElementById('qrLoadingText');
+    function renderPublicWarns(users) {
+      const tbody = document.getElementById('publicWarnsTableBody');
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-slate-500">Aucun membre répertorié.</td></tr>';
+        return;
+      }
 
-        if (data.bot.status === 'connected') {
-          phoneSpan.textContent = `+${data.bot.phone || 'CONNECTÉ'}`;
-          dot.className = 'w-2 h-2 bg-emerald-400 animate-pulse';
-          qrCard.classList.add('hidden');
-        } else {
-          phoneSpan.textContent = 'DÉCONNECTÉ';
-          dot.className = 'w-2 h-2 bg-red-500';
-          qrCard.classList.remove('hidden');
+      tbody.innerHTML = users.map((u, i) => {
+        const isBan = u.count >= 3;
+        return `
+          <tr class="hover:bg-slate-800/40 transition-colors">
+            <td class="py-3 px-4 font-mono text-slate-500 text-xs">${i + 1}</td>
+            <td class="py-3 px-4 font-medium text-white">${u.pseudo || 'Membre Taverne'}</td>
+            <td class="py-3 px-4 text-right">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                ${isBan ? '⛔ BAN (3+)' : `${u.count} avertissement${u.count > 1 ? 's' : ''}`}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
 
-          if (data.bot.qr) {
-            qrImg.classList.remove('hidden');
-            qrLoad.classList.add('hidden');
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.bot.qr)}`;
+    document.getElementById('publicSearchInput')?.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = publicWarnsData.filter(u => u.pseudo && u.pseudo.toLowerCase().includes(q));
+      renderPublicWarns(filtered);
+    });
+
+    // 3. Panel Admin : Chargement des données
+    async function loadAdminData() {
+      try {
+        await Promise.all([
+          loadBotStatus(),
+          loadWarns(),
+          loadGroupsActivity(),
+          loadLogs()
+        ]);
+      } catch (err) {}
+    }
+
+    async function loadBotStatus() {
+      try {
+        const res = await apiFetch('/api/status');
+        const data = await res.json();
+        if (data.bot) {
+          const isOnline = data.bot.status === 'connected';
+          document.getElementById('statusDot').className = `w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`;
+          document.getElementById('waPhoneText').textContent = data.bot.phone ? `+${data.bot.phone} (${data.bot.pushName || 'ZyBot'})` : (isOnline ? 'Connecté' : 'Hors ligne');
+          
+          const uptimeSec = data.bot.uptime || 0;
+          const uptimeHours = (uptimeSec / 3600).toFixed(1);
+          document.getElementById('uptimeDisplay').textContent = `UPTIME: ${uptimeHours}h`;
+
+          // Gestion QR code si déconnecté
+          const qrCard = document.getElementById('qrCodeCard');
+          if (data.bot.status === 'disconnected' && data.bot.qr) {
+            qrCard.classList.remove('hidden');
+            document.getElementById('qrCodeImg').src = data.bot.qr;
           } else {
-            qrImg.classList.add('hidden');
-            qrLoad.classList.remove('hidden');
+            qrCard.classList.add('hidden');
           }
         }
-
-        const hours = Math.floor(data.bot.uptime / 3600);
-        const mins = Math.floor((data.bot.uptime % 3600) / 60);
-        document.getElementById('uptimeDisplay').textContent = `UPTIME: ${hours}H ${mins}M • RAM: ${data.system.processMemMb}MB`;
-        document.getElementById('statUsersCount').textContent = data.stats.warnedUsersCount;
-        document.getElementById('statTotalWarns').textContent = data.stats.totalWarnCount;
-        document.getElementById('tabWarnCount').textContent = data.stats.warnedUsersCount;
-      } catch {}
+      } catch (err) {}
     }
 
-    // 2. Warns (Admin)
-    async function updateWarns() {
+    async function loadWarns() {
       try {
-        const res = await apiFetch('api/warns');
+        const res = await apiFetch('/api/warns');
         const data = await res.json();
         allWarnsData = data.users || [];
-        renderWarns();
-      } catch {}
+        
+        document.getElementById('tabWarnCount').textContent = allWarnsData.length;
+        document.getElementById('statUsersCount').textContent = allWarnsData.length;
+        
+        const total = allWarnsData.reduce((sum, u) => sum + (u.count || 0), 0);
+        document.getElementById('statTotalWarns').textContent = total;
+
+        filterAndRenderAdminWarns();
+      } catch (err) {}
     }
 
-    function renderWarns() {
-      const q = (document.getElementById('warnSearchInput')?.value || '').toLowerCase().trim();
-      const filtered = q ? allWarnsData.filter((u) => {
-        return (
-          u.number.includes(q) ||
-          (u.pushName && u.pushName.toLowerCase().includes(q)) ||
-          u.warns.some((w) => (w.reason && w.reason.toLowerCase().includes(q)))
-        );
-      }) : allWarnsData;
+    function filterAndRenderAdminWarns() {
+      const search = (document.getElementById('adminSearchInput')?.value || '').toLowerCase().trim();
+      const banFilter = document.getElementById('filterBanSelect')?.value || 'all';
 
-      const tbody = document.getElementById('warnsTableBody');
-      if (!tbody) return;
+      let list = allWarnsData.filter(u => {
+        const matchesSearch = !search || 
+          (u.number && u.number.includes(search)) || 
+          (u.pushName && u.pushName.toLowerCase().includes(search));
+        
+        if (!matchesSearch) return false;
 
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-600">Aucun avertissement enregistré.</td></tr>';
+        if (banFilter === 'active') return (u.count || 0) < 3;
+        if (banFilter === 'ban') return (u.count || 0) >= 3;
+        return true;
+      });
+
+      const tbody = document.getElementById('adminWarnsTableBody');
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500">Aucun membre ne correspond aux critères.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = filtered.map((u) => {
-        const count = u.count;
-        let badge = `<span class="px-2 py-0.5 border border-yellow-800 bg-yellow-950/40 text-yellow-300 font-bold">${count} WARN</span>`;
-        if (count === 2) {
-          badge = `<span class="px-2 py-0.5 border border-orange-800 bg-orange-950/40 text-orange-300 font-bold">2 WARNS</span>`;
-        } else if (count >= 3) {
-          badge = `<span class="px-2 py-0.5 border border-red-700 bg-red-950/70 text-red-300 font-bold animate-pulse">⛔ BAN (${count})</span>`;
-        }
-
-        const last = u.lastWarn || {};
-        const pseudo = u.pushName || '<span class="text-slate-600">-</span>';
-        const isLid = u.number.length >= 14;
+      tbody.innerHTML = list.map(u => {
+        const isBan = (u.count || 0) >= 3;
+        const lastWarn = u.warns && u.warns.length > 0 ? u.warns[u.warns.length - 1] : null;
+        const reason = lastWarn?.reason || 'Non précisé';
+        const dateStr = lastWarn ? new Date(lastWarn.timestamp).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
 
         return `
-          <tr class="hover:bg-white/[0.02] border-b border-noir-800/60 font-mono">
-            <td class="py-2.5 px-3 text-white font-medium">
-              <span class="text-slate-500">${isLid ? 'ID:' : '+'}</span>${u.number}
-              <button onclick="copyText('${u.number}', this)" title="Copier" class="ml-1 text-slate-600 hover:text-white">⧉</button>
+          <tr class="hover:bg-slate-800/40 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-semibold text-white">${u.pushName || 'Membre Taverne'}</div>
+              <div class="font-mono text-slate-400 text-[11px]">+${u.number}</div>
             </td>
-            <td class="py-2.5 px-3 text-slate-300 font-sans">${pseudo}</td>
-            <td class="py-2.5 px-3">${badge}</td>
-            <td class="py-2.5 px-3 text-slate-300 max-w-xs truncate font-sans" title="${last.reason || ''}">
-              "${escapeHtml(last.reason || 'N/A')}"
+            <td class="py-3 px-4 text-slate-300 max-w-xs truncate" title="${reason}">
+              ${reason}
             </td>
-            <td class="py-2.5 px-3 text-slate-500 text-[10px] font-sans">${last.groupName || 'Taverne'}</td>
-            <td class="py-2.5 px-3 text-right space-x-1.5 whitespace-nowrap">
-              <button onclick="openMemberDetails('${u.number}')" class="px-2 py-0.5 border border-noir-700 hover:border-white text-slate-300 hover:text-white uppercase text-[10px]">
+            <td class="py-3 px-4 font-mono text-slate-400 text-[11px]">
+              ${dateStr}
+            </td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                ${isBan ? '⛔ BAN (3+)' : `${u.count} warn${u.count > 1 ? 's' : ''}`}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-right space-x-1">
+              <button onclick="openWarnDetails('${u.number}')" class="px-2.5 py-1 rounded-md border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors">
                 Détails
               </button>
-              <button onclick="deleteMemberWarns('${u.number}')" class="px-2 py-0.5 border border-red-900/60 hover:bg-red-950/40 text-red-400 uppercase text-[10px]">
-                Effacer
+              <button onclick="confirmResetMemberWarns('${u.number}', '${u.pushName || u.number}')" class="px-2.5 py-1 rounded-md border border-rose-900/30 bg-rose-950/20 hover:bg-rose-900/40 text-rose-400 text-xs font-medium transition-colors">
+                Reset
               </button>
             </td>
           </tr>
@@ -987,498 +874,250 @@
       }).join('');
     }
 
-    document.getElementById('warnSearchInput')?.addEventListener('input', renderWarns);
+    document.getElementById('adminSearchInput')?.addEventListener('input', filterAndRenderAdminWarns);
+    document.getElementById('filterBanSelect')?.addEventListener('change', filterAndRenderAdminWarns);
 
-    // 3. Permissions (/trust & /untrust)
-    async function updatePermissions() {
-      try {
-        const res = await apiFetch('api/permissions');
-        const data = await res.json();
-        allPermissionsData = {
-          trusted: data.trusted || [],
-          revoked: data.revoked || []
-        };
-        const countBadge = document.getElementById('tabPermsCount');
-        if (countBadge) countBadge.textContent = allPermissionsData.trusted.length;
-        renderPermissions();
-      } catch {}
-    }
+    // Modal Nouveau Warn
+    document.getElementById('btnOpenAddWarnModal')?.addEventListener('click', () => openModal('addWarnModal'));
 
-    function renderPermissions() {
-      const trustedContainer = document.getElementById('trustedListContainer');
-      const revokedContainer = document.getElementById('revokedListContainer');
-      const countTrusted = document.getElementById('countTrustedBadge');
-      const countRevoked = document.getElementById('countRevokedBadge');
-
-      if (countTrusted) countTrusted.textContent = `${allPermissionsData.trusted.length} membre(s)`;
-      if (countRevoked) countRevoked.textContent = `${allPermissionsData.revoked.length} membre(s)`;
-
-      if (trustedContainer) {
-        if (!allPermissionsData.trusted.length) {
-          trustedContainer.innerHTML = '<div class="text-slate-600 text-center py-4">Aucun membre ajouté manuellement (seuls les admins taverne ont accès).</div>';
-        } else {
-          trustedContainer.innerHTML = allPermissionsData.trusted.map(u => `
-            <div class="flex items-center justify-between p-2 bg-noir-950 border border-noir-800">
-              <div>
-                <div class="text-white font-medium">${escapeHtml(u.name || 'Inconnu')}</div>
-                <div class="text-[10px] text-slate-500">+${u.number}</div>
-              </div>
-              <button onclick="removePermission('${u.number}')" class="px-2 py-0.5 border border-red-900 hover:bg-red-950/40 text-red-400 text-[10px] uppercase">
-                Retirer
-              </button>
-            </div>
-          `).join('');
-        }
-      }
-
-      if (revokedContainer) {
-        if (!allPermissionsData.revoked.length) {
-          revokedContainer.innerHTML = '<div class="text-slate-600 text-center py-4">Aucun membre révoqué.</div>';
-        } else {
-          revokedContainer.innerHTML = allPermissionsData.revoked.map(u => `
-            <div class="flex items-center justify-between p-2 bg-noir-950 border border-noir-800">
-              <div>
-                <div class="text-white font-medium">${escapeHtml(u.name || 'Inconnu')}</div>
-                <div class="text-[10px] text-slate-500">+${u.number}</div>
-              </div>
-              <button onclick="removePermission('${u.number}')" class="px-2 py-0.5 border border-emerald-900 hover:bg-emerald-950/40 text-emerald-400 text-[10px] uppercase">
-                Débloquer
-              </button>
-            </div>
-          `).join('');
-        }
-      }
-    }
-
-    async function removePermission(target) {
-      const ok = await showConfirmModal({
-        title: 'RÉVOQUER PERMISSION',
-        message: `Supprimer les autorisations/restrictions pour ${target} ?`,
-        confirmText: 'SUPPRIMER ✕',
-        danger: true
-      });
-      if (!ok) return;
+    document.getElementById('addWarnForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const target = document.getElementById('modalWarnTarget').value.trim();
+      const pushName = document.getElementById('modalWarnPseudo').value.trim();
+      const reason = document.getElementById('modalWarnReason').value.trim();
+      const admin = document.getElementById('modalWarnAdmin').value.trim();
 
       try {
-        await apiFetch('api/permissions/remove', {
+        await apiFetch('/api/warns/add', {
           method: 'POST',
-          body: JSON.stringify({ target })
+          body: JSON.stringify({ target, pushName, reason, admin })
         });
-        showToast('Permission mise à jour.');
-        await updatePermissions();
+        closeModal('addWarnModal');
+        showToast('Avertissement enregistré avec succès.');
+        loadWarns();
       } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    // 4. Activité & Classements Groupes
-    async function updateGroupsActivity() {
-      try {
-        const res = await apiFetch('api/groups/activity');
-        const data = await res.json();
-        allGroupsActivity = data.groups || [];
-
-        const totalMsgs = allGroupsActivity.reduce((acc, g) => acc + (g.totalMessages || 0), 0);
-        const groupsCountEl = document.getElementById('statGroupsCount');
-        const totalMsgsEl = document.getElementById('statTotalGroupMsgs');
-        if (groupsCountEl) groupsCountEl.textContent = allGroupsActivity.length;
-        if (totalMsgsEl) totalMsgsEl.textContent = totalMsgs.toLocaleString('fr-FR');
-
-        renderGroupsActivity();
-      } catch {}
-    }
-
-    function renderGroupsActivity() {
-      const container = document.getElementById('groupsActivityContainer');
-      if (!container) return;
-
-      if (!allGroupsActivity.length) {
-        container.innerHTML = `
-          <div class="p-8 bg-noir-900 border border-noir-800 text-slate-500 text-center col-span-full font-mono text-xs">
-            📊 Aucune activité de groupe enregistrée pour l'instant.<br>
-            Les messages envoyés dans vos groupes alimenteront automatiquement ce classement.
-          </div>
-        `;
-        return;
-      }
-
-      const medals = ['🥇', '🥈', '🥉'];
-
-      container.innerHTML = allGroupsActivity.map((group) => {
-        const total = group.totalMessages || 0;
-        const topUsers = group.topUsers || [];
-
-        const rows = topUsers.length ? topUsers.map((u, idx) => {
-          const badge = medals[idx] || `<span class="text-slate-500 font-mono text-[10px]">${idx + 1}.</span>`;
-          const pct = total > 0 ? ((u.count / total) * 100).toFixed(1) : 0;
-          const cleanNum = u.id ? u.id.split('@')[0] : '';
-          const name = u.name || `+${cleanNum}`;
-
-          return `
-            <tr class="border-b border-noir-800/40 hover:bg-white/[0.02]">
-              <td class="py-1.5 px-2.5 w-8">${badge}</td>
-              <td class="py-1.5 px-2.5">
-                <div class="font-medium text-slate-200">${escapeHtml(name)}</div>
-                <div class="text-[10px] text-slate-500 font-mono">+${cleanNum}</div>
-              </td>
-              <td class="py-1.5 px-2.5 text-right font-mono font-bold text-white">
-                ${u.count.toLocaleString('fr-FR')} <span class="text-[10px] text-slate-500 font-normal">msg</span>
-              </td>
-              <td class="py-1.5 px-2.5 w-28">
-                <div class="flex items-center gap-1.5">
-                  <div class="flex-1 bg-noir-950 border border-noir-800 h-2">
-                    <div class="bg-emerald-500 h-full" style="width: ${pct}%"></div>
-                  </div>
-                  <span class="text-[10px] font-mono text-slate-400 w-9 text-right">${pct}%</span>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('') : `
-          <tr>
-            <td colspan="4" class="py-4 text-center text-slate-600">Aucun message enregistré dans ce groupe.</td>
-          </tr>
-        `;
-
-        return `
-          <div class="bg-noir-900 border border-noir-800 p-4 space-y-3 flex flex-col">
-            <div class="flex items-center justify-between border-b border-noir-800 pb-2.5">
-              <div>
-                <div class="font-bold text-white text-xs uppercase tracking-wider">${escapeHtml(group.groupName)}</div>
-                <div class="text-[10px] text-slate-500 font-mono mt-0.5">${group.groupJid}</div>
-              </div>
-              <div class="text-right">
-                <div class="px-2 py-0.5 border border-emerald-900/60 bg-emerald-950/40 text-emerald-400 font-bold font-mono text-[11px]">
-                  ${total.toLocaleString('fr-FR')} MSGS
-                </div>
-                <div class="text-[10px] text-slate-500 mt-0.5">${group.userCount} participants actifs</div>
-              </div>
-            </div>
-
-            <div class="overflow-x-auto flex-1">
-              <table class="w-full text-left text-xs border-collapse">
-                <thead class="bg-noir-950/60 text-slate-500 border-b border-noir-800 text-[10px] uppercase font-mono tracking-wider">
-                  <tr>
-                    <th class="py-1 px-2.5 w-8">#</th>
-                    <th class="py-1 px-2.5">Membre</th>
-                    <th class="py-1 px-2.5 text-right">Messages</th>
-                    <th class="py-1 px-2.5">Part (%)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${rows}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // 5. Logs & Copie
-    async function updateLogs() {
-      try {
-        const res = await apiFetch('api/logs?limit=150');
-        const data = await res.json();
-        rawLogsList = data.combined || [];
-        if (activeTab === 'tab-logs') renderLogs();
-      } catch {}
-    }
-
-    function renderLogs() {
-      const filter = (document.getElementById('logFilterInput')?.value || '').toLowerCase().trim();
-      const filtered = filter ? rawLogsList.filter(l => l.toLowerCase().includes(filter)) : rawLogsList;
-      const win = document.getElementById('terminalWindow');
-      if (!win) return;
-
-      if (!filtered.length) {
-        win.innerHTML = '<div class="text-slate-600">// Aucun log disponible.</div>';
-        return;
-      }
-
-      win.innerHTML = filtered.map((line) => {
-        let colorClass = 'text-slate-300';
-        if (line.includes('ERROR') || line.includes('Erreur') || line.includes('❌') || line.includes('Code: 1')) {
-          colorClass = 'text-red-400 bg-red-950/20';
-        } else if (line.includes('WARNING') || line.includes('⚠️')) {
-          colorClass = 'text-amber-300';
-        } else if (line.includes('✅') || line.includes('CONNECTÉ') || line.includes('SUCCESS')) {
-          colorClass = 'text-emerald-300';
-        } else if (line.includes('[Commande]')) {
-          colorClass = 'text-indigo-300 font-bold';
-        }
-        return `<div class="${colorClass} leading-tight whitespace-pre-wrap">${escapeHtml(line)}</div>`;
-      }).join('');
-    }
-
-    document.getElementById('logFilterInput')?.addEventListener('input', renderLogs);
-
-    // Bouton Copier les logs
-    document.getElementById('btnCopyLogs')?.addEventListener('click', async () => {
-      const textToCopy = rawLogsList.join('\n');
-      const btnText = document.getElementById('btnCopyLogsText');
-      try {
-        await navigator.clipboard.writeText(textToCopy);
-        btnText.textContent = 'COPIÉ !';
-        setTimeout(() => { btnText.textContent = 'COPIER LES LOGS'; }, 2000);
-      } catch {
-        const ta = document.createElement('textarea');
-        ta.value = textToCopy;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        btnText.textContent = 'COPIÉ !';
-        setTimeout(() => { btnText.textContent = 'COPIER LES LOGS'; }, 2000);
+        showToast('Erreur lors de l\'enregistrement', 'error');
       }
     });
 
+    // Détails d'un membre et suppression de warn individuel
+    window.openWarnDetails = (number) => {
+      const user = allWarnsData.find(u => u.number === number);
+      if (!user) return;
+
+      document.getElementById('modalDetailsTitle').textContent = `Historique : ${user.pushName || 'Membre'} (+${user.number})`;
+      document.getElementById('modalDetailsSubtitle').textContent = `${user.warns?.length || 0} avertissement(s) au total`;
+
+      const listContainer = document.getElementById('modalDetailsList');
+      const warns = user.warns || [];
+
+      if (warns.length === 0) {
+        listContainer.innerHTML = '<div class="py-6 text-center text-slate-500">Aucun avertissement enregistré pour ce membre.</div>';
+      } else {
+        listContainer.innerHTML = warns.map((w, index) => {
+          const dateStr = new Date(w.timestamp).toLocaleString('fr-FR');
+          const warnIdentifier = w.id || w.timestamp;
+
+          return `
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-semibold text-amber-400">#${index + 1} — ${w.groupName || 'Taverne'}</span>
+                  <span class="font-mono text-slate-400 text-[11px]">${dateStr}</span>
+                </div>
+                <div class="text-xs text-slate-200">${w.reason || 'Aucun motif renseigné'}</div>
+                <div class="text-[11px] text-slate-500">Par : ${w.admin || 'Admin'}</div>
+              </div>
+              <div class="flex justify-end pt-2 border-t border-slate-800/60">
+                <button onclick="confirmDeleteSingleWarn('${user.number}', '${warnIdentifier}')" class="px-2 py-1 rounded bg-slate-900 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 text-xs font-medium transition-colors">
+                  Supprimer ce warn
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('modalDetailsResetAllBtn').onclick = () => {
+        confirmResetMemberWarns(user.number, user.pushName || user.number);
+      };
+
+      openModal('detailsWarnModal');
+    };
+
+    window.confirmDeleteSingleWarn = (number, warnId) => {
+      showConfirmModal({
+        title: 'Supprimer ce warn individuel ?',
+        message: 'Cette action retirera cet avertissement spécifique du casier de ce membre.',
+        onConfirm: async () => {
+          try {
+            const res = await apiFetch('/api/warns/delete-single', {
+              method: 'POST',
+              body: JSON.stringify({ target: number, warnId, timestamp: warnId })
+            });
+            if (res.ok) {
+              showToast('Avertissement individuel supprimé avec succès.');
+              await loadWarns();
+              openWarnDetails(number);
+            }
+          } catch (err) {
+            showToast('Erreur lors de la suppression.', 'error');
+          }
+        }
+      });
+    };
+
+    window.confirmResetMemberWarns = (number, pseudo) => {
+      showConfirmModal({
+        title: `Effacer TOUS les avertissements ?`,
+        message: `Voulez-vous supprimer l'intégralité du casier de ${pseudo} (+${number}) ?`,
+        onConfirm: async () => {
+          try {
+            await apiFetch('/api/warns/delete', {
+              method: 'POST',
+              body: JSON.stringify({ target: number })
+            });
+            closeModal('detailsWarnModal');
+            showToast(`Casier de ${pseudo} réinitialisé.`);
+            loadWarns();
+          } catch (err) {
+            showToast('Erreur lors de la réinitialisation.', 'error');
+          }
+        }
+      });
+    };
+
+    // Scan historique Taverne
+    document.getElementById('btnScanTaverne')?.addEventListener('click', async () => {
+      showToast('Scan des 60 membres historiques en cours...');
+      try {
+        const res = await apiFetch('/api/warns/scan', { method: 'POST' });
+        const data = await res.json();
+        showToast(`Scan terminé : ${data.resolvedCount} identifiés, ${data.appliedWarns} warns appliqués.`);
+        loadWarns();
+      } catch (err) {
+        showToast('Erreur lors du scan.', 'error');
+      }
+    });
+
+    // 4. Activité des Groupes
+    async function loadGroupsActivity() {
+      try {
+        const res = await apiFetch('/api/groups/activity');
+        const data = await res.json();
+        allGroupsActivity = data.groups || [];
+        renderGroupsActivity(allGroupsActivity);
+      } catch (err) {}
+    }
+
+    function renderGroupsActivity(groups) {
+      const container = document.getElementById('groupsActivityContainer');
+      if (groups.length === 0) {
+        container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500">Aucune activité enregistrée pour le moment.</div>';
+        return;
+      }
+
+      container.innerHTML = groups.map(g => `
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div>
+              <h4 class="text-sm font-semibold text-white tracking-tight">${g.name || 'Groupe WhatsApp'}</h4>
+              <p class="font-mono text-[11px] text-slate-500">${g.jid}</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-bold text-xs font-mono">
+              ${g.messageCount || 0} msgs
+            </span>
+          </div>
+
+          <div>
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Top Parleurs :</div>
+            <div class="space-y-1.5">
+              ${(g.topSpeakers || []).slice(0, 5).map((s, idx) => `
+                <div class="flex items-center justify-between text-xs p-1.5 rounded-lg bg-slate-950/60">
+                  <span class="text-slate-300 font-medium">${idx + 1}. ${s.name || s.jid.split('@')[0]}</span>
+                  <span class="font-mono text-slate-400 font-bold">${s.count}</span>
+                </div>
+              `).join('') || '<div class="text-slate-500 text-xs">Aucun message enregistré.</div>'}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('btnRefreshActivity')?.addEventListener('click', loadGroupsActivity);
+
+    // 5. Flux de logs PM2
+    async function loadLogs() {
+      if (activeTab !== 'tab-logs') return;
+      try {
+        const res = await apiFetch('/api/logs?limit=80');
+        const data = await res.json();
+        rawLogsList = data.combined || [];
+        renderLogs();
+      } catch (err) {}
+    }
+
+    function renderLogs() {
+      const filter = (document.getElementById('logFilterInput')?.value || '').toLowerCase();
+      const terminal = document.getElementById('terminalWindow');
+      
+      const filtered = rawLogsList.filter(l => !filter || l.text.toLowerCase().includes(filter));
+      if (filtered.length === 0) {
+        terminal.innerHTML = '<div class="text-slate-600">// Aucun log correspondant.</div>';
+        return;
+      }
+
+      terminal.innerHTML = filtered.map(l => {
+        const isError = l.type === 'error' || l.text.includes('Error') || l.text.includes('ERROR');
+        return `<div class="${isError ? 'text-rose-400' : 'text-slate-300'} leading-relaxed">${escapeHtml(l.text)}</div>`;
+      }).join('');
+      
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    document.getElementById('logFilterInput')?.addEventListener('input', renderLogs);
     document.getElementById('btnClearLogs')?.addEventListener('click', () => {
       rawLogsList = [];
       renderLogs();
     });
 
-    document.getElementById('btnRestartBot')?.addEventListener('click', async () => {
-      const ok = await showConfirmModal({
-        title: 'REDÉMARRAGE DU BOT',
-        message: 'Redémarrer le processus ZyBot en arrière-plan ?',
-        confirmText: 'REDÉMARRER ⚡',
-        danger: true
-      });
-      if (!ok) return;
+    document.getElementById('btnCopyLogs')?.addEventListener('click', () => {
+      const text = rawLogsList.map(l => l.text).join('\n');
+      navigator.clipboard.writeText(text);
+      document.getElementById('btnCopyLogsText').textContent = 'Copié !';
+      setTimeout(() => {
+        document.getElementById('btnCopyLogsText').textContent = 'Copier';
+      }, 2000);
+    });
 
-      try {
-        await apiFetch('api/bot/restart', { method: 'POST' });
-        showToast('Redémarrage en cours...');
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
+    document.getElementById('btnRestartBot')?.addEventListener('click', () => {
+      showConfirmModal({
+        title: 'Redémarrer le bot PM2 ?',
+        message: 'Le processus PM2 sera relancé immédiatement.',
+        onConfirm: async () => {
+          await apiFetch('/api/bot/restart', { method: 'POST' });
+          showToast('Commande de redémarrage envoyée.');
+        }
+      });
     });
 
     document.getElementById('btnReauth')?.addEventListener('click', async () => {
-      const ok = await showConfirmModal({
-        title: 'NOUVELLE SESSION',
-        message: 'Supprimer la session et régénérer un nouveau QR Code WhatsApp ?',
-        confirmText: 'RÉINITIALISER ⚡',
-        danger: true
+      showConfirmModal({
+        title: 'Générer un nouveau QR Code ?',
+        message: 'Cela supprimera les clés de session et demandera un nouveau scan.',
+        onConfirm: async () => {
+          await apiFetch('/api/bot/reauth', { method: 'POST' });
+          showToast('Session réinitialisée. Nouveau QR code en cours...');
+        }
       });
-      if (!ok) return;
-
-      try {
-        await apiFetch('api/bot/reauth', { method: 'POST' });
-        showToast('Nouvelle session demandée.');
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
     });
 
-    // ══════════════════════════════════════════════════════════
-    // GESTION DES MODALES
-    // ══════════════════════════════════════════════════════════
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    function setupEvents() {
-      // Modale Ajout Warn
-      document.getElementById('btnOpenAddWarnModal')?.addEventListener('click', () => {
-        document.getElementById('addWarnModal').classList.remove('hidden');
-        document.getElementById('modalWarnTarget').focus();
-      });
-
-      document.getElementById('addWarnForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const target = document.getElementById('modalWarnTarget').value.trim();
-        const pushName = document.getElementById('modalWarnPseudo').value.trim();
-        const reason = document.getElementById('modalWarnReason').value.trim();
-        const admin = document.getElementById('modalWarnAdmin').value.trim();
-
-        try {
-          const res = await apiFetch('api/warns/add', {
-            method: 'POST',
-            body: JSON.stringify({ target, pushName, reason, admin })
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            closeModal('addWarnModal');
-            document.getElementById('addWarnForm').reset();
-            await updateWarns();
-          } else {
-            alert(data.error || 'Erreur lors de l\'ajout du warn.');
-          }
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-
-      // Modale Ajout Permission
-      document.getElementById('btnOpenAddPermModal')?.addEventListener('click', () => {
-        document.getElementById('addPermModal').classList.remove('hidden');
-        document.getElementById('modalPermTarget').focus();
-      });
-
-      document.getElementById('addPermForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const action = document.getElementById('modalPermAction').value;
-        const target = document.getElementById('modalPermTarget').value.trim();
-        const name = document.getElementById('modalPermName').value.trim();
-
-        const endpoint = action === 'trust' ? 'api/permissions/trust' : 'api/permissions/untrust';
-
-        try {
-          const res = await apiFetch(endpoint, {
-            method: 'POST',
-            body: JSON.stringify({ target, name })
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            closeModal('addPermModal');
-            document.getElementById('addPermForm').reset();
-            await updatePermissions();
-          } else {
-            alert(data.error || 'Erreur lors de la modification des permissions.');
-          }
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-
-      // Scan Taverne
-      document.getElementById('btnScanTaverne')?.addEventListener('click', async () => {
-        const btn = document.getElementById('btnScanTaverne');
-        btn.textContent = 'SCAN EN COURS...';
-        btn.disabled = true;
-
-        try {
-          const res = await apiFetch('api/warns/scan-taverne', { method: 'POST' });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            alert(`Scan terminé avec succès !\n• Cibles historiques : ${data.targetsCount}\n• Résolus : ${data.resolvedCount}\n• Introuvables : ${data.notFoundCount}`);
-            await updateWarns();
-          } else {
-            alert(data.error || 'Erreur scan taverne');
-          }
-        } catch (err) {
-          alert(err.message);
-        } finally {
-          btn.textContent = 'SCAN TAVERNE';
-          btn.disabled = false;
-        }
-      });
-    }
-
-    // Détails & Suppression Warn
-    async function openMemberDetails(targetNumber) {
-      const user = allWarnsData.find(u => u.number === targetNumber);
-      if (!user) return;
-
-      document.getElementById('modalDetailsTitle').textContent = user.pushName ? `CASIER : ${user.pushName}` : `CASIER : +${user.number}`;
-      document.getElementById('modalDetailsSubtitle').textContent = `IDENTIFIANT : ${user.number} • TOTAL : ${user.count} AVERTISSEMENT(S)`;
-
-      const listDiv = document.getElementById('modalDetailsList');
-      if (!user.warns || !user.warns.length) {
-        listDiv.innerHTML = '<div class="text-slate-600 text-center py-4">Aucun avertissement actif.</div>';
-      } else {
-        listDiv.innerHTML = user.warns.map((w, idx) => `
-          <div class="p-3 bg-noir-950 border border-noir-800 space-y-1">
-            <div class="flex items-center justify-between">
-              <span class="text-amber-400 font-bold">AVERTISSEMENT #${idx + 1}</span>
-              <span class="text-slate-500 font-mono text-[10px]">${new Date(w.timestamp).toLocaleString('fr-FR')}</span>
-            </div>
-            <div class="text-white text-xs font-sans">"${escapeHtml(w.reason || 'Non spécifié')}"</div>
-            <div class="text-[10px] text-slate-500 flex items-center justify-between pt-1">
-              <span>Admin : ${escapeHtml(w.admin || 'Système')}</span>
-              <button onclick="deleteSingleWarnRecord('${user.number}', '${w.id || w.timestamp}')" class="text-red-400 hover:text-red-300 uppercase">
-                Supprimer ce warn ✕
-              </button>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      document.getElementById('modalDetailsResetAllBtn').onclick = () => {
-        deleteMemberWarns(user.number);
-      };
-
-      document.getElementById('detailsWarnModal').classList.remove('hidden');
-    }
-
-    async function deleteSingleWarnRecord(targetNumber, warnIdentifier) {
-      const ok = await showConfirmModal({
-        title: 'SUPPRIMER LE WARN',
-        message: `Supprimer cet avertissement spécifique pour ${targetNumber} ?`,
-        confirmText: 'SUPPRIMER ✕',
-        danger: true
-      });
-      if (!ok) return;
-
-      try {
-        const res = await apiFetch('api/warns/delete', {
-          method: 'POST',
-          body: JSON.stringify({
-            target: targetNumber,
-            warnId: String(warnIdentifier),
-            timestamp: warnIdentifier
-          })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          showToast('Avertissement supprimé.');
-          await updateWarns();
-          const updatedUser = allWarnsData.find(u => u.number === targetNumber);
-          if (updatedUser && updatedUser.warns && updatedUser.warns.length > 0) {
-            openMemberDetails(targetNumber);
-          } else {
-            closeModal('detailsWarnModal');
-          }
-        } else {
-          showToast(data.error || 'Erreur lors de la suppression.', 'error');
-        }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    async function deleteMemberWarns(targetNumber) {
-      const ok = await showConfirmModal({
-        title: 'EFFACER TOUS LES WARNS',
-        message: `Voulez-vous vraiment effacer la totalité des avertissements de ${targetNumber} ?`,
-        confirmText: 'TOUT EFFACER ✕',
-        danger: true
-      });
-      if (!ok) return;
-
-      try {
-        const res = await apiFetch(`api/warns/clear/${targetNumber}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          showToast('Casier entièrement réinitialisé.');
-          closeModal('detailsWarnModal');
-          await updateWarns();
-        } else {
-          showToast(data.error || 'Erreur lors de la réinitialisation.', 'error');
-        }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    function copyText(txt, btn) {
-      navigator.clipboard.writeText(txt);
-      const orig = btn.textContent;
-      btn.textContent = '✓';
-      setTimeout(() => { btn.textContent = orig; }, 1500);
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
+    // Démarrage
+    initApp();
   </script>
 </body>
 </html>

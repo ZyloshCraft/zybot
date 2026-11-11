@@ -79,6 +79,20 @@ const DEFAULT_CONFIG = {
     end: '06:00',
     until: null
   },
+  antiRaid: {
+    enabled: true,
+    probationMinutes: 10,
+    maxWarnings: 5
+  },
+  notifications: {
+    groupEvents: true,
+    pseudoChanges: true,
+    antiDelete: true,
+    antiEdit: true,
+    keywordAlerts: true,
+    dailyRecap: true,
+    antiLink: true
+  },
   speech: {
     groqApiKey: '',
     geminiApiKey: ''
@@ -86,7 +100,8 @@ const DEFAULT_CONFIG = {
   web: {
     enabled: true,
     port: 3050,
-    password: 'Nexoria2026'
+    password: 'Nexoria2026',
+    superadminPassword: 'Jevaisencore-2020'
   }
 };
 

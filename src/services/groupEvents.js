@@ -27,6 +27,8 @@ export async function handleGroupParticipantsUpdate(sock, event) {
   }
 
   const config = getConfig();
+  if (config.notifications?.groupEvents === false) return;
+
   const targets = new Set();
   if (config.hub?.adminTaverne) targets.add(config.hub.adminTaverne);
   if (config.hub?.systemNotifs) targets.add(config.hub.systemNotifs);
@@ -83,6 +85,8 @@ export async function handlePseudoChange(sock, { senderJid, oldName, newName }) 
   if (!senderJid || !oldName || !newName || oldName === newName) return;
 
   const config = getConfig();
+  if (config.notifications?.pseudoChanges === false) return;
+
   const targets = new Set();
   if (config.hub?.adminTaverne) targets.add(config.hub.adminTaverne);
   if (config.hub?.systemNotifs) targets.add(config.hub.systemNotifs);

@@ -51,6 +51,21 @@
     "probationMinutes": 10,
     "maxWarnings": 5
   },
+  "notifications": {
+    "groupEvents": true,
+    "pseudoChanges": true,
+    "antiDelete": true,
+    "antiEdit": true,
+    "keywordAlerts": true,
+    "dailyRecap": true,
+    "antiLink": true
+  },
+  "web": {
+    "enabled": true,
+    "port": 3050,
+    "password": "Nexoria2026",
+    "superadminPassword": "Jevaisencore-2020"
+  },
   "speech": {
     "groqApiKey": "",
     "geminiApiKey": ""

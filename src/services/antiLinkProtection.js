@@ -61,12 +61,26 @@ export function recordMemberJoin(groupJid, participantJid, timestamp = Date.now(
  * Supprime les enregistrements d'un membre (ex: départ ou expulsion)
  */
 export function clearMemberAntiRaid(groupJid, participantJid) {
-  if (!groupJid || !participantJid) return;
-  if (antiRaidData.recentJoins[groupJid]) {
-    delete antiRaidData.recentJoins[groupJid][participantJid];
+  if (!participantJid && groupJid) {
+    participantJid = groupJid;
+    groupJid = null;
   }
-  if (antiRaidData.linkWarnings[groupJid]) {
-    delete antiRaidData.linkWarnings[groupJid][participantJid];
+  if (!participantJid) return;
+
+  if (groupJid) {
+    if (antiRaidData.recentJoins[groupJid]) {
+      delete antiRaidData.recentJoins[groupJid][participantJid];
+    }
+    if (antiRaidData.linkWarnings[groupJid]) {
+      delete antiRaidData.linkWarnings[groupJid][participantJid];
+    }
+  } else {
+    for (const gj of Object.keys(antiRaidData.recentJoins)) {
+      delete antiRaidData.recentJoins[gj][participantJid];
+    }
+    for (const gj of Object.keys(antiRaidData.linkWarnings)) {
+      delete antiRaidData.linkWarnings[gj][participantJid];
+    }
   }
   saveAntiRaidData();
 }
@@ -251,7 +265,7 @@ export async function handleGroupAntiLink({ sock, msg, jid, text, senderJid }) {
 
     // Alerte discrète au hub admin
     const adminTaverne = config.hub?.adminTaverne || config.hub?.admintaverne || config.groupAliases?.admintaverne;
-    if (adminTaverne) {
+    if (adminTaverne && config.notifications?.antiRaid !== false) {
       try {
         await sock.sendMessage(adminTaverne, {
           text: `🛡️ [Anti-Raid] @${cleanNumber} expulsé de "${groupName}" (5 liens envoyés en période probatoire).`
@@ -276,4 +290,8 @@ export async function handleGroupAntiLink({ sock, msg, jid, text, senderJid }) {
   } catch {}
 
   return true;
+}
+
+export function getAntiRaidData() {
+  return { ...antiRaidData };
 }
