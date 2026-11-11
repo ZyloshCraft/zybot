@@ -46,6 +46,11 @@
     "end": "06:00",
     "until": null
   },
+  "antiRaid": {
+    "enabled": true,
+    "probationMinutes": 10,
+    "maxWarnings": 5
+  },
   "speech": {
     "groqApiKey": "",
     "geminiApiKey": ""

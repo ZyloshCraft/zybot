@@ -14,6 +14,7 @@ import { checkAndTrackPseudo } from '../services/contactStore.js';
 import { handlePseudoChange } from '../services/groupEvents.js';
 import { canUserExecuteCommand } from '../services/permissionStore.js';
 import { handleGiveawayReaction } from '../services/giveawayStore.js';
+import { handleGroupAntiLink } from '../services/antiLinkProtection.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -175,6 +176,16 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
           senderJid,
           pushName: msg.pushName
         });
+
+        // Protection Anti-Raid / Anti-Lien pour les nouveaux arrivants (< 10 min)
+        if (!msg.key.fromMe) {
+          try {
+            const linkBlocked = await handleGroupAntiLink({ sock, msg, jid, text, senderJid });
+            if (linkBlocked) continue;
+          } catch (err) {
+            console.error('[AntiLink] Erreur non bloquante:', err.message);
+          }
+        }
       }
 
       // Détection des changements de pseudo en temps réel

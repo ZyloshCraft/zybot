@@ -1,6 +1,7 @@
 import { getConfig } from '../config.js';
 import { getCachedGroupMetadata } from '../utils/groupCache.js';
 import { getContact } from './contactStore.js';
+import { recordMemberJoin, clearMemberAntiRaid } from './antiLinkProtection.js';
 
 /**
  * Gère les départs et arrivées de membres dans les groupes
@@ -14,6 +15,16 @@ export async function handleGroupParticipantsUpdate(sock, event) {
 
   // Seuls les départs (remove) et arrivées (add) nous intéressent
   if (action !== 'remove' && action !== 'add') return;
+
+  // 1. Enregistrement pour la protection Anti-Raid / Anti-Lien
+  for (const participant of participants) {
+    const pId = typeof participant === 'string' ? participant : (participant?.id || participant?.jid || String(participant || ''));
+    if (action === 'add') {
+      recordMemberJoin(groupJid, pId);
+    } else if (action === 'remove') {
+      clearMemberAntiRaid(groupJid, pId);
+    }
+  }
 
   const config = getConfig();
   const targets = new Set();

@@ -13,6 +13,16 @@ import { isDndActive } from '../src/services/ntfy.js';
 import { trackStatus, getStatusesForUser } from '../src/services/statusStore.js';
 import { addWarn, getWarns, clearWarns } from '../src/services/warnStore.js';
 import { getCachedGroupMetadata, invalidateGroupMetadataCache } from '../src/utils/groupCache.js';
+import {
+  containsLink,
+  formatRemainingTimeHuman,
+  recordMemberJoin,
+  clearMemberAntiRaid,
+  isRecentJoin,
+  recordLinkAttempt,
+  getLinkWarnings,
+  handleGroupAntiLink
+} from '../src/services/antiLinkProtection.js';
 
 console.log('🧪 Début des tests unitaires...');
 
@@ -416,5 +426,89 @@ const latestGw = getLatestGiveawayForGroup('test_group_gw@g.us');
 assert.strictEqual(latestGw?.id, gw.id, 'Le dernier giveaway doit être retrouvé');
 
 console.log('✅ Test 17 réussi : Moteur de giveaway (/gw, durées, réactions, /gw end et /gw reroll) validé.');
+
+// Test 18: Protection Anti-Raid / Anti-Lien pour les nouveaux membres (< 10 min)
+assert.strictEqual(containsLink('Rejoignez mon serveur https://discord.gg/abc'), true);
+assert.strictEqual(containsLink('Lien chat.whatsapp.com/12345'), true);
+assert.strictEqual(containsLink('Visitez test.fr/accueil'), true);
+assert.strictEqual(containsLink('Bonjour tout le monde !'), false);
+assert.strictEqual(containsLink('Version 1.2 du jeu'), false);
+
+const testGroup = '120363999999999999@g.us';
+const newMember = '33699887766@s.whatsapp.net';
+
+// 1. Enregistrer l'arrivée du membre
+recordMemberJoin(testGroup, newMember, Date.now());
+const joinStatus = isRecentJoin(testGroup, newMember);
+assert.ok(joinStatus, 'Le membre doit être reconnu comme nouvel arrivant (< 10 min)');
+assert.ok(joinStatus.remainingMs > 0, 'Il doit rester du temps de probation');
+
+// 2. Tester les avertissements successifs
+let deletedCount = 0;
+let kicked = false;
+const sentMessages = [];
+
+const antiRaidMockSock = {
+  user: { id: '33766337937:1@s.whatsapp.net' },
+  sendMessage: async (dest, content) => {
+    if (content.delete) {
+      deletedCount++;
+    } else {
+      sentMessages.push({ dest, content });
+    }
+  },
+  groupMetadata: async () => ({
+    subject: 'Groupe Test AntiRaid',
+    participants: [
+      { id: '33766337937:1@s.whatsapp.net', admin: 'admin' },
+      { id: newMember, admin: null }
+    ]
+  }),
+  groupParticipantsUpdate: async (jid, participants, action) => {
+    if (action === 'remove' && participants.includes(newMember)) {
+      kicked = true;
+    }
+  }
+};
+
+// Tentatives 1 à 4 : Avertissements et suppression du lien
+for (let i = 1; i <= 4; i++) {
+  const handled = await handleGroupAntiLink({
+    sock: antiRaidMockSock,
+    msg: { key: { remoteJid: testGroup, id: `msg_${i}`, fromMe: false } },
+    jid: testGroup,
+    text: `Rejoignez https://pub.com/${i}`,
+    senderJid: newMember
+  });
+  assert.strictEqual(handled, true, `La tentative ${i} doit être interceptée`);
+  assert.strictEqual(deletedCount, i, `Le message ${i} doit être supprimé`);
+  const lastMsg = sentMessages[sentMessages.length - 1];
+  const expectedRemaining = 5 - i;
+  assert.ok(
+    lastMsg.content.text.includes(`${expectedRemaining} lien`),
+    `Le message doit indiquer ${expectedRemaining} lien(s) restant(s) avant ban`
+  );
+}
+
+assert.strictEqual(kicked, false, 'Le membre ne doit pas encore être expulsé avant 5 avertissements');
+
+// Tentative 5 : Expulsion
+const handled5 = await handleGroupAntiLink({
+  sock: antiRaidMockSock,
+  msg: { key: { remoteJid: testGroup, id: 'msg_5', fromMe: false } },
+  jid: testGroup,
+  text: 'Encore un lien https://spam.gg',
+  senderJid: newMember
+});
+
+assert.strictEqual(handled5, true);
+assert.strictEqual(kicked, true, 'Le membre doit être expulsé à la 5ème tentative');
+const banGroupMsg = sentMessages.find(m => m.dest === testGroup && m.content.text.includes('expulsé après 5 liens non autorisés'));
+assert.ok(banGroupMsg, 'Le message d expulsion doit être envoyé dans le groupe');
+
+// Nettoyage
+clearMemberAntiRaid(testGroup, newMember);
+
+console.log('✅ Test 18 réussi : Protection Anti-Raid / Anti-Lien (< 10 min, mentions, 5 avertissements, ban) validée.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
