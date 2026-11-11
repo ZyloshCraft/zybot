@@ -28,7 +28,11 @@ export async function sendStealthMessage(sock, jid, content, options = {}) {
     } catch (err) {}
   }
 
-  return await sock.sendMessage(jid, content, options);
+  const res = await sock.sendMessage(jid, content, options);
+  try {
+    await sock.sendPresenceUpdate('unavailable');
+  } catch {}
+  return res;
 }
 
 /**

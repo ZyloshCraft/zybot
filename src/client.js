@@ -89,12 +89,26 @@ export async function createWhatsAppClient() {
     markOnlineOnConnect: false // Ne pas forcer l'état en ligne à la connexion
   });
 
+  // Intercepter sendMessage pour toujours forcer le retour en 'unavailable' (hors ligne)
+  // après n'importe quel message envoyé, évitant ainsi d'apparaître 'En ligne' H24
+  const originalSendMessage = sock.sendMessage.bind(sock);
+  sock.sendMessage = async (...args) => {
+    const result = await originalSendMessage(...args);
+    try {
+      await sock.sendPresenceUpdate('unavailable');
+    } catch {}
+    return result;
+  };
+
+  let offlineHeartbeat = null;
+
   currentSocket = sock;
   isRestarting = false;
   connectionInfo.status = 'connecting';
   connectionInfo.version = version.join('.');
 
   function restartClient() {
+    if (offlineHeartbeat) clearInterval(offlineHeartbeat);
     if (isRestarting) return;
     isRestarting = true;
     console.log('🔄 Redémarrage du client WhatsApp...');
@@ -140,7 +154,7 @@ export async function createWhatsAppClient() {
   });
 
   // Gestion du cycle de vie de connexion
-  sock.ev.on('connection.update', (update) => {
+  sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
@@ -153,6 +167,7 @@ export async function createWhatsAppClient() {
     }
 
     if (connection === 'close') {
+      if (offlineHeartbeat) clearInterval(offlineHeartbeat);
       connectionInfo.status = 'disconnected';
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const reason = lastDisconnect?.error?.message || statusCode || 'Inconnu';
@@ -192,6 +207,24 @@ export async function createWhatsAppClient() {
       console.log(`🛡️  Protection anti-détection : Active`);
       console.log(`💬 Envoyez /help dans votre chat privé pour tester le bot.`);
       console.log('=============================================================\n');
+
+      // Forcer immédiatement le statut hors-ligne pour ne pas être marqué 'En ligne' H24
+      try {
+        await sock.sendPresenceUpdate('unavailable');
+        console.log('👻 [Furtivité] Présence WhatsApp forcée sur : Hors ligne (unavailable).');
+      } catch (err) {
+        console.warn('[Furtivité] Avertissement présence hors ligne:', err.message);
+      }
+
+      // Heartbeat régulier (toutes les 5 min) pour s'assurer que WhatsApp ne marque pas la session active
+      if (offlineHeartbeat) clearInterval(offlineHeartbeat);
+      offlineHeartbeat = setInterval(async () => {
+        try {
+          if (currentSocket && connectionInfo.status === 'connected') {
+            await currentSocket.sendPresenceUpdate('unavailable');
+          }
+        } catch {}
+      }, 5 * 60 * 1000);
 
       // Initialiser le planificateur du récapitulatif quotidien à 23h00
       initDailyRecapScheduler(sock);
