@@ -84,7 +84,7 @@
       
       <!-- Brand & Badges -->
       <div class="flex items-center gap-3">
-        <a href="/" class="flex items-center gap-2 group">
+        <a href="./" class="nav-standard-link flex items-center gap-2 group">
           <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform">
             ⚡
           </div>
@@ -112,7 +112,7 @@
 
       <!-- Actions -->
       <div class="flex items-center gap-3">
-        <a href="/" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors">
+        <a href="./" class="nav-standard-link inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors">
           <span>←</span>
           <span>Panel Admin Standard</span>
         </a>
@@ -705,7 +705,15 @@
   <!-- SCRIPT CLIENT JAVASCRIPT DU SUPERADMIN                   -->
   <!-- ======================================================== -->
   <script>
-    const API_BASE = '/api';
+    // Détection dynamique du préfixe URL (/bot si sous reverse-proxy ou racine si direct)
+    const BASE_PATH = window.location.pathname.startsWith('/bot') ? '/bot' : '';
+    const API_BASE = `${BASE_PATH}/api`;
+
+    // Mettre à jour les liens de retour vers le panel standard
+    document.querySelectorAll('.nav-standard-link').forEach(el => {
+      el.href = `${BASE_PATH || '/'}`;
+    });
+
     let currentAuth = null;
     let currentConfig = {};
     let currentNotifications = {};
@@ -758,7 +766,7 @@
     // Déconnexion
     document.getElementById('superLogoutBtn').addEventListener('click', async () => {
       await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
-      window.location.href = '/';
+      window.location.href = `${BASE_PATH || '/'}`;
     });
 
     // 2. Gestion des onglets

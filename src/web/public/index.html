@@ -71,8 +71,8 @@
 
         <div class="flex items-center gap-2">
           <a 
-            href="/superadmin"
-            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 text-xs font-medium transition-colors"
+            href="superadmin"
+            class="nav-superadmin-link hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 text-xs font-medium transition-colors"
           >
             <span>👑</span>
             <span>SuperAdmin ➔</span>
@@ -195,8 +195,8 @@
           </button>
 
           <a 
-            href="/superadmin"
-            class="px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap ml-1"
+            href="superadmin"
+            class="nav-superadmin-link px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap ml-1"
           >
             <span>👑</span>
             <span>SuperAdmin ➔</span>
@@ -556,6 +556,15 @@
   <!-- JAVASCRIPT TEMPS RÉEL (VUE PUBLIQUE + PANEL ADMIN)       -->
   <!-- ======================================================== -->
   <script>
+    // Détection dynamique du préfixe URL (/bot si sous reverse-proxy ou vide si direct)
+    const BASE_PATH = window.location.pathname.startsWith('/bot') ? '/bot' : '';
+    const API_BASE = `${BASE_PATH}/api`;
+
+    // Mettre à jour les liens vers SuperAdmin
+    document.querySelectorAll('.nav-superadmin-link').forEach(el => {
+      el.href = `${BASE_PATH}/superadmin`;
+    });
+
     let currentAuthToken = localStorage.getItem('zybot_token') || null;
     let publicWarnsData = [];
     let allWarnsData = [];
@@ -571,8 +580,12 @@
       }
       headers['Content-Type'] = 'application/json';
       
-      const res = await fetch(endpoint, { ...options, headers });
-      if (res.status === 401 && !endpoint.includes('/api/auth/')) {
+      const fullUrl = endpoint.startsWith('http') 
+        ? endpoint 
+        : (endpoint.startsWith('/api') ? `${BASE_PATH}${endpoint}` : `${API_BASE}/${endpoint.replace(/^\//, '')}`);
+
+      const res = await fetch(fullUrl, { ...options, headers });
+      if (res.status === 401 && !endpoint.includes('auth/')) {
         showPublic();
         throw new Error('Non authentifié');
       }
@@ -652,7 +665,7 @@
     // 1. Initialisation & Auth check
     async function initApp() {
       try {
-        const res = await fetch('/api/auth/check');
+        const res = await fetch(`${API_BASE}/auth/check`);
         const data = await res.json();
         if (data.authenticated) {
           showAdmin();
@@ -690,7 +703,7 @@
       errBox.classList.add('hidden');
 
       try {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch(`${API_BASE}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password: pwd })
@@ -702,7 +715,7 @@
           closeModal('loginModal');
           
           if (data.isSuperAdmin) {
-            window.location.href = '/superadmin';
+            window.location.href = `${BASE_PATH}/superadmin`;
           } else {
             showAdmin();
           }
@@ -717,7 +730,7 @@
     });
 
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
       currentAuthToken = null;
       localStorage.removeItem('zybot_token');
       showPublic();
@@ -726,7 +739,7 @@
     // 2. Vue Publique
     async function loadPublicWarns() {
       try {
-        const res = await fetch('/api/public/warns');
+        const res = await fetch(`${API_BASE}/public/warns`);
         const data = await res.json();
         publicWarnsData = data.users || [];
         document.getElementById('publicTotalUsers').textContent = publicWarnsData.length;
