@@ -547,3 +547,20 @@ export function initGiveawayEngine(sock) {
 export function getAllGiveaways() {
   return [...giveaways];
 }
+
+export function deleteGiveaway(id) {
+  const idx = giveaways.findIndex(g => g.id === id || g.messageId === id);
+  if (idx >= 0) {
+    const gw = giveaways[idx];
+    if (activeTimers.has(gw.id)) {
+      const t = activeTimers.get(gw.id);
+      if (t.endTimer) clearTimeout(t.endTimer);
+      if (t.hourlyInterval) clearInterval(t.hourlyInterval);
+      activeTimers.delete(gw.id);
+    }
+    giveaways.splice(idx, 1);
+    saveGiveaways();
+    return true;
+  }
+  return false;
+}

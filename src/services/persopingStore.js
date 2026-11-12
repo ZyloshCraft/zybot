@@ -63,3 +63,13 @@ export function deletePersoping(id) {
   }
   return false;
 }
+
+export function updatePersoping(id, updates = {}) {
+  const item = persopings.find(p => p.id === id);
+  if (!item) return null;
+  if (updates.text !== undefined) item.text = updates.text;
+  if (updates.author !== undefined) item.author = updates.author;
+  if (updates.origin !== undefined) item.origin = updates.origin;
+  savePersopings();
+  return item;
+}

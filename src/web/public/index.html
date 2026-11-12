@@ -1,22 +1,34 @@
 <!DOCTYPE html>
-<html lang="fr" class="dark">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZyBot // Modération & Casier</title>
+  <title>ZyBot // Modération & Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
             sans: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+          },
+          colors: {
+            playit: {
+              bg: '#091322',
+              card: '#0e1b2e',
+              border: '#1d314c',
+              borderHover: '#2a4468',
+              orange: '#f97316',
+              orangeHover: '#ea580c',
+              text: '#f8fafc',
+              subtext: '#8b9bb4',
+              terminal: '#060d17'
+            }
           }
         }
       }
@@ -25,7 +37,7 @@
 
   <style>
     body {
-      background-color: #020617;
+      background-color: #091322;
       color: #f8fafc;
       font-family: 'Inter', system-ui, sans-serif;
     }
@@ -34,56 +46,74 @@
       height: 6px;
     }
     .custom-scroll::-webkit-scrollbar-track {
-      background: #020617;
+      background: #091322;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-      background: #1e293b;
-      border-radius: 9999px;
+      background: #1d314c;
+      border-radius: 4px;
     }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-      background: #334155;
+      background: #2a4468;
+    }
+    /* Style Playit.gg text tabs */
+    .playit-tab {
+      color: #8b9bb4;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 0.75rem;
+      padding-top: 0.5rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.15s ease-in-out;
+    }
+    .playit-tab:hover {
+      color: #f8fafc;
+    }
+    .playit-tab.active {
+      color: #f8fafc;
+      border-bottom-color: #f97316;
+      font-weight: 600;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col text-sm antialiased selection:bg-indigo-500/20 selection:text-indigo-300">
+<body class="min-h-screen flex flex-col text-sm antialiased selection:bg-[#f97316]/20 selection:text-[#f97316]">
 
   <!-- ======================================================== -->
   <!-- 1. VUE PUBLIQUE (ACCESSIBLE À TOUS SANS MOT DE PASSE)    -->
   <!-- ======================================================== -->
   <div id="publicScreen" class="flex-1 flex flex-col">
     <!-- Barre supérieure publique -->
-    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
+    <header class="bg-[#0e1b2e] border-b border-[#1d314c] sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-            🛡️
+          <div class="w-8 h-8 rounded-md bg-[#f97316]/10 border border-[#f97316]/30 flex items-center justify-center text-[#f97316] font-bold">
+            Z
           </div>
           <div>
             <div class="flex items-center gap-2">
               <span class="font-bold text-base text-white tracking-tight">ZyBot</span>
-              <span class="text-slate-500 text-xs">/</span>
-              <span class="text-slate-300 text-xs font-medium">Casier Public</span>
+              <span class="text-[#8b9bb4] text-xs">/</span>
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Casier Public</span>
             </div>
-            <p class="text-[11px] text-slate-400 leading-none">Registre communautaire de modération</p>
+            <p class="text-[11px] text-[#8b9bb4] leading-none">Registre communautaire de modération</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
           <a 
             href="superadmin"
-            class="nav-superadmin-link hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 text-xs font-medium transition-colors"
+            class="nav-superadmin-link hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors"
           >
-            <span>👑</span>
-            <span>SuperAdmin ➔</span>
+            <span>SuperAdmin</span>
+            <span>➔</span>
           </a>
 
           <button 
             id="btnOpenLoginModal"
-            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition-colors shadow-sm"
+            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-medium transition-colors shadow-sm"
           >
-            <span>🔒</span>
             <span>Connexion Admin</span>
+            <span>➔</span>
           </button>
         </div>
 
@@ -93,54 +123,53 @@
     <!-- Contenu Public -->
     <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 space-y-6">
       
-      <!-- Hero & Recherche -->
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm space-y-4">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <!-- Carte Recherche Playit -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-6 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#1d314c] pb-4">
           <div>
-            <h1 class="text-lg font-bold text-white tracking-tight">Casier Communautaire de Modération</h1>
-            <p class="text-xs text-slate-400 mt-0.5">
-              Consultation libre du nombre d'avertissements attribués aux membres par les modérateurs de la Taverne.
+            <h1 class="text-base font-bold text-white tracking-tight">Casier Communautaire de Modération</h1>
+            <p class="text-xs text-[#8b9bb4] mt-0.5">
+              Consultation libre du nombre d'avertissements attribués par la modération.
             </p>
           </div>
           <div class="flex items-center gap-3">
-            <span class="text-xs text-slate-400">Membres répertoriés :</span>
-            <span class="px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 font-bold text-amber-400 text-sm font-mono" id="publicTotalUsers">0</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">MEMBRES RÉPERTORIÉS :</span>
+            <span class="px-2.5 py-1 rounded bg-[#091322] border border-[#1d314c] font-bold text-[#f97316] text-sm font-mono" id="publicTotalUsers">0</span>
           </div>
         </div>
 
         <!-- Recherche par pseudo -->
         <div class="relative">
-          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">🔍</span>
           <input 
             type="text" 
             id="publicSearchInput" 
             placeholder="Rechercher par pseudo (ex: Hugo, Axel, Mme chaise Ikea)..." 
-            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white placeholder-slate-600 text-xs sm:text-sm font-sans outline-none transition-colors"
+            class="w-full px-4 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-xs sm:text-sm font-sans outline-none transition-colors"
           >
         </div>
       </div>
 
-      <!-- Tableau public (Tremor Style) -->
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
+      <!-- Tableau public Playit -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs sm:text-sm">
-            <thead class="bg-slate-950/60 text-slate-400 border-b border-slate-800 text-[11px] uppercase tracking-wider font-medium">
+            <thead class="bg-[#091322] text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
               <tr>
-                <th class="py-3 px-4 w-12 font-mono">#</th>
+                <th class="py-3 px-4 w-16 font-mono">#</th>
                 <th class="py-3 px-4 font-semibold">Membre (Pseudo)</th>
                 <th class="py-3 px-4 text-right font-semibold w-48">Statut Modération</th>
               </tr>
             </thead>
-            <tbody id="publicWarnsTableBody" class="divide-y divide-slate-800/60">
+            <tbody id="publicWarnsTableBody" class="divide-y divide-[#1d314c]/70">
               <tr>
-                <td colspan="3" class="py-8 text-center text-slate-500">Chargement du casier...</td>
+                <td colspan="3" class="py-8 text-center text-[#8b9bb4]">Chargement du casier...</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="text-[11px] text-slate-500 text-center tracking-wide font-sans">
+      <div class="text-[11px] text-[#8b9bb4] text-center tracking-wide font-sans">
         ZyBot • Modération Discrète & Stricte pour WhatsApp
       </div>
     </main>
@@ -151,59 +180,43 @@
   <!-- ======================================================== -->
   <div id="appScreen" class="hidden flex-1 flex flex-col">
     
-    <!-- Barre supérieure Admin (Tremor Navbar) -->
-    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
+    <!-- Barre supérieure Admin (Playit.gg Navbar) -->
+    <header class="bg-[#0e1b2e] border-b border-[#1d314c] sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         
-        <!-- Titre & Statut -->
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-              ⚡
+        <!-- Gauche: Titre, Numéro, Statut et Uptime -->
+        <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div class="w-8 h-8 rounded-md bg-[#f97316]/10 border border-[#f97316]/30 flex items-center justify-center text-[#f97316] font-bold shrink-0">
+            Z
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-base text-white tracking-tight shrink-0">ZyBot</span>
+              <span class="text-xs font-mono font-medium text-[#8b9bb4] truncate" id="waPhoneText">Chargement...</span>
             </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-base text-white tracking-tight">ZyBot</span>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" id="statusDot"></span>
-                  Admin
-                </span>
-              </div>
-              <p class="text-[11px] text-slate-400 leading-none" id="waPhoneText">Chargement...</p>
+            <div class="flex items-center gap-2 text-[11px]">
+              <span class="inline-flex items-center gap-1 text-emerald-400 font-mono font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" id="statusDot"></span>
+                ONLINE
+              </span>
+              <span class="text-[#8b9bb4]">•</span>
+              <span class="text-[#8b9bb4] font-mono" id="uptimeDisplay">UPTIME: --</span>
             </div>
           </div>
-          <span class="text-slate-700 hidden md:inline">|</span>
-          <div class="text-slate-400 text-xs hidden md:block" id="uptimeDisplay">UPTIME: --</div>
         </div>
 
-        <!-- Navigation Tabs & Accès SuperAdmin -->
-        <div class="flex items-center gap-2 overflow-x-auto custom-scroll">
-          
-          <button class="nav-tab active px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-600/10 text-indigo-300 font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap" data-tab="tab-warns">
-            <span>⚠️</span>
-            <span>Warns (<span id="tabWarnCount">0</span>)</span>
-          </button>
-
-          <button class="nav-tab px-3 py-1.5 rounded-lg border border-transparent hover:border-slate-800 text-slate-400 hover:text-white font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap" data-tab="tab-top">
-            <span>📊</span>
-            <span>Activité Groupes</span>
-          </button>
-
-          <button class="nav-tab px-3 py-1.5 rounded-lg border border-transparent hover:border-slate-800 text-slate-400 hover:text-white font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap" data-tab="tab-logs">
-            <span>📜</span>
-            <span>Logs PM2</span>
-          </button>
-
+        <!-- Droite: Accès SuperAdmin & Déconnexion -->
+        <div class="flex items-center gap-2.5 shrink-0">
           <a 
             href="superadmin"
-            class="nav-superadmin-link px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 font-medium text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap ml-1"
+            class="nav-superadmin-link inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors"
           >
-            <span>👑</span>
-            <span>SuperAdmin ➔</span>
+            <span>SuperAdmin</span>
+            <span>➔</span>
           </a>
 
-          <button id="logoutBtn" title="Retour à la vue publique" class="px-2.5 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-rose-400 text-xs font-medium transition-colors ml-1">
-            Sortir
+          <button id="logoutBtn" title="Déconnexion" class="px-3 py-1.5 rounded-md border border-rose-900/40 bg-rose-950/20 hover:bg-rose-900/40 text-rose-300 text-xs font-medium transition-colors">
+            Déconnexion
           </button>
         </div>
       </div>
@@ -212,113 +225,122 @@
     <!-- Contenu Principal Admin -->
     <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6">
 
+      <!-- Navigation par Onglets (Playit.gg Style - Ligne Orange Inférieure) -->
+      <div class="border-b border-[#1d314c]">
+        <nav class="flex space-x-8 overflow-x-auto custom-scroll" aria-label="Tabs">
+          <button class="playit-tab active" data-tab="tab-warns">
+            Warns & Casier (<span id="tabWarnCount" class="font-mono">0</span>)
+          </button>
+          <button class="playit-tab" data-tab="tab-groups">
+            Activité Groupes
+          </button>
+          <button class="playit-tab" data-tab="tab-logs">
+            Logs PM2
+          </button>
+        </nav>
+      </div>
+
       <!-- ====================================================== -->
-      <!-- SECTION 1 : GESTION DÉTAILLÉE DES WARNS (ADMIN)        -->
+      <!-- SECTION 1 : GESTION DES WARNS (ADMIN)                  -->
       <!-- ====================================================== -->
-      <section id="tab-warns" class="tab-content space-y-4">
+      <section id="tab-warns" class="tab-content space-y-5">
         
         <!-- ALERTE / CARTE SCAN QR CODE (VISIBLE UNIQUEMENT SI DÉCONNECTÉ) -->
-        <div id="qrCodeCard" class="hidden bg-slate-900 border border-amber-500/50 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xl">
-          <div class="bg-white p-3 rounded-xl border border-slate-700 shrink-0">
-            <img id="qrCodeImg" src="" alt="QR Code WhatsApp" class="w-48 h-48 block">
-            <div id="qrLoadingText" class="w-48 h-48 flex items-center justify-center text-black font-bold text-xs text-center hidden">
+        <div id="qrCodeCard" class="hidden bg-[#0e1b2e] border border-amber-500/50 rounded-md p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xl">
+          <div class="bg-white p-3 rounded border border-slate-300 shrink-0">
+            <img id="qrCodeImg" src="" alt="QR Code WhatsApp" class="w-44 h-44 block">
+            <div id="qrLoadingText" class="w-44 h-44 flex items-center justify-center text-black font-bold text-xs text-center hidden">
               Génération du QR Code...
             </div>
           </div>
           <div class="space-y-3 flex-1 text-center sm:text-left">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-500/40 bg-amber-950/40 text-amber-400 font-semibold text-xs">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold text-xs">
               ⚠️ RECONNEXION REQUISE (SESSION FERMÉE)
             </div>
             <div class="text-sm font-bold text-white tracking-tight">
               Scannez ce QR Code avec votre WhatsApp
             </div>
-            <div class="text-slate-400 text-xs space-y-1">
+            <div class="text-[#8b9bb4] text-xs space-y-1">
               <div>1. Ouvrez WhatsApp sur votre téléphone.</div>
               <div>2. Allez dans <b>Appareils connectés</b> &gt; <b>Connecter un appareil</b>.</div>
               <div>3. Pointez votre caméra vers ce QR code pour reconnecter ZyBot.</div>
             </div>
             <div class="pt-2 flex items-center justify-center sm:justify-start gap-2">
-              <button id="btnReauth" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-200 text-black font-medium text-xs transition-colors">
-                🔄 Générer un nouveau QR
+              <button id="btnReauth" class="px-3.5 py-1.5 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-xs transition-colors">
+                Générer un nouveau QR
               </button>
             </div>
           </div>
         </div>
 
-        <!-- KPI Metrics & Barre d'outils -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- 3 Cartes KPI Playit.gg -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           
-          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm">
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Membres Avertis</div>
-            <div class="mt-2 text-2xl font-bold text-white tracking-tight" id="statUsersCount">0</div>
-            <div class="mt-1 text-xs text-slate-400">Total au casier</div>
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Membres Avertis</div>
+            <div class="mt-2 text-2xl font-bold font-mono text-white tracking-tight" id="statUsersCount">0</div>
+            <div class="mt-1 text-xs text-[#8b9bb4]">Total répertorié au casier</div>
           </div>
 
-          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm">
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Avertissements Émis</div>
-            <div class="mt-2 text-2xl font-bold text-white tracking-tight" id="statTotalWarns">0</div>
-            <div class="mt-1 text-xs text-slate-400">Cumul tous membres</div>
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Total Avertissements</div>
+            <div class="mt-2 text-2xl font-bold font-mono text-[#f97316] tracking-tight" id="statTotalWarns">0</div>
+            <div class="mt-1 text-xs text-[#8b9bb4]">Avertissements cumulés</div>
           </div>
 
-          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm">
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Synchronisation</div>
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Statut Synchronisation</div>
             <div class="mt-2 flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span class="text-lg font-bold text-emerald-400">Temps Réel</span>
+              <span class="text-lg font-bold text-emerald-400">En direct • 2.5s</span>
             </div>
-            <div class="mt-1 text-xs text-slate-400">Intervalle : 2.5s</div>
-          </div>
-
-          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Actions Rapides</div>
-            <div class="flex items-center gap-2 mt-2">
-              <button id="btnScanTaverne" class="flex-1 px-3 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-300 text-xs font-medium transition-colors">
-                🔍 Sync 60 Cibles
-              </button>
-              <button id="btnOpenAddWarnModal" class="flex-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors">
-                + Ajouter
-              </button>
-            </div>
+            <div class="mt-1 text-xs text-[#8b9bb4]">Flux continu Baileys / Base</div>
           </div>
 
         </div>
 
-        <!-- Recherche et Filtres -->
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <!-- Barre de recherche et Filtres Playit -->
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div class="relative flex-1">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">🔍</span>
             <input 
               type="text" 
               id="adminSearchInput" 
-              placeholder="Filtrer par nom, pseudo ou numéro..." 
-              class="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white placeholder-slate-600 text-xs outline-none font-sans"
+              placeholder="Filtrer par nom, pseudo ou numéro WhatsApp..." 
+              class="w-full px-4 py-2 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-xs sm:text-sm outline-none font-sans transition-colors"
             >
           </div>
           <div class="flex items-center gap-2">
-            <select id="filterBanSelect" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs outline-none focus:border-indigo-500">
+            <select id="filterBanSelect" class="px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white text-xs outline-none focus:border-[#f97316]">
               <option value="all">Tous les membres</option>
-              <option value="active">Sous avertissements (< 3)</option>
+              <option value="active">Actifs (< 3 warns)</option>
               <option value="ban">Bannis (3+ warns)</option>
             </select>
+
+            <button id="btnScanTaverne" class="px-3.5 py-2 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors whitespace-nowrap">
+              Scan Taverne (60)
+            </button>
+            <button id="btnOpenAddWarnModal" class="px-3.5 py-2 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-medium transition-colors whitespace-nowrap shadow-sm">
+              + Ajouter Warn
+            </button>
           </div>
         </div>
 
-        <!-- Tableau des Warns Admin (Tremor Style) -->
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
+        <!-- Tableau des Warns Admin (Playit Style) -->
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md overflow-hidden shadow-sm">
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-950/60 text-slate-400 border-b border-slate-800 text-[11px] uppercase tracking-wider font-medium">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead class="bg-[#091322] text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
                 <tr>
-                  <th class="py-3 px-4 font-semibold">Membre & Identifiant</th>
+                  <th class="py-3 px-4 font-semibold">Membre & Numéro</th>
                   <th class="py-3 px-4 font-semibold">Dernier Motif</th>
                   <th class="py-3 px-4 font-semibold">Date & Heure</th>
                   <th class="py-3 px-4 font-semibold">Statut</th>
                   <th class="py-3 px-4 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody id="adminWarnsTableBody" class="divide-y divide-slate-800/60">
+              <tbody id="adminWarnsTableBody" class="divide-y divide-[#1d314c]/70">
                 <tr>
-                  <td colspan="5" class="py-8 text-center text-slate-500">Chargement des données de modération...</td>
+                  <td colspan="5" class="py-8 text-center text-[#8b9bb4]">Chargement des données de modération...</td>
                 </tr>
               </tbody>
             </table>
@@ -328,24 +350,24 @@
       </section>
 
       <!-- ====================================================== -->
-      <!-- SECTION 2 : ACTIVITÉ DES GROUPES & TOP PARLEURS        -->
+      <!-- SECTION 2 : ACTIVITÉ DES GROUPES (RÉPARÉE)             -->
       <!-- ====================================================== -->
-      <section id="tab-top" class="tab-content hidden space-y-4">
+      <section id="tab-groups" class="tab-content hidden space-y-5">
         
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 class="text-sm font-semibold text-white tracking-tight">Activité & Classement des Groupes</h3>
-            <p class="text-xs text-slate-400 mt-0.5">
-              Volumes de messages échangés, top parleurs en direct et statistiques des conversations.
+            <h3 class="text-sm font-bold text-white tracking-tight">Activité & Classement des Groupes WhatsApp</h3>
+            <p class="text-xs text-[#8b9bb4] mt-0.5">
+              Noms réels des groupes synchronisés via Baileys, participants, total des messages et Top 3 parleurs.
             </p>
           </div>
-          <button id="btnRefreshActivity" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors">
+          <button id="btnRefreshActivity" class="px-3.5 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors">
             ↻ Actualiser
           </button>
         </div>
 
         <div id="groupsActivityContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="col-span-full p-8 text-center text-slate-500">Chargement de l'activité des groupes...</div>
+          <div class="col-span-full p-8 text-center text-[#8b9bb4]">Chargement des groupes WhatsApp...</div>
         </div>
 
       </section>
@@ -355,37 +377,39 @@
       <!-- ====================================================== -->
       <section id="tab-logs" class="tab-content hidden space-y-4">
         
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span class="text-xs font-semibold text-white">Flux en direct (PM2)</span>
+              <span class="text-xs font-semibold uppercase tracking-wider text-white">Flux en direct (PM2)</span>
             </div>
-            <span class="text-slate-700">|</span>
+            <span class="text-[#1d314c]">|</span>
             <input 
               type="text" 
               id="logFilterInput" 
-              placeholder="Filtrer les lignes..." 
-              class="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs w-48 font-mono outline-none focus:border-indigo-500"
+              placeholder="Filtrer les logs..." 
+              class="px-3 py-1 rounded-md bg-[#091322] border border-[#1d314c] text-white placeholder-[#8b9bb4]/60 text-xs w-48 font-mono outline-none focus:border-[#f97316]"
             >
           </div>
 
           <div class="flex items-center gap-2">
-            <button id="btnCopyLogs" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-200 text-black font-medium text-xs transition-colors flex items-center gap-1.5">
-              <span>📋</span>
-              <span id="btnCopyLogsText">Copier</span>
+            <button id="btnAutoScroll" class="px-3 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] text-[#f97316] text-xs font-medium transition-colors">
+              Auto-scroll : ON
             </button>
-            <button id="btnClearLogs" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-medium transition-colors">
+            <button id="btnCopyLogs" class="px-3 py-1.5 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-xs transition-colors">
+              Copier
+            </button>
+            <button id="btnClearLogs" class="px-3 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:bg-[#14253f] text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors">
               Vider
             </button>
-            <button id="btnRestartBot" class="px-3 py-1.5 rounded-lg border border-rose-900/30 bg-rose-950/20 hover:bg-rose-900/40 text-rose-400 text-xs font-medium transition-colors">
+            <button id="btnRestartBot" class="px-3 py-1.5 rounded-md border border-rose-900/40 bg-rose-950/20 hover:bg-rose-900/40 text-rose-300 text-xs font-medium transition-colors">
               Restart PM2
             </button>
           </div>
         </div>
 
-        <div id="terminalWindow" class="w-full h-[650px] p-4 rounded-2xl bg-black border border-slate-800 font-mono text-[11px] text-slate-300 overflow-y-auto custom-scroll space-y-0.5 select-text shadow-inner">
-          <div class="text-slate-600">// Flux de logs en cours de synchronisation...</div>
+        <div id="terminalWindow" class="w-full h-[650px] p-4 rounded-md bg-[#060d17] border border-[#1d314c] font-mono text-[12px] text-slate-300 overflow-y-auto custom-scroll space-y-1 select-text shadow-inner">
+          <div class="text-[#8b9bb4]">// Initialisation du flux de logs PM2...</div>
         </div>
 
       </section>
@@ -396,35 +420,35 @@
   <!-- ======================================================== -->
   <!-- MODALE : CONNEXION ADMINISTRATEUR                        -->
   <!-- ======================================================== -->
-  <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-7 space-y-5 shadow-2xl relative">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+  <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-[#0e1b2e] border border-[#1d314c] rounded-md p-6 space-y-5 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-[#1d314c] pb-3">
         <div>
-          <div class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Authentification</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Authentification</div>
           <div class="text-base font-bold text-white tracking-tight mt-0.5">Accès Administrateur</div>
         </div>
-        <button onclick="closeModal('loginModal')" class="text-slate-500 hover:text-white text-lg">✕</button>
+        <button onclick="closeModal('loginModal')" class="text-[#8b9bb4] hover:text-white text-lg">✕</button>
       </div>
 
-      <div id="loginError" class="hidden p-3 rounded-lg bg-rose-950/40 border border-rose-800/80 text-rose-300 text-xs">
+      <div id="loginError" class="hidden p-3 rounded bg-rose-950/40 border border-rose-800/80 text-rose-300 text-xs">
         Mot de passe incorrect.
       </div>
 
       <form id="loginForm" class="space-y-4">
         <div class="space-y-1.5">
-          <label class="block text-xs font-medium text-slate-300">Mot de passe Admin</label>
+          <label class="block text-xs font-medium text-[#8b9bb4]">Mot de passe Admin</label>
           <input 
             type="password" 
             id="passwordInput" 
             placeholder="••••••••••••" 
             required
-            class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono text-xs"
+            class="w-full px-3.5 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] text-white placeholder-[#8b9bb4]/60 focus:outline-none focus:border-[#f97316] font-mono text-xs"
           >
         </div>
 
         <button 
           type="submit" 
-          class="w-full py-2.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors shadow-sm"
+          class="w-full py-2.5 px-4 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-xs transition-colors shadow-sm"
         >
           Déverrouiller le panel ➔
         </button>
@@ -435,62 +459,62 @@
   <!-- ======================================================== -->
   <!-- MODALE : AJOUTER UN WARN (ADMIN)                         -->
   <!-- ======================================================== -->
-  <div id="addWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+  <div id="addWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="w-full max-w-md bg-[#0e1b2e] border border-[#1d314c] rounded-md p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-[#1d314c] pb-3">
         <span class="font-bold text-sm text-white tracking-tight">+ Nouvel Avertissement</span>
-        <button onclick="closeModal('addWarnModal')" class="text-slate-500 hover:text-white text-lg">✕</button>
+        <button onclick="closeModal('addWarnModal')" class="text-[#8b9bb4] hover:text-white text-lg">✕</button>
       </div>
 
       <form id="addWarnForm" class="space-y-3">
         <div class="space-y-1">
-          <label class="block text-xs font-medium text-slate-400">Cible (Numéro ou LID)</label>
+          <label class="block text-xs font-medium text-[#8b9bb4]">Cible (Numéro ou LID)</label>
           <input 
             type="text" 
             id="modalWarnTarget" 
-            placeholder="Ex: 33612345678 ou 218193348006100" 
+            placeholder="Ex: 33612345678" 
             required
-            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 font-mono text-xs"
+            class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white focus:outline-none focus:border-[#f97316] font-mono text-xs"
           >
         </div>
 
         <div class="space-y-1">
-          <label class="block text-xs font-medium text-slate-400">Pseudo (Optionnel)</label>
+          <label class="block text-xs font-medium text-[#8b9bb4]">Pseudo (Optionnel)</label>
           <input 
             type="text" 
             id="modalWarnPseudo" 
             placeholder="Ex: Hugo, Mme chaise Ikea..." 
-            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 text-xs"
+            class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white focus:outline-none focus:border-[#f97316] text-xs"
           >
         </div>
 
         <div class="space-y-1">
-          <label class="block text-xs font-medium text-slate-400">Motif de l'avertissement</label>
+          <label class="block text-xs font-medium text-[#8b9bb4]">Motif de l'avertissement</label>
           <textarea 
             id="modalWarnReason" 
             rows="3" 
             placeholder="Ex: Spam de stickers, insultes, pub non autorisée..." 
             required
-            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 text-xs"
+            class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white focus:outline-none focus:border-[#f97316] text-xs"
           ></textarea>
         </div>
 
         <div class="space-y-1">
-          <label class="block text-xs font-medium text-slate-400">Admin émetteur</label>
+          <label class="block text-xs font-medium text-[#8b9bb4]">Admin émetteur</label>
           <input 
             type="text" 
             id="modalWarnAdmin" 
             value="Administrateur Web" 
             required
-            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 text-xs"
+            class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white focus:outline-none focus:border-[#f97316] text-xs"
           >
         </div>
 
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-          <button type="button" onclick="closeModal('addWarnModal')" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-medium transition-colors">
+        <div class="flex justify-end gap-2 pt-2 border-t border-[#1d314c]">
+          <button type="button" onclick="closeModal('addWarnModal')" class="px-3 py-1.5 rounded-md border border-[#1d314c] hover:bg-[#14253f] text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors">
             Annuler
           </button>
-          <button type="submit" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors shadow-sm">
+          <button type="submit" class="px-4 py-1.5 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-xs transition-colors shadow-sm">
             Enregistrer
           </button>
         </div>
@@ -501,25 +525,25 @@
   <!-- ======================================================== -->
   <!-- MODALE : HISTORIQUE D'UN MEMBRE (ADMIN)                  -->
   <!-- ======================================================== -->
-  <div id="detailsWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+  <div id="detailsWarnModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="w-full max-w-xl bg-[#0e1b2e] border border-[#1d314c] rounded-md p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-[#1d314c] pb-3">
         <div>
           <span class="font-bold text-sm text-white tracking-tight" id="modalDetailsTitle">Historique des Avertissements</span>
-          <div class="text-[11px] text-slate-400 font-mono mt-0.5" id="modalDetailsSubtitle"></div>
+          <div class="text-[11px] text-[#8b9bb4] font-mono mt-0.5" id="modalDetailsSubtitle"></div>
         </div>
-        <button onclick="closeModal('detailsWarnModal')" class="text-slate-500 hover:text-white text-lg">✕</button>
+        <button onclick="closeModal('detailsWarnModal')" class="text-[#8b9bb4] hover:text-white text-lg">✕</button>
       </div>
 
       <div class="flex-1 overflow-y-auto custom-scroll space-y-2.5 pr-1" id="modalDetailsList">
         <!-- Rempli par JavaScript -->
       </div>
 
-      <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
-        <button id="modalDetailsResetAllBtn" class="px-3 py-1.5 rounded-lg bg-rose-950/40 border border-rose-800/80 hover:bg-rose-900/50 text-rose-300 font-medium text-xs transition-colors">
+      <div class="pt-3 border-t border-[#1d314c] flex items-center justify-between">
+        <button id="modalDetailsResetAllBtn" class="px-3 py-1.5 rounded-md bg-rose-950/40 border border-rose-800/80 hover:bg-rose-900/50 text-rose-300 font-medium text-xs transition-colors">
           Effacer tous les warns (Reset)
         </button>
-        <button onclick="closeModal('detailsWarnModal')" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-medium transition-colors">
+        <button onclick="closeModal('detailsWarnModal')" class="px-3 py-1.5 rounded-md border border-[#1d314c] hover:bg-[#14253f] text-[#8b9bb4] text-xs font-medium transition-colors">
           Fermer
         </button>
       </div>
@@ -529,20 +553,20 @@
   <!-- ======================================================== -->
   <!-- MODALE : CONFIRMATION INTÉGRÉE (PAS DE POPUP BROWSER)    -->
   <!-- ======================================================== -->
-  <div id="confirmModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl relative">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+  <div id="confirmModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-[#0e1b2e] border border-[#1d314c] rounded-md p-6 space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-[#1d314c] pb-3">
         <span class="font-bold text-sm text-white tracking-tight" id="confirmModalTitle">Confirmation</span>
-        <button id="confirmModalCloseBtn" class="text-slate-500 hover:text-white text-lg">✕</button>
+        <button id="confirmModalCloseBtn" class="text-[#8b9bb4] hover:text-white text-lg">✕</button>
       </div>
-      <div class="text-xs text-slate-300 font-sans leading-relaxed" id="confirmModalMessage">
+      <div class="text-xs text-[#8b9bb4] leading-relaxed" id="confirmModalMessage">
         Confirmer cette action ?
       </div>
-      <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-        <button id="confirmModalCancelBtn" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-medium transition-colors">
+      <div class="pt-3 border-t border-[#1d314c] flex items-center justify-end gap-2">
+        <button id="confirmModalCancelBtn" class="px-3 py-1.5 rounded-md border border-[#1d314c] hover:bg-[#14253f] text-[#8b9bb4] text-xs font-medium transition-colors">
           Annuler
         </button>
-        <button id="confirmModalOkBtn" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs transition-colors shadow-sm">
+        <button id="confirmModalOkBtn" class="px-3.5 py-1.5 rounded-md bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs transition-colors shadow-sm">
           Confirmer
         </button>
       </div>
@@ -550,13 +574,13 @@
   </div>
 
   <!-- TOAST NOTIFICATION INTÉGRÉ -->
-  <div id="toastNotification" class="hidden fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-xl border font-sans text-xs font-medium transition-all duration-300 shadow-2xl"></div>
+  <div id="toastNotification" class="hidden fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-md border font-sans text-xs font-medium transition-all duration-300 shadow-2xl"></div>
 
   <!-- ======================================================== -->
   <!-- JAVASCRIPT TEMPS RÉEL (VUE PUBLIQUE + PANEL ADMIN)       -->
   <!-- ======================================================== -->
   <script>
-    // Détection dynamique du préfixe URL (/bot si sous reverse-proxy ou vide si direct)
+    // Détection dynamique du préfixe URL (/bot si reverse-proxy ou vide si direct)
     const BASE_PATH = window.location.pathname.startsWith('/bot') ? '/bot' : '';
     const API_BASE = `${BASE_PATH}/api`;
 
@@ -572,6 +596,7 @@
     let rawLogsList = [];
     let activeTab = 'tab-warns';
     let pollInterval = null;
+    let autoScrollLogs = true;
 
     async function apiFetch(endpoint, options = {}) {
       const headers = options.headers || {};
@@ -626,9 +651,9 @@
       const toast = document.getElementById('toastNotification');
       toast.textContent = text;
       if (type === 'success') {
-        toast.className = 'fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-xl border bg-emerald-950/80 border-emerald-500/40 text-emerald-300 font-sans text-xs font-medium shadow-2xl';
+        toast.className = 'fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-md border bg-[#0e1b2e] border-emerald-500/40 text-emerald-300 font-sans text-xs font-medium shadow-2xl';
       } else {
-        toast.className = 'fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-xl border bg-rose-950/80 border-rose-500/40 text-rose-300 font-sans text-xs font-medium shadow-2xl';
+        toast.className = 'fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-md border bg-[#0e1b2e] border-rose-500/40 text-rose-300 font-sans text-xs font-medium shadow-2xl';
       }
       toast.classList.remove('hidden');
       setTimeout(() => {
@@ -644,21 +669,22 @@
       document.getElementById(id)?.classList.remove('hidden');
     }
 
-    // Navigation des onglets Admin
-    document.querySelectorAll('.nav-tab').forEach(btn => {
+    // Navigation des onglets Admin (Playit Style)
+    document.querySelectorAll('.playit-tab').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.nav-tab').forEach(b => {
-          b.classList.remove('active', 'border-indigo-500/40', 'bg-indigo-600/10', 'text-indigo-300');
-          b.classList.add('border-transparent', 'text-slate-400');
-        });
+        document.querySelectorAll('.playit-tab').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
 
-        btn.classList.add('active', 'border-indigo-500/40', 'bg-indigo-600/10', 'text-indigo-300');
-        btn.classList.remove('border-transparent', 'text-slate-400');
-        
+        btn.classList.add('active');
         const tabId = btn.getAttribute('data-tab');
         document.getElementById(tabId)?.classList.remove('hidden');
         activeTab = tabId;
+
+        if (activeTab === 'tab-groups') {
+          loadGroupsActivity();
+        } else if (activeTab === 'tab-logs') {
+          loadLogs();
+        }
       });
     });
 
@@ -750,19 +776,19 @@
     function renderPublicWarns(users) {
       const tbody = document.getElementById('publicWarnsTableBody');
       if (users.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-slate-500">Aucun membre répertorié.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-[#8b9bb4]">Aucun membre répertorié.</td></tr>';
         return;
       }
 
       tbody.innerHTML = users.map((u, i) => {
         const isBan = u.count >= 3;
         return `
-          <tr class="hover:bg-slate-800/40 transition-colors">
-            <td class="py-3 px-4 font-mono text-slate-500 text-xs">${i + 1}</td>
+          <tr class="hover:bg-[#14253f]/40 transition-colors">
+            <td class="py-3 px-4 font-mono text-[#8b9bb4] text-xs">${i + 1}</td>
             <td class="py-3 px-4 font-medium text-white">${u.pseudo || 'Membre Taverne'}</td>
             <td class="py-3 px-4 text-right">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
-                ${isBan ? '⛔ BAN (3+)' : `${u.count} avertissement${u.count > 1 ? 's' : ''}`}
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                ${isBan ? 'BAN (3+)' : `${u.count} avertissement${u.count > 1 ? 's' : ''}`}
               </span>
             </td>
           </tr>
@@ -781,10 +807,10 @@
       try {
         await Promise.all([
           loadBotStatus(),
-          loadWarns(),
-          loadGroupsActivity(),
-          loadLogs()
+          loadWarns()
         ]);
+        if (activeTab === 'tab-groups') loadGroupsActivity();
+        if (activeTab === 'tab-logs') loadLogs();
       } catch (err) {}
     }
 
@@ -795,7 +821,7 @@
         if (data.bot) {
           const isOnline = data.bot.status === 'connected';
           document.getElementById('statusDot').className = `w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`;
-          document.getElementById('waPhoneText').textContent = data.bot.phone ? `+${data.bot.phone} (${data.bot.pushName || 'ZyBot'})` : (isOnline ? 'Connecté' : 'Hors ligne');
+          document.getElementById('waPhoneText').textContent = data.bot.phone ? `+${data.bot.phone}` : (isOnline ? 'Prêt' : 'Hors ligne');
           
           const uptimeSec = data.bot.uptime || 0;
           const uptimeHours = (uptimeSec / 3600).toFixed(1);
@@ -847,7 +873,7 @@
 
       const tbody = document.getElementById('adminWarnsTableBody');
       if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500">Aucun membre ne correspond aux critères.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-[#8b9bb4]">Aucun membre ne correspond aux critères.</td></tr>';
         return;
       }
 
@@ -858,27 +884,27 @@
         const dateStr = lastWarn ? new Date(lastWarn.timestamp).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
 
         return `
-          <tr class="hover:bg-slate-800/40 transition-colors">
+          <tr class="hover:bg-[#14253f]/40 transition-colors">
             <td class="py-3 px-4">
               <div class="font-semibold text-white">${u.pushName || 'Membre Taverne'}</div>
-              <div class="font-mono text-slate-400 text-[11px]">+${u.number}</div>
+              <div class="font-mono text-[#8b9bb4] text-xs">+${u.number}</div>
             </td>
             <td class="py-3 px-4 text-slate-300 max-w-xs truncate" title="${reason}">
               ${reason}
             </td>
-            <td class="py-3 px-4 font-mono text-slate-400 text-[11px]">
+            <td class="py-3 px-4 font-mono text-[#8b9bb4] text-xs">
               ${dateStr}
             </td>
             <td class="py-3 px-4">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
-                ${isBan ? '⛔ BAN (3+)' : `${u.count} warn${u.count > 1 ? 's' : ''}`}
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                ${isBan ? 'BAN (3+)' : `${u.count} warn${u.count > 1 ? 's' : ''}`}
               </span>
             </td>
-            <td class="py-3 px-4 text-right space-x-1">
-              <button onclick="openWarnDetails('${u.number}')" class="px-2.5 py-1 rounded-md border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors">
+            <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+              <button onclick="openWarnDetails('${u.number}')" class="px-2.5 py-1 rounded border border-[#1d314c] bg-[#091322] hover:bg-[#14253f] text-slate-300 text-xs font-medium transition-colors">
                 Détails
               </button>
-              <button onclick="confirmResetMemberWarns('${u.number}', '${u.pushName || u.number}')" class="px-2.5 py-1 rounded-md border border-rose-900/30 bg-rose-950/20 hover:bg-rose-900/40 text-rose-400 text-xs font-medium transition-colors">
+              <button onclick="confirmResetMemberWarns('${u.number}', '${u.pushName || u.number}')" class="px-2.5 py-1 rounded border border-rose-900/40 bg-rose-950/20 hover:bg-rose-900/40 text-rose-300 text-xs font-medium transition-colors">
                 Reset
               </button>
             </td>
@@ -925,24 +951,24 @@
       const warns = user.warns || [];
 
       if (warns.length === 0) {
-        listContainer.innerHTML = '<div class="py-6 text-center text-slate-500">Aucun avertissement enregistré pour ce membre.</div>';
+        listContainer.innerHTML = '<div class="py-6 text-center text-[#8b9bb4]">Aucun avertissement enregistré pour ce membre.</div>';
       } else {
         listContainer.innerHTML = warns.map((w, index) => {
           const dateStr = new Date(w.timestamp).toLocaleString('fr-FR');
           const warnIdentifier = w.id || w.timestamp;
 
           return `
-            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
+            <div class="p-3.5 rounded bg-[#091322] border border-[#1d314c] space-y-2 flex flex-col justify-between">
               <div class="space-y-1">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-semibold text-amber-400">#${index + 1} — ${w.groupName || 'Taverne'}</span>
-                  <span class="font-mono text-slate-400 text-[11px]">${dateStr}</span>
+                  <span class="font-semibold text-[#f97316]">#${index + 1} — ${w.groupName || 'Taverne'}</span>
+                  <span class="font-mono text-[#8b9bb4] text-[11px]">${dateStr}</span>
                 </div>
-                <div class="text-xs text-slate-200">${w.reason || 'Aucun motif renseigné'}</div>
-                <div class="text-[11px] text-slate-500">Par : ${w.admin || 'Admin'}</div>
+                <div class="text-xs text-white">${w.reason || 'Aucun motif renseigné'}</div>
+                <div class="text-[11px] text-[#8b9bb4]">Par : ${w.admin || 'Admin'}</div>
               </div>
-              <div class="flex justify-end pt-2 border-t border-slate-800/60">
-                <button onclick="confirmDeleteSingleWarn('${user.number}', '${warnIdentifier}')" class="px-2 py-1 rounded bg-slate-900 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 text-xs font-medium transition-colors">
+              <div class="flex justify-end pt-2 border-t border-[#1d314c]">
+                <button onclick="confirmDeleteSingleWarn('${user.number}', '${warnIdentifier}')" class="px-2 py-1 rounded bg-[#0e1b2e] border border-rose-900/40 hover:bg-rose-900/40 text-rose-300 text-xs font-medium transition-colors">
                   Supprimer ce warn
                 </button>
               </div>
@@ -1013,10 +1039,10 @@
       }
     });
 
-    // 4. Activité des Groupes
+    // 4. Activité des Groupes (Corrigée avec vrais noms Baileys & Top 3 parleurs)
     async function loadGroupsActivity() {
       try {
-        const res = await apiFetch('/api/groups/activity');
+        const res = await apiFetch('/api/groups');
         const data = await res.json();
         allGroupsActivity = data.groups || [];
         renderGroupsActivity(allGroupsActivity);
@@ -1026,35 +1052,49 @@
     function renderGroupsActivity(groups) {
       const container = document.getElementById('groupsActivityContainer');
       if (groups.length === 0) {
-        container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500">Aucune activité enregistrée pour le moment.</div>';
+        container.innerHTML = '<div class="col-span-full p-8 text-center text-[#8b9bb4]">Aucun groupe WhatsApp répertorié.</div>';
         return;
       }
 
-      container.innerHTML = groups.map(g => `
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
-            <div>
-              <h4 class="text-sm font-semibold text-white tracking-tight">${g.name || 'Groupe WhatsApp'}</h4>
-              <p class="font-mono text-[11px] text-slate-500">${g.jid}</p>
-            </div>
-            <span class="px-2.5 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-bold text-xs font-mono">
-              ${g.messageCount || 0} msgs
-            </span>
-          </div>
+      container.innerHTML = groups.map(g => {
+        const groupName = g.name || g.groupName || g.jid || 'Groupe WhatsApp';
+        const groupJid = g.jid || g.groupJid || '';
+        const msgCount = g.messageCount ?? g.totalMessages ?? 0;
+        const partCount = g.participantCount ?? g.userCount ?? 0;
+        const speakers = (g.topSpeakers || g.topUsers || []).slice(0, 3);
 
-          <div>
-            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Top Parleurs :</div>
-            <div class="space-y-1.5">
-              ${(g.topSpeakers || []).slice(0, 5).map((s, idx) => `
-                <div class="flex items-center justify-between text-xs p-1.5 rounded-lg bg-slate-950/60">
-                  <span class="text-slate-300 font-medium">${idx + 1}. ${s.name || s.jid.split('@')[0]}</span>
-                  <span class="font-mono text-slate-400 font-bold">${s.count}</span>
+        return `
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-4">
+            <div class="flex items-start justify-between gap-3 border-b border-[#1d314c] pb-3">
+              <div class="min-w-0">
+                <h4 class="text-sm font-bold text-white tracking-tight truncate">${escapeHtml(groupName)}</h4>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="font-mono text-xs text-[#8b9bb4] truncate">${escapeHtml(groupJid)}</span>
+                  ${partCount > 0 ? `<span class="text-xs text-[#8b9bb4]">• ${partCount} membres</span>` : ''}
                 </div>
-              `).join('') || '<div class="text-slate-500 text-xs">Aucun message enregistré.</div>'}
+              </div>
+              <span class="shrink-0 px-2.5 py-1 rounded bg-[#f97316]/10 border border-[#f97316]/30 text-[#f97316] font-bold text-xs font-mono">
+                ${msgCount} msgs
+              </span>
+            </div>
+
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-2.5">Top 3 Parleurs :</div>
+              <div class="space-y-1.5">
+                ${speakers.length > 0 ? speakers.map((s, idx) => `
+                  <div class="flex items-center justify-between text-xs p-2 rounded bg-[#091322] border border-[#1d314c]/60">
+                    <span class="text-slate-200 font-medium truncate">
+                      <span class="font-mono text-[#f97316] mr-1.5">#${idx + 1}</span>
+                      ${escapeHtml(s.name || 'Membre')}
+                    </span>
+                    <span class="font-mono text-[#8b9bb4] font-semibold shrink-0 ml-2">${s.count} msgs</span>
+                  </div>
+                `).join('') : '<div class="text-[#8b9bb4] text-xs p-2 rounded bg-[#091322] border border-[#1d314c]/60">Aucun message comptabilisé.</div>'}
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     document.getElementById('btnRefreshActivity')?.addEventListener('click', loadGroupsActivity);
@@ -1076,23 +1116,38 @@
       
       const filtered = rawLogsList.filter(l => !filter || l.text.toLowerCase().includes(filter));
       if (filtered.length === 0) {
-        terminal.innerHTML = '<div class="text-slate-600">// Aucun log correspondant.</div>';
+        terminal.innerHTML = '<div class="text-[#8b9bb4]">// Aucun log correspondant.</div>';
         return;
       }
 
       terminal.innerHTML = filtered.map(l => {
         const isError = l.type === 'error' || l.text.includes('Error') || l.text.includes('ERROR');
-        return `<div class="${isError ? 'text-rose-400' : 'text-slate-300'} leading-relaxed">${escapeHtml(l.text)}</div>`;
+        return `<div class="${isError ? 'text-rose-400' : 'text-slate-300'} leading-relaxed font-mono">${escapeHtml(l.text)}</div>`;
       }).join('');
       
-      terminal.scrollTop = terminal.scrollHeight;
+      if (autoScrollLogs) {
+        terminal.scrollTop = terminal.scrollHeight;
+      }
     }
 
     function escapeHtml(str) {
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
     document.getElementById('logFilterInput')?.addEventListener('input', renderLogs);
+    
+    document.getElementById('btnAutoScroll')?.addEventListener('click', (e) => {
+      autoScrollLogs = !autoScrollLogs;
+      e.target.textContent = `Auto-scroll : ${autoScrollLogs ? 'ON' : 'OFF'}`;
+      e.target.className = `px-3 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] text-xs font-medium transition-colors ${autoScrollLogs ? 'text-[#f97316]' : 'text-[#8b9bb4]'}`;
+    });
+
     document.getElementById('btnClearLogs')?.addEventListener('click', () => {
       rawLogsList = [];
       renderLogs();
@@ -1101,10 +1156,7 @@
     document.getElementById('btnCopyLogs')?.addEventListener('click', () => {
       const text = rawLogsList.map(l => l.text).join('\n');
       navigator.clipboard.writeText(text);
-      document.getElementById('btnCopyLogsText').textContent = 'Copié !';
-      setTimeout(() => {
-        document.getElementById('btnCopyLogsText').textContent = 'Copier';
-      }, 2000);
+      showToast('Logs copiés dans le presse-papier.');
     });
 
     document.getElementById('btnRestartBot')?.addEventListener('click', () => {

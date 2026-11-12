@@ -18,9 +18,97 @@ import {
   revokeUser,
   unrevokeUser
 } from '../services/permissionStore.js';
-import { getAllGiveaways, finishGiveaway, rerollGiveaway } from '../services/giveawayStore.js';
-import { getAllPersopings, deletePersoping } from '../services/persopingStore.js';
+import { getAllGiveaways, finishGiveaway, rerollGiveaway, createGiveaway, deleteGiveaway } from '../services/giveawayStore.js';
+import { getAllPersopings, deletePersoping, updatePersoping } from '../services/persopingStore.js';
 import { getAntiRaidData, clearMemberAntiRaid } from '../services/antiLinkProtection.js';
+
+// Cache des groupes WhatsApp pour éviter le spam de requêtes Baileys
+let groupsParticipatingCache = { data: null, timestamp: 0 };
+const GROUPS_CACHE_TTL_MS = 60 * 1000; // 60 secondes
+
+async function getEnrichedGroups() {
+  const sock = getActiveSocket();
+  const now = Date.now();
+  let participating = {};
+
+  if (sock && typeof sock.groupFetchAllParticipating === 'function') {
+    if (groupsParticipatingCache.data && (now - groupsParticipatingCache.timestamp < GROUPS_CACHE_TTL_MS)) {
+      participating = groupsParticipatingCache.data;
+    } else {
+      try {
+        participating = await sock.groupFetchAllParticipating();
+        groupsParticipatingCache = { data: participating, timestamp: now };
+      } catch (err) {
+        console.warn('[Server] Échec groupFetchAllParticipating:', err.message);
+        participating = groupsParticipatingCache.data || {};
+      }
+    }
+  }
+
+  const activityList = getAllGroupsActivity();
+  const activityMap = new Map();
+  for (const item of activityList) {
+    activityMap.set(item.groupJid, item);
+  }
+
+  const result = [];
+  const handledJids = new Set();
+
+  // 1. Ajouter tous les groupes participants récupérés de WhatsApp
+  for (const [jid, groupData] of Object.entries(participating || {})) {
+    handledJids.add(jid);
+    const act = activityMap.get(jid);
+    const totalMessages = act ? act.totalMessages : 0;
+    const topUsers = act && act.topUsers ? act.topUsers.map(u => ({
+      id: u.id || '',
+      name: u.name && !u.name.startsWith('+') ? u.name : (u.id ? `+${u.id.split('@')[0].split(':')[0]}` : 'Membre'),
+      count: u.count || 0
+    })) : [];
+
+    result.push({
+      jid,
+      groupJid: jid,
+      name: groupData.subject || act?.groupName || jid,
+      groupName: groupData.subject || act?.groupName || jid,
+      participantCount: Array.isArray(groupData.participants) ? groupData.participants.length : 0,
+      userCount: Array.isArray(groupData.participants) ? groupData.participants.length : (act ? act.userCount : 0),
+      messageCount: totalMessages,
+      totalMessages,
+      lastUpdate: act ? act.lastUpdate : null,
+      topSpeakers: topUsers.slice(0, 5),
+      topUsers: topUsers.slice(0, 5)
+    });
+  }
+
+  // 2. Ajouter les groupes qui ont de l'activité enregistrée mais qui ne sont pas dans participating
+  for (const act of activityList) {
+    if (!handledJids.has(act.groupJid)) {
+      const topUsers = act.topUsers ? act.topUsers.map(u => ({
+        id: u.id || '',
+        name: u.name && !u.name.startsWith('+') ? u.name : (u.id ? `+${u.id.split('@')[0].split(':')[0]}` : 'Membre'),
+        count: u.count || 0
+      })) : [];
+
+      result.push({
+        jid: act.groupJid,
+        groupJid: act.groupJid,
+        name: act.groupName && act.groupName !== act.groupJid ? act.groupName : act.groupJid,
+        groupName: act.groupName && act.groupName !== act.groupJid ? act.groupName : act.groupJid,
+        participantCount: act.userCount || 0,
+        userCount: act.userCount || 0,
+        messageCount: act.totalMessages || 0,
+        totalMessages: act.totalMessages || 0,
+        lastUpdate: act.lastUpdate || null,
+        topSpeakers: topUsers.slice(0, 5),
+        topUsers: topUsers.slice(0, 5)
+      });
+    }
+  }
+
+  // Trier par messages décroissants puis par nom
+  result.sort((a, b) => (b.messageCount - a.messageCount) || a.name.localeCompare(b.name));
+  return result;
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -193,8 +281,8 @@ export function startWebServer() {
       // ROUTES D'AUTHENTIFICATION (PUBLIQUES)
       // ══════════════════════════════════════════════
 
-      // 1. POST /api/auth/login
-      if (pathname === '/api/auth/login' && method === 'POST') {
+      // 1. POST /api/auth/login & POST /api/superadmin/login
+      if ((pathname === '/api/auth/login' || pathname === '/api/superadmin/login') && method === 'POST') {
         const rate = loginRateLimit.get(ip) || { attempts: 0, lockUntil: 0 };
         if (Date.now() < rate.lockUntil) {
           const remainingSec = Math.ceil((rate.lockUntil - Date.now()) / 1000);
@@ -212,7 +300,7 @@ export function startWebServer() {
         let role = null;
         if (inputPassword === superadminPassword) {
           role = 'superadmin';
-        } else if (inputPassword === adminPassword) {
+        } else if (inputPassword === adminPassword && pathname !== '/api/superadmin/login') {
           role = 'admin';
         }
 
@@ -342,9 +430,9 @@ export function startWebServer() {
         });
       }
 
-      // GET /api/groups/activity : Leaderboard et statistiques d'activité des groupes
-      if (pathname === '/api/groups/activity' && method === 'GET') {
-        const groups = getAllGroupsActivity();
+      // GET /api/groups ou /api/groups/activity : Leaderboard et métadonnées WhatsApp en direct
+      if ((pathname === '/api/groups' || pathname === '/api/groups/activity') && method === 'GET') {
+        const groups = await getEnrichedGroups();
         return sendJson(res, 200, { success: true, count: groups.length, groups });
       }
 
@@ -389,8 +477,11 @@ export function startWebServer() {
       // 1. Notifications Hub
       if (pathname === '/api/superadmin/notifications' && method === 'GET') {
         const cfg = getConfig();
+        const targetGroup = cfg.hub?.systemNotifs || cfg.hub?.alerts || cfg.hub?.admintaverne || '';
         return sendJson(res, 200, {
           success: true,
+          targetGroup,
+          hub: cfg.hub || {},
           notifications: cfg.notifications || {
             groupEvents: true,
             pseudoChanges: true,
@@ -405,20 +496,51 @@ export function startWebServer() {
 
       if (pathname === '/api/superadmin/notifications' && method === 'POST') {
         const body = await parseJsonBody(req);
-        const updated = updateConfig((cur) => ({
-          ...cur,
-          notifications: {
-            ...(cur.notifications || {}),
-            ...body
+        const { targetGroup, ...notifs } = body;
+        const updated = updateConfig((cur) => {
+          const next = { ...cur };
+          if (notifs && Object.keys(notifs).length > 0) {
+            next.notifications = {
+              ...(cur.notifications || {}),
+              ...notifs
+            };
           }
-        }));
-        return sendJson(res, 200, { success: true, notifications: updated.notifications });
+          if (targetGroup) {
+            next.hub = {
+              ...(cur.hub || {}),
+              systemNotifs: targetGroup,
+              alerts: targetGroup,
+              admintaverne: targetGroup
+            };
+          }
+          return next;
+        });
+        return sendJson(res, 200, {
+          success: true,
+          notifications: updated.notifications,
+          targetGroup: updated.hub?.systemNotifs || ''
+        });
       }
 
       // 2. Giveaways (/gw)
       if (pathname === '/api/superadmin/giveaways' && method === 'GET') {
         const list = getAllGiveaways();
         return sendJson(res, 200, { success: true, count: list.length, giveaways: list });
+      }
+
+      if (pathname === '/api/superadmin/giveaways/create' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { groupJid, prize, durationMs } = body;
+        if (!groupJid || !prize) return sendJson(res, 400, { error: 'Groupe et lot requis.' });
+        const gw = createGiveaway({
+          groupJid,
+          messageId: `admin_${Date.now()}`,
+          messageKey: null,
+          prize,
+          durationMs: parseInt(durationMs, 10) || 86400000,
+          creatorJid: 'superadmin'
+        });
+        return sendJson(res, 200, { success: true, giveaway: gw });
       }
 
       if (pathname === '/api/superadmin/giveaways/end' && method === 'POST') {
@@ -439,6 +561,14 @@ export function startWebServer() {
         return sendJson(res, 200, { success: true, result: resGw });
       }
 
+      if (pathname === '/api/superadmin/giveaways/delete' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const giveawayId = body.giveawayId || body.id || body.messageId;
+        if (!giveawayId) return sendJson(res, 400, { error: 'Identifiant requis.' });
+        const ok = deleteGiveaway(giveawayId);
+        return sendJson(res, 200, { success: ok });
+      }
+
       // 3. Persopings (/persoping & vues uniques)
       if (pathname === '/api/superadmin/persopings' && method === 'GET') {
         const list = getAllPersopings();
@@ -451,6 +581,14 @@ export function startWebServer() {
         if (!id) return sendJson(res, 400, { error: 'ID persoping requis.' });
         const ok = deletePersoping(id);
         return sendJson(res, 200, { success: ok });
+      }
+
+      if (pathname === '/api/superadmin/persopings/update' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { id, text, author, origin } = body;
+        if (!id) return sendJson(res, 400, { error: 'ID requis.' });
+        const updated = updatePersoping(id, { text, author, origin });
+        return sendJson(res, 200, { success: !!updated, persoping: updated });
       }
 
       // 4. Anti-Raid & Protection Anti-Lien
@@ -748,8 +886,10 @@ export function startWebServer() {
       let filePath;
       if (pathname === '/superadmin' || pathname === '/superadmin/' || pathname === '/superadmin.html') {
         filePath = path.join(PUBLIC_DIR, 'superadmin.html');
+      } else if (pathname === '/admin' || pathname === '/admin/' || pathname === '/' || pathname === '/index.html') {
+        filePath = path.join(PUBLIC_DIR, 'index.html');
       } else {
-        filePath = path.join(PUBLIC_DIR, pathname === '/' ? 'index.html' : pathname);
+        filePath = path.join(PUBLIC_DIR, pathname);
       }
 
       // Si le fichier demandé n'existe pas ou s'il s'agit d'une route SPA

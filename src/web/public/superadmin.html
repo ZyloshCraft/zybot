@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="dark">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -19,25 +18,16 @@
             mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
           },
           colors: {
-            tremor: {
-              background: {
-                muted: '#090d16',
-                subtle: '#0f172a',
-                DEFAULT: '#020617',
-                emphasis: '#1e293b'
-              },
-              border: {
-                DEFAULT: '#1e293b'
-              },
-              ring: {
-                DEFAULT: '#334155'
-              },
-              content: {
-                subtle: '#64748b',
-                DEFAULT: '#94a3b8',
-                emphasis: '#e2e8f0',
-                strong: '#f8fafc'
-              }
+            playit: {
+              bg: '#091322',
+              card: '#0e1b2e',
+              border: '#1d314c',
+              borderHover: '#2a4468',
+              orange: '#f97316',
+              orangeHover: '#ea580c',
+              text: '#f8fafc',
+              subtext: '#8b9bb4',
+              terminal: '#060d17'
             }
           }
         }
@@ -47,7 +37,7 @@
 
   <style>
     body {
-      background-color: #020617;
+      background-color: #091322;
       color: #f8fafc;
       font-family: 'Inter', system-ui, sans-serif;
     }
@@ -56,68 +46,86 @@
       height: 6px;
     }
     .custom-scroll::-webkit-scrollbar-track {
-      background: #020617;
+      background: #091322;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-      background: #1e293b;
-      border-radius: 9999px;
+      background: #1d314c;
+      border-radius: 4px;
     }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-      background: #334155;
+      background: #2a4468;
     }
-    /* Tremor Switch Component */
+    /* Style Playit.gg text tabs */
+    .playit-tab {
+      color: #8b9bb4;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 0.75rem;
+      padding-top: 0.5rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.15s ease-in-out;
+      white-space: nowrap;
+    }
+    .playit-tab:hover {
+      color: #f8fafc;
+    }
+    .playit-tab.active {
+      color: #f8fafc;
+      border-bottom-color: #f97316;
+      font-weight: 600;
+    }
+    /* Playit Switch */
     .switch-bg {
-      transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: background-color 0.15s ease-in-out;
     }
     .switch-dot {
-      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.15s ease-in-out;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col text-sm antialiased selection:bg-indigo-500/20 selection:text-indigo-300">
+<body class="min-h-screen flex flex-col text-sm antialiased selection:bg-[#f97316]/20 selection:text-[#f97316]">
 
   <!-- ======================================================== -->
-  <!-- BARRE SUPÉRIEURE (TREMOR NAVBAR)                         -->
+  <!-- BARRE SUPÉRIEURE (PLAYIT NAVBAR)                         -->
   <!-- ======================================================== -->
-  <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
+  <header class="bg-[#0e1b2e] border-b border-[#1d314c] sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
       
       <!-- Brand & Badges -->
-      <div class="flex items-center gap-3">
-        <a href="./" class="nav-standard-link flex items-center gap-2 group">
-          <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform">
+      <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+        <a href="./" class="nav-standard-link flex items-center gap-2 group shrink-0">
+          <div class="w-8 h-8 rounded-md bg-[#f97316]/10 border border-[#f97316]/30 flex items-center justify-center text-[#f97316] font-bold">
             ⚡
           </div>
-          <div>
+          <div class="min-w-0">
             <div class="flex items-center gap-2">
               <span class="font-bold text-base text-white tracking-tight">ZyBot</span>
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                <span class="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"></span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">
                 SuperAdmin
               </span>
             </div>
-            <p class="text-[11px] text-slate-400 leading-none">Console propriétaire exclusive</p>
+            <p class="text-[11px] text-[#8b9bb4] leading-none">Console propriétaire exclusive</p>
           </div>
         </a>
 
-        <div class="hidden md:flex items-center gap-2 ml-4 pl-4 border-l border-slate-800 text-xs text-slate-400">
-          <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-800/60 text-slate-300">
-            <span class="w-2 h-2 rounded-full bg-emerald-400" id="topStatusDot"></span>
+        <div class="hidden md:flex items-center gap-2 ml-4 pl-4 border-l border-[#1d314c] text-xs text-[#8b9bb4]">
+          <span class="inline-flex items-center gap-1.5 font-mono text-emerald-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" id="topStatusDot"></span>
             <span id="topPhoneText">En ligne</span>
           </span>
-          <span class="text-slate-500">•</span>
-          <span id="topUptime">Uptime: --</span>
+          <span>•</span>
+          <span class="font-mono" id="topUptime">Uptime: --</span>
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-3">
-        <a href="./" class="nav-standard-link inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors">
+      <div class="flex items-center gap-2.5 shrink-0">
+        <a href="./" class="nav-standard-link inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors">
           <span>←</span>
-          <span>Panel Admin Standard</span>
+          <span>Panel Admin</span>
         </a>
 
-        <button id="superLogoutBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-900/30 bg-red-950/20 hover:bg-red-900/40 text-red-400 text-xs font-medium transition-colors">
+        <button id="superLogoutBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-rose-900/40 bg-rose-950/20 hover:bg-rose-900/40 text-rose-300 text-xs font-medium transition-colors">
           <span>Déconnexion</span>
         </button>
       </div>
@@ -126,46 +134,49 @@
   </header>
 
   <!-- ======================================================== -->
-  <!-- MODAL AUTHENTIFICATION SUPERADMIN                        -->
+  <!-- MODAL AUTHENTIFICATION SUPERADMIN (PLAYIT STYLE)          -->
   <!-- ======================================================== -->
-  <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-7 max-w-md w-full shadow-2xl relative overflow-hidden">
-      <!-- Glow effect -->
-      <div class="absolute -top-24 -left-24 w-48 h-48 bg-violet-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
+  <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#091322] hidden">
+    <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-8 max-w-md w-full shadow-2xl relative">
       <div class="text-center space-y-2 mb-6">
-        <div class="w-12 h-12 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-400 flex items-center justify-center mx-auto text-xl">
+        <div class="w-12 h-12 rounded-md bg-[#f97316]/10 border border-[#f97316]/30 text-[#f97316] flex items-center justify-center mx-auto text-xl font-bold">
           👑
         </div>
         <h2 class="text-lg font-bold text-white tracking-tight">Accès SuperAdmin</h2>
-        <p class="text-xs text-slate-400 max-w-xs mx-auto">
+        <p class="text-xs text-[#8b9bb4] max-w-xs mx-auto">
           Espace strictement réservé au propriétaire du bot. Mot de passe maître requis.
         </p>
       </div>
 
       <form id="authForm" class="space-y-4">
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1.5">Mot de passe SuperAdmin</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1.5">Mot de passe SuperAdmin</label>
           <input 
             type="password" 
             id="superPasswordInput" 
             placeholder="••••••••••••••" 
-            class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-800 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-white placeholder-slate-600 text-sm font-mono transition-colors outline-none"
+            class="w-full px-3.5 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-sm font-mono transition-colors outline-none"
             required
             autofocus
           >
         </div>
 
-        <div id="authErrorMsg" class="hidden text-xs text-rose-400 bg-rose-950/30 border border-rose-900/40 rounded-lg p-2.5 text-center"></div>
+        <div id="authErrorMsg" class="hidden text-xs text-rose-300 bg-rose-950/40 border border-rose-800/80 rounded p-2.5 text-center"></div>
 
         <button 
           type="submit" 
           id="btnSubmitAuth"
-          class="w-full py-2.5 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-medium text-sm transition-colors shadow-lg shadow-violet-600/20 flex items-center justify-center gap-2"
+          class="w-full py-2.5 px-4 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
         >
           <span>Déverrouiller l'espace SuperAdmin</span>
           <span>➔</span>
         </button>
+
+        <div class="text-center pt-2 border-t border-[#1d314c]/70">
+          <a href="./" class="nav-standard-link text-xs text-[#8b9bb4] hover:text-white transition-colors">
+            ← Retour au Panel Admin
+          </a>
+        </div>
       </form>
     </div>
   </div>
@@ -173,89 +184,77 @@
   <!-- ======================================================== -->
   <!-- CONTENU PRINCIPAL SUPERADMIN                             -->
   <!-- ======================================================== -->
-  <main id="mainContent" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 space-y-6">
+  <main id="mainContent" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6">
 
-    <!-- KPI Metric Cards (Tremor Style) -->
+    <!-- 4 Cartes KPI Playit.gg (Zéro Débordement) -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 shadow-sm backdrop-blur-sm">
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 sm:p-5 shadow-sm min-w-0">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Statut Bot</span>
-          <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" id="kpiStatusBadge">ONLINE</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Statut Bot</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" id="kpiStatusBadge">ONLINE</span>
         </div>
-        <div class="mt-2 text-xl sm:text-2xl font-bold text-white tracking-tight" id="kpiPhone">--</div>
-        <div class="mt-1 text-xs text-slate-400" id="kpiPushName">ZyBot</div>
+        <div class="mt-2 text-lg sm:text-xl font-bold font-mono text-white tracking-tight truncate" id="kpiPhone">--</div>
+        <div class="mt-1 text-xs text-[#8b9bb4] truncate" id="kpiPushName">ZyBot</div>
       </div>
 
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 shadow-sm backdrop-blur-sm">
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 sm:p-5 shadow-sm min-w-0">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Membres Trust</span>
-          <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">SÉCURISÉ</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Membres Trust</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">SÉCURISÉ</span>
         </div>
-        <div class="mt-2 text-xl sm:text-2xl font-bold text-white tracking-tight" id="kpiTrustedCount">0</div>
-        <div class="mt-1 text-xs text-slate-400"><span id="kpiRevokedCount">0</span> révoqués</div>
+        <div class="mt-2 text-2xl font-bold font-mono text-white tracking-tight" id="kpiTrustedCount">0</div>
+        <div class="mt-1 text-xs text-[#8b9bb4]"><span id="kpiRevokedCount">0</span> révoqués</div>
       </div>
 
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 shadow-sm backdrop-blur-sm">
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 sm:p-5 shadow-sm min-w-0">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Giveaways Actifs</span>
-          <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20" id="kpiGwBadge">EN COURS</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Giveaways Actifs</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20" id="kpiGwBadge">EN COURS</span>
         </div>
-        <div class="mt-2 text-xl sm:text-2xl font-bold text-white tracking-tight" id="kpiGwCount">0</div>
-        <div class="mt-1 text-xs text-slate-400"><span id="kpiGwParticipants">0</span> participants totaux</div>
+        <div class="mt-2 text-2xl font-bold font-mono text-white tracking-tight" id="kpiGwCount">0</div>
+        <div class="mt-1 text-xs text-[#8b9bb4]"><span id="kpiGwParticipants">0</span> participants totaux</div>
       </div>
 
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 shadow-sm backdrop-blur-sm">
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 sm:p-5 shadow-sm min-w-0">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Persopings Sauvegardés</span>
-          <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">ARCHIVES</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Persopings Archivés</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">NOTES</span>
         </div>
-        <div class="mt-2 text-xl sm:text-2xl font-bold text-white tracking-tight" id="kpiPersoCount">0</div>
-        <div class="mt-1 text-xs text-slate-400">Notes & Vues Uniques</div>
+        <div class="mt-2 text-2xl font-bold font-mono text-white tracking-tight" id="kpiPersoCount">0</div>
+        <div class="mt-1 text-xs text-[#8b9bb4]">Messages sauvegardés</div>
       </div>
 
     </div>
 
-    <!-- Navigation par Onglets (Tremor TabList) -->
-    <div class="border-b border-slate-800">
-      <div class="flex space-x-1 sm:space-x-2 overflow-x-auto pb-px custom-scroll">
-        <button class="super-tab active px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-indigo-500 text-white bg-slate-900/40 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-perms">
-          <span>🔒</span>
-          <span>Permissions & Sécurité</span>
+    <!-- Navigation par Onglets (Playit.gg Style - Ligne Orange) -->
+    <div class="border-b border-[#1d314c]">
+      <nav class="flex space-x-8 overflow-x-auto custom-scroll" aria-label="SuperAdmin Tabs">
+        <button class="playit-tab active" data-tab="tab-perms">
+          Permissions
         </button>
-        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-notifs">
-          <span>🔔</span>
-          <span>Notifications Hub</span>
+        <button class="playit-tab" data-tab="tab-notifs">
+          Notifications & Alertes
         </button>
-        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-giveaways">
-          <span>🎉</span>
-          <span>Giveaways</span>
+        <button class="playit-tab" data-tab="tab-gwperso">
+          Giveaways & PersoPings
         </button>
-        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-persopings">
-          <span>📌</span>
-          <span>Persopings & Vues</span>
+        <button class="playit-tab" data-tab="tab-settings">
+          Réglages Bot
         </button>
-        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-antiraid">
-          <span>🛡️</span>
-          <span>Anti-Raid & Liens</span>
-        </button>
-        <button class="super-tab px-3.5 py-2.5 rounded-t-lg font-medium text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/20 transition-colors flex items-center gap-2 whitespace-nowrap" data-tab="tab-settings">
-          <span>⚙️</span>
-          <span>Réglages Bot & Alertes</span>
-        </button>
-      </div>
+      </nav>
     </div>
 
     <!-- ======================================================== -->
-    <!-- TAB 1 : PERMISSIONS & SÉCURITÉ                           -->
+    <!-- TAB 1 : PERMISSIONS                                      -->
     <!-- ======================================================== -->
     <section id="tab-perms" class="tab-panel space-y-6">
       
-      <!-- Tremor Card : Ajouter une permission -->
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm">
-        <h3 class="text-sm font-semibold text-white tracking-tight mb-1">Gérer les Autorisations Membres</h3>
-        <p class="text-xs text-slate-400 mb-4">
-          Ajoutez un membre dans la liste blanche (<span class="font-mono text-indigo-400">/trust</span>) pour l'autoriser à exécuter les commandes du bot ou révoquez-le (<span class="font-mono text-rose-400">/untrust</span>).
+      <!-- Carte formulaire ajout permission -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm">
+        <h3 class="text-sm font-bold text-white tracking-tight mb-1">Gérer les Autorisations Membres</h3>
+        <p class="text-xs text-[#8b9bb4] mb-4">
+          Ajoutez un membre en liste blanche (<span class="font-mono text-[#f97316]">/trust</span>) pour l'autoriser à exécuter les commandes du bot ou révoquez-le (<span class="font-mono text-rose-400">/untrust</span>).
         </p>
 
         <form id="permActionForm" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -264,7 +263,7 @@
               type="text" 
               id="permTargetInput" 
               placeholder="Numéro WhatsApp ou LID (ex: 33612345678)" 
-              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white placeholder-slate-600 text-xs font-mono outline-none"
+              class="w-full px-3.5 py-2 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-xs font-mono outline-none"
               required
             >
           </div>
@@ -272,22 +271,22 @@
             <input 
               type="text" 
               id="permNameInput" 
-              placeholder="Nom ou note (optionnel)" 
-              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white placeholder-slate-600 text-xs outline-none"
+              placeholder="Nom ou pseudo (optionnel)" 
+              class="w-full px-3.5 py-2 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-xs outline-none"
             >
           </div>
           <div class="flex gap-2">
             <button 
               type="button" 
               id="btnTrustAction" 
-              class="flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors"
+              class="flex-1 px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors"
             >
-              + Autoriser (Trust)
+              + Autoriser
             </button>
             <button 
               type="button" 
               id="btnUntrustAction" 
-              class="flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium transition-colors"
+              class="flex-1 px-3 py-2 rounded-md bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium transition-colors"
             >
               - Révoquer
             </button>
@@ -295,56 +294,56 @@
         </form>
       </div>
 
-      <!-- Deux colonnes : Membres Autorisés & Membres Révoqués -->
+      <!-- 2 Tables côte à côte (Playit Style) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        <!-- Table Membres de Confiance -->
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl overflow-hidden shadow-sm">
-          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <!-- Table Membres Autorisés -->
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md overflow-hidden shadow-sm">
+          <div class="p-4 bg-[#091322] border-b border-[#1d314c] flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <h4 class="text-xs font-bold text-white uppercase tracking-wider">Membres Autorisés (Trust)</h4>
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-white">Membres Autorisés (Trust)</h4>
             </div>
-            <span class="text-xs text-slate-400 font-mono" id="trustedTotalCount">0</span>
+            <span class="text-xs text-[#8b9bb4] font-mono" id="trustedTotalCount">0 membre</span>
           </div>
 
           <div class="max-h-96 overflow-y-auto custom-scroll">
             <table class="w-full text-left text-xs">
-              <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 text-[11px]">
+              <thead class="bg-[#091322]/80 text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
                 <tr>
-                  <th class="py-2.5 px-4 font-medium">IDENTIFIANT</th>
-                  <th class="py-2.5 px-4 font-medium">NOM</th>
-                  <th class="py-2.5 px-4 text-right font-medium">ACTION</th>
+                  <th class="py-2.5 px-4">Identifiant</th>
+                  <th class="py-2.5 px-4">Nom</th>
+                  <th class="py-2.5 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody id="trustedTableBody" class="divide-y divide-slate-800/60">
-                <tr><td colspan="3" class="py-6 text-center text-slate-500">Chargement...</td></tr>
+              <tbody id="trustedTableBody" class="divide-y divide-[#1d314c]/70">
+                <tr><td colspan="3" class="py-6 text-center text-[#8b9bb4]">Chargement...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
         <!-- Table Membres Révoqués -->
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl overflow-hidden shadow-sm">
-          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md overflow-hidden shadow-sm">
+          <div class="p-4 bg-[#091322] border-b border-[#1d314c] flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-rose-400"></span>
-              <h4 class="text-xs font-bold text-white uppercase tracking-wider">Membres Révoqués (Untrusted)</h4>
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-white">Membres Révoqués (Untrusted)</h4>
             </div>
-            <span class="text-xs text-slate-400 font-mono" id="revokedTotalCount">0</span>
+            <span class="text-xs text-[#8b9bb4] font-mono" id="revokedTotalCount">0 membre</span>
           </div>
 
           <div class="max-h-96 overflow-y-auto custom-scroll">
             <table class="w-full text-left text-xs">
-              <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 text-[11px]">
+              <thead class="bg-[#091322]/80 text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
                 <tr>
-                  <th class="py-2.5 px-4 font-medium">IDENTIFIANT</th>
-                  <th class="py-2.5 px-4 font-medium">NOM</th>
-                  <th class="py-2.5 px-4 text-right font-medium">ACTION</th>
+                  <th class="py-2.5 px-4">Identifiant</th>
+                  <th class="py-2.5 px-4">Nom</th>
+                  <th class="py-2.5 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody id="revokedTableBody" class="divide-y divide-slate-800/60">
-                <tr><td colspan="3" class="py-6 text-center text-slate-500">Chargement...</td></tr>
+              <tbody id="revokedTableBody" class="divide-y divide-[#1d314c]/70">
+                <tr><td colspan="3" class="py-6 text-center text-[#8b9bb4]">Chargement...</td></tr>
               </tbody>
             </table>
           </div>
@@ -355,100 +354,114 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 2 : NOTIFICATIONS HUB                                -->
+    <!-- TAB 2 : NOTIFICATIONS & ALERTES                          -->
     <!-- ======================================================== -->
     <section id="tab-notifs" class="tab-panel hidden space-y-6">
       
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm">
-        <h3 class="text-sm font-semibold text-white tracking-tight mb-1">Routage des Notifications vers le Hub</h3>
-        <p class="text-xs text-slate-400 mb-6">
-          Sélectionnez précisément les événements qui sont retransmis dans votre groupe de notifications (<span class="font-mono text-indigo-400">notifds / admintaverne / hub</span>). Les fonctionnalités continuent d'opérer, seuls les transferts d'alertes sont ajustés.
-        </p>
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-5">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight mb-1">Routage des Notifications vers le Hub</h3>
+          <p class="text-xs text-[#8b9bb4]">
+            Choisissez le groupe WhatsApp de destination et activez/désactivez chaque type d'alerte retransmis.
+          </p>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="notificationsTogglesContainer">
+        <!-- Sélecteur de Groupe WhatsApp (alimenté par Baileys) -->
+        <div class="p-4 rounded-md bg-[#091322] border border-[#1d314c] space-y-2">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">
+            Groupe Cible pour les Notifications
+          </label>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <select id="targetGroupSelect" class="flex-1 px-3.5 py-2 rounded-md bg-[#0e1b2e] border border-[#1d314c] text-white text-xs outline-none focus:border-[#f97316]">
+              <option value="">Chargement des groupes WhatsApp...</option>
+            </select>
+            <input 
+              type="text" 
+              id="targetGroupManualInput" 
+              placeholder="Ou saisir un JID manuellement (ex: 120363...)" 
+              class="flex-1 px-3.5 py-2 rounded-md bg-[#0e1b2e] border border-[#1d314c] text-white placeholder-[#8b9bb4]/60 text-xs font-mono outline-none focus:border-[#f97316]"
+            >
+          </div>
+        </div>
+
+        <!-- Grille des Toggles de notifications -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          <!-- Toggle 1: Alertes Mots-clés -->
-          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center justify-between p-4 rounded-md bg-[#091322] border border-[#1d314c]">
             <div>
               <div class="font-medium text-white text-xs sm:text-sm">🔔 Alertes Mots-Clés</div>
-              <p class="text-[11px] text-slate-400 mt-0.5">Notification instantanée quand votre nom ou un mot surveillé est cité.</p>
+              <p class="text-[11px] text-[#8b9bb4] mt-0.5">Notification immédiate quand votre nom ou un mot-clé est cité.</p>
             </div>
-            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="keywordAlerts" aria-checked="true">
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" data-key="keywordAlerts" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
-          <!-- Toggle 2: Anti-Delete -->
-          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center justify-between p-4 rounded-md bg-[#091322] border border-[#1d314c]">
             <div>
               <div class="font-medium text-white text-xs sm:text-sm">🗑️ Messages Supprimés (Anti-Delete)</div>
-              <p class="text-[11px] text-slate-400 mt-0.5">Capture et transmission des messages effacés par les membres.</p>
+              <p class="text-[11px] text-[#8b9bb4] mt-0.5">Transmission des messages supprimés par les membres.</p>
             </div>
-            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="antiDelete" aria-checked="true">
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" data-key="antiDelete" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
-          <!-- Toggle 3: Anti-Edit -->
-          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center justify-between p-4 rounded-md bg-[#091322] border border-[#1d314c]">
             <div>
               <div class="font-medium text-white text-xs sm:text-sm">✏️ Messages Modifiés (Anti-Edit)</div>
-              <p class="text-[11px] text-slate-400 mt-0.5">Historique des modifications de messages avant/après.</p>
+              <p class="text-[11px] text-[#8b9bb4] mt-0.5">Historique des modifications de messages (avant/après).</p>
             </div>
-            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="antiEdit" aria-checked="true">
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" data-key="antiEdit" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
-          <!-- Toggle 4: Événements Groupes (Arrivées / Départs) -->
-          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center justify-between p-4 rounded-md bg-[#091322] border border-[#1d314c]">
             <div>
               <div class="font-medium text-white text-xs sm:text-sm">🚪 Arrivées & Départs de Membres</div>
-              <p class="text-[11px] text-slate-400 mt-0.5">Alertes lors des nouveaux membres, sorties ou expulsions de groupes.</p>
+              <p class="text-[11px] text-[#8b9bb4] mt-0.5">Alertes lors des nouveaux membres ou sorties de groupes.</p>
             </div>
-            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="groupEvents" aria-checked="true">
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" data-key="groupEvents" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
-          <!-- Toggle 5: Changements de Pseudo -->
-          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center justify-between p-4 rounded-md bg-[#091322] border border-[#1d314c]">
             <div>
-              <div class="font-medium text-white text-xs sm:text-sm">🏷️ Changements de Pseudo WhatsApp</div>
-              <p class="text-[11px] text-slate-400 mt-0.5">Détection et journalisation des modifications de PushName.</p>
+              <div class="font-medium text-white text-xs sm:text-sm">🏷️ Changements de Pseudo</div>
+              <p class="text-[11px] text-[#8b9bb4] mt-0.5">Détection et journalisation des modifications de PushName.</p>
             </div>
-            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="pseudoChanges" aria-checked="true">
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" data-key="pseudoChanges" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
-          <!-- Toggle 6: Récapitulatif quotidien à 23h -->
-          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center justify-between p-4 rounded-md bg-[#091322] border border-[#1d314c]">
             <div>
               <div class="font-medium text-white text-xs sm:text-sm">📊 Récapitulatif Quotidien (23:00)</div>
-              <p class="text-[11px] text-slate-400 mt-0.5">Bilan quotidien des messages, top parleurs et stats des groupes.</p>
+              <p class="text-[11px] text-[#8b9bb4] mt-0.5">Bilan quotidien des messages et statistiques des groupes.</p>
             </div>
-            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="dailyRecap" aria-checked="true">
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" data-key="dailyRecap" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
-          <!-- Toggle 7: Alertes Anti-Raid & Liens -->
-          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center justify-between p-4 rounded-md bg-[#091322] border border-[#1d314c]">
             <div>
               <div class="font-medium text-white text-xs sm:text-sm">🛡️ Alertes Anti-Raid & Liens</div>
-              <p class="text-[11px] text-slate-400 mt-0.5">Alerte discrète lors de l'expulsion d'un spammeur de liens.</p>
+              <p class="text-[11px] text-[#8b9bb4] mt-0.5">Alerte lors de l'expulsion d'un spammeur de liens.</p>
             </div>
-            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" data-key="antiLink" aria-checked="true">
+            <button type="button" class="notif-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" data-key="antiLink" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
         </div>
 
-        <div class="mt-6 flex justify-end">
-          <button id="btnSaveNotifications" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors shadow-sm">
-            Sauvegarder les Préférences de Notifications
+        <div class="flex justify-end pt-3">
+          <button id="btnSaveNotifications" class="px-4 py-2 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-xs transition-colors shadow-sm">
+            Enregistrer les Préférences de Notifications
           </button>
         </div>
       </div>
@@ -456,242 +469,232 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 3 : GESTION DES GIVEAWAYS                            -->
+    <!-- TAB 3 : GIVEAWAYS & PERSOPINGS                           -->
     <!-- ======================================================== -->
-    <section id="tab-giveaways" class="tab-panel hidden space-y-6">
+    <section id="tab-gwperso" class="tab-panel hidden space-y-6">
       
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 class="text-sm font-semibold text-white tracking-tight">Giveaways WhatsApp (/gw)</h3>
-          <p class="text-xs text-slate-400 mt-0.5">
-            Suivi des tirages au sort en direct, participants réels inscrits par emoji, tirage anticipé et reroll.
-          </p>
+      <!-- Section Giveaways -->
+      <div class="space-y-4">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight">Gestion des Giveaways (/gw)</h3>
+            <p class="text-xs text-[#8b9bb4] mt-0.5">
+              Création, suivi des tirages, participants réels par réaction emoji, arrêt anticipé et reroll.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openModal('createGwModal')" class="px-3.5 py-1.5 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-medium transition-colors">
+              + Créer un Giveaway
+            </button>
+            <button id="btnRefreshGiveaways" class="px-3.5 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:bg-[#14253f] text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors">
+              ↻ Actualiser
+            </button>
+          </div>
         </div>
-        <button id="btnRefreshGiveaways" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors">
-          ↻ Actualiser les Giveaways
-        </button>
+
+        <div id="giveawaysContainer" class="space-y-4">
+          <div class="p-8 text-center text-[#8b9bb4]">Chargement des giveaways...</div>
+        </div>
       </div>
 
-      <div id="giveawaysContainer" class="space-y-4">
-        <div class="p-8 text-center text-slate-500">Chargement des giveaways...</div>
+      <!-- Section PersoPings -->
+      <div class="space-y-4 pt-4 border-t border-[#1d314c]">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight">PersoPings & Vues Uniques Archivées</h3>
+            <p class="text-xs text-[#8b9bb4] mt-0.5">
+              Messages et citations enregistrés via <span class="font-mono text-[#f97316]">/persoping</span>.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input 
+              type="text" 
+              id="searchPersopingInput" 
+              placeholder="Filtrer les notes..." 
+              class="px-3 py-1.5 rounded-md bg-[#091322] border border-[#1d314c] text-white text-xs outline-none focus:border-[#f97316]"
+            >
+            <button id="btnRefreshPersopings" class="px-3 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:bg-[#14253f] text-[#8b9bb4] text-xs font-medium transition-colors">
+              ↻
+            </button>
+          </div>
+        </div>
+
+        <div id="persopingsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="col-span-full p-8 text-center text-[#8b9bb4]">Chargement des persopings...</div>
+        </div>
       </div>
 
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 4 : PERSOPINGS & VUES UNIQUES                        -->
+    <!-- TAB 4 : RÉGLAGES BOT                                     -->
     <!-- ======================================================== -->
-    <section id="tab-persopings" class="tab-panel hidden space-y-6">
+    <section id="tab-settings" class="tab-panel hidden space-y-6">
       
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <!-- Anti-Raid & Protection Anti-Lien -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-4">
         <div>
-          <h3 class="text-sm font-semibold text-white tracking-tight">Persopings & Archives de Vues Uniques</h3>
-          <p class="text-xs text-slate-400 mt-0.5">
-            Messages et citations sauvegardés via la commande <span class="font-mono text-purple-400">/persoping</span> ou transférés depuis vos discussions.
+          <h3 class="text-sm font-bold text-white tracking-tight mb-1">Configuration Anti-Raid & Anti-Lien</h3>
+          <p class="text-xs text-[#8b9bb4]">
+            Empêche les nouveaux membres d'envoyer des liens durant leur période d'arrivée sous peine de ban.
           </p>
         </div>
-        <div class="flex items-center gap-2">
-          <input 
-            type="text" 
-            id="searchPersopingInput" 
-            placeholder="Filtrer les notes..." 
-            class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs outline-none focus:border-purple-500 font-mono"
-          >
-          <button id="btnRefreshPersopings" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors">
-            ↻
-          </button>
-        </div>
-      </div>
-
-      <!-- Grille des cartes persoping -->
-      <div id="persopingsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="col-span-full p-8 text-center text-slate-500">Chargement des persopings...</div>
-      </div>
-
-    </section>
-
-    <!-- ======================================================== -->
-    <!-- TAB 5 : ANTI-RAID & PROTECTION ANTI-LIEN                 -->
-    <!-- ======================================================== -->
-    <section id="tab-antiraid" class="tab-panel hidden space-y-6">
-      
-      <!-- Réglages Anti-Raid -->
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm">
-        <h3 class="text-sm font-semibold text-white tracking-tight mb-1">Configuration du Protocole Anti-Raid</h3>
-        <p class="text-xs text-slate-400 mb-6">
-          Protège les groupes contre les raids et le spam instantané : les nouveaux arrivants ne peuvent poster aucun lien durant leur période probatoire.
-        </p>
 
         <form id="antiRaidConfigForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          
-          <div class="flex items-center justify-between p-3.5 rounded-lg bg-slate-950 border border-slate-800">
+          <div class="flex items-center justify-between p-3.5 rounded-md bg-[#091322] border border-[#1d314c]">
             <div>
               <div class="text-xs font-medium text-white">Module Activé</div>
-              <div class="text-[10px] text-slate-400">Filtrage strict des liens</div>
+              <div class="text-[10px] text-[#8b9bb4]">Filtrage strict des liens</div>
             </div>
-            <button type="button" id="antiRaidEnabledToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" aria-checked="true">
+            <button type="button" id="antiRaidEnabledToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Durée de probation (minutes)</label>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1">Période probatoire (minutes)</label>
             <input 
               type="number" 
               id="antiRaidProbationInput" 
               min="1" 
               max="1440" 
               value="10" 
-              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white text-xs font-mono outline-none"
+              class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white text-xs font-mono outline-none"
             >
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Avertissements max avant ban</label>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1">Avertissements max avant ban</label>
             <input 
               type="number" 
               id="antiRaidMaxWarningsInput" 
               min="1" 
               max="20" 
               value="5" 
-              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white text-xs font-mono outline-none"
+              class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white text-xs font-mono outline-none"
             >
           </div>
 
           <div class="sm:col-span-3 flex justify-end">
-            <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors shadow-sm">
+            <button type="submit" class="px-4 py-2 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-medium transition-colors shadow-sm">
               Enregistrer les Paramètres Anti-Raid
             </button>
           </div>
         </form>
-      </div>
 
-      <!-- Membres actuellement sous probation -->
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl overflow-hidden shadow-sm">
-        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Membres Récents sous Surveillance Probatoire</h4>
+        <!-- Tableau des membres sous probation -->
+        <div class="pt-3 border-t border-[#1d314c]">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-2">Membres Actuellement Sous Surveillance Probatoire :</div>
+          <div class="overflow-x-auto rounded border border-[#1d314c]">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[#091322] text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
+                <tr>
+                  <th class="py-2.5 px-4">Membre</th>
+                  <th class="py-2.5 px-4">Groupe</th>
+                  <th class="py-2.5 px-4">Arrivée</th>
+                  <th class="py-2.5 px-4">Liens tentés</th>
+                  <th class="py-2.5 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="antiRaidMembersTableBody" class="divide-y divide-[#1d314c]/70 bg-[#0e1b2e]">
+                <tr><td colspan="5" class="py-6 text-center text-[#8b9bb4]">Aucun membre sous probation active.</td></tr>
+              </tbody>
+            </table>
           </div>
-          <button id="btnRefreshAntiRaidData" class="text-xs text-slate-400 hover:text-white transition-colors">
-            ↻ Actualiser
-          </button>
-        </div>
-
-        <div class="max-h-96 overflow-y-auto custom-scroll">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 text-[11px]">
-              <tr>
-                <th class="py-2.5 px-4 font-medium">MEMBRE</th>
-                <th class="py-2.5 px-4 font-medium">GROUPE</th>
-                <th class="py-2.5 px-4 font-medium">ARRIVÉE</th>
-                <th class="py-2.5 px-4 font-medium">LIENS TENTÉS</th>
-                <th class="py-2.5 px-4 text-right font-medium">ACTION</th>
-              </tr>
-            </thead>
-            <tbody id="antiRaidMembersTableBody" class="divide-y divide-slate-800/60">
-              <tr><td colspan="5" class="py-6 text-center text-slate-500">Aucun membre en période de probation.</td></tr>
-            </tbody>
-          </table>
         </div>
       </div>
 
-    </section>
-
-    <!-- ======================================================== -->
-    <!-- TAB 6 : RÉGLAGES BOT & ALERTES MOTS-CLÉS                 -->
-    <!-- ======================================================== -->
-    <section id="tab-settings" class="tab-panel hidden space-y-6">
-      
       <!-- Mots-clés surveillés -->
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm">
-        <h3 class="text-sm font-semibold text-white tracking-tight mb-1">Mots-Clés Surveillés (Alerte Immédiate)</h3>
-        <p class="text-xs text-slate-400 mb-4">
-          Le bot vous prévient dès que l'un de ces mots est mentionné dans n'importe quel groupe où il est présent.
-        </p>
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-4">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight mb-1">Mots-Clés Surveillés (Alerte Immédiate)</h3>
+          <p class="text-xs text-[#8b9bb4]">
+            Le bot transmet une notification prioritaire dès que l'un de ces mots est cité.
+          </p>
+        </div>
 
-        <div class="flex flex-wrap gap-2 mb-4" id="watchedWordsContainer">
+        <div class="flex flex-wrap gap-2" id="watchedWordsContainer">
           <!-- Badges des mots -->
         </div>
 
-        <form id="addWordForm" class="flex gap-2 max-w-md">
+        <form id="addWordForm" class="flex gap-2 max-w-md pt-2">
           <input 
             type="text" 
             id="newWordInput" 
             placeholder="Nouveau mot à surveiller..." 
-            class="flex-1 px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white text-xs outline-none"
+            class="flex-1 px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white text-xs outline-none"
             required
           >
-          <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors">
+          <button type="submit" class="px-4 py-2 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-medium transition-colors">
             + Ajouter
           </button>
         </form>
       </div>
 
-      <!-- Réglages Furtivité & DND -->
+      <!-- Furtivité & Mode DND -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         <!-- Furtivité (Stealth typing) -->
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-4">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-4">
           <div class="flex items-center justify-between">
             <div>
-              <h4 class="text-sm font-semibold text-white tracking-tight">Furtivité & Frappe Humaine</h4>
-              <p class="text-[11px] text-slate-400">Simule la présence en ligne et la saisie naturelle.</p>
+              <h4 class="text-sm font-bold text-white tracking-tight">Furtivité & Frappe Humaine</h4>
+              <p class="text-[11px] text-[#8b9bb4]">Simule la présence et la saisie naturelle.</p>
             </div>
-            <button type="button" id="stealthToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" aria-checked="true">
+            <button type="button" id="stealthToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="grid grid-cols-2 gap-3 pt-1">
             <div>
-              <label class="block text-[11px] text-slate-400 mb-1">Typing Min (ms)</label>
-              <input type="number" id="stealthMinInput" value="1500" step="100" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono outline-none">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1">Typing Min (ms)</label>
+              <input type="number" id="stealthMinInput" value="1500" step="100" class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white text-xs font-mono outline-none">
             </div>
             <div>
-              <label class="block text-[11px] text-slate-400 mb-1">Typing Max (ms)</label>
-              <input type="number" id="stealthMaxInput" value="3500" step="100" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono outline-none">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1">Typing Max (ms)</label>
+              <input type="number" id="stealthMaxInput" value="3500" step="100" class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white text-xs font-mono outline-none">
             </div>
           </div>
         </div>
 
         <!-- DND (Ne Pas Déranger) -->
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-4">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-4">
           <div class="flex items-center justify-between">
             <div>
-              <h4 class="text-sm font-semibold text-white tracking-tight">Mode Nuit (DND)</h4>
-              <p class="text-[11px] text-slate-400">Désactive les notifications sonores pendant ces heures.</p>
+              <h4 class="text-sm font-bold text-white tracking-tight">Mode Nuit (DND)</h4>
+              <p class="text-[11px] text-[#8b9bb4]">Désactive les notifications durant ces heures.</p>
             </div>
-            <button type="button" id="dndToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-indigo-600" aria-checked="true">
+            <button type="button" id="dndToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-[#f97316]" aria-checked="true">
               <span class="switch-dot inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
             </button>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="grid grid-cols-2 gap-3 pt-1">
             <div>
-              <label class="block text-[11px] text-slate-400 mb-1">Début (ex: 23:00)</label>
-              <input type="text" id="dndStartInput" value="23:00" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono outline-none">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1">Début (ex: 23:00)</label>
+              <input type="text" id="dndStartInput" value="23:00" class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white text-xs font-mono outline-none">
             </div>
             <div>
-              <label class="block text-[11px] text-slate-400 mb-1">Fin (ex: 06:00)</label>
-              <input type="text" id="dndEndInput" value="06:00" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono outline-none">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1">Fin (ex: 06:00)</label>
+              <input type="text" id="dndEndInput" value="06:00" class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white text-xs font-mono outline-none">
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- Actions Système (Redémarrage & Session) -->
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+      <!-- Actions Système (Redémarrage PM2 & Session QR) -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
-          <h4 class="text-sm font-semibold text-white tracking-tight">Opérations Système</h4>
-          <p class="text-xs text-slate-400 mt-0.5">Redémarrer le processus PM2 ou réinitialiser la session WhatsApp (re-scanner un QR).</p>
+          <h4 class="text-sm font-bold text-white tracking-tight">Opérations Système</h4>
+          <p class="text-xs text-[#8b9bb4] mt-0.5">Relancer le processus PM2 ou générer un nouveau QR de session.</p>
         </div>
-        <div class="flex gap-2">
-          <button id="btnRestartBot" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-colors shadow-sm">
+        <div class="flex gap-2.5">
+          <button id="btnRestartBot" class="px-4 py-2 rounded-md bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-colors shadow-sm">
             ⚡ Redémarrer PM2
           </button>
-          <button id="btnReauthSession" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium transition-colors shadow-sm">
+          <button id="btnReauthSession" class="px-4 py-2 rounded-md bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium transition-colors shadow-sm">
             🔄 Réinitialiser Session QR
           </button>
         </div>
@@ -700,6 +703,62 @@
     </section>
 
   </main>
+
+  <!-- ======================================================== -->
+  <!-- MODALE : CRÉATION DE GIVEAWAY SUPERADMIN                  -->
+  <!-- ======================================================== -->
+  <div id="createGwModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="w-full max-w-md bg-[#0e1b2e] border border-[#1d314c] rounded-md p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-[#1d314c] pb-3">
+        <span class="font-bold text-sm text-white tracking-tight">+ Lancer un Giveaway</span>
+        <button onclick="closeModal('createGwModal')" class="text-[#8b9bb4] hover:text-white text-lg">✕</button>
+      </div>
+
+      <form id="createGwForm" class="space-y-3">
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Groupe WhatsApp Cible</label>
+          <select id="gwGroupSelect" class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white text-xs outline-none focus:border-[#f97316]" required>
+            <option value="">Sélectionner un groupe...</option>
+          </select>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Lot à Gagner</label>
+          <input 
+            type="text" 
+            id="gwPrizeInput" 
+            placeholder="Ex: Discord Nitro 1 mois, Cape Minecraft..." 
+            required
+            class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white focus:outline-none focus:border-[#f97316] text-xs"
+          >
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Durée</label>
+          <select id="gwDurationSelect" class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white text-xs outline-none focus:border-[#f97316]">
+            <option value="3600000">1 heure</option>
+            <option value="7200000">2 heures</option>
+            <option value="43200000">12 heures</option>
+            <option value="86400000" selected>24 heures (1 jour)</option>
+            <option value="172800000">48 heures (2 jours)</option>
+            <option value="259200000">72 heures (3 jours)</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-[#1d314c]">
+          <button type="button" onclick="closeModal('createGwModal')" class="px-3 py-1.5 rounded-md border border-[#1d314c] hover:bg-[#14253f] text-[#8b9bb4] text-xs font-medium transition-colors">
+            Annuler
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-xs transition-colors shadow-sm">
+            Lancer le Giveaway
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION INTÉGRÉ -->
+  <div id="toastNotification" class="hidden fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-md border font-sans text-xs font-medium transition-all duration-300 shadow-2xl"></div>
 
   <!-- ======================================================== -->
   <!-- SCRIPT CLIENT JAVASCRIPT DU SUPERADMIN                   -->
@@ -717,6 +776,27 @@
     let currentAuth = null;
     let currentConfig = {};
     let currentNotifications = {};
+    let availableGroups = [];
+
+    function showToast(text, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      toast.textContent = text;
+      if (type === 'success') {
+        toast.className = 'fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-md border bg-[#0e1b2e] border-emerald-500/40 text-emerald-300 font-sans text-xs font-medium shadow-2xl';
+      } else {
+        toast.className = 'fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-md border bg-[#0e1b2e] border-rose-500/40 text-rose-300 font-sans text-xs font-medium shadow-2xl';
+      }
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+    }
+
+    function closeModal(id) {
+      document.getElementById(id)?.classList.add('hidden');
+    }
+
+    function openModal(id) {
+      document.getElementById(id)?.classList.remove('hidden');
+    }
 
     // 1. Initialisation & Vérification du rôle SuperAdmin
     async function checkSuperAuth() {
@@ -743,7 +823,7 @@
       errBox.classList.add('hidden');
 
       try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
+        const res = await fetch(`${API_BASE}/superadmin/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password: pwd })
@@ -754,7 +834,7 @@
           document.getElementById('authOverlay').classList.add('hidden');
           loadAllSuperAdminData();
         } else {
-          errBox.textContent = data.error || (data.role === 'admin' ? 'Ce mot de passe donne un accès Admin standard, pas SuperAdmin.' : 'Mot de passe incorrect.');
+          errBox.textContent = data.error || 'Mot de passe SuperAdmin incorrect.';
           errBox.classList.remove('hidden');
         }
       } catch (err) {
@@ -769,26 +849,22 @@
       window.location.href = `${BASE_PATH || '/'}`;
     });
 
-    // 2. Gestion des onglets
-    document.querySelectorAll('.super-tab').forEach(tabBtn => {
+    // 2. Navigation des onglets (Playit Style)
+    document.querySelectorAll('.playit-tab').forEach(tabBtn => {
       tabBtn.addEventListener('click', () => {
-        document.querySelectorAll('.super-tab').forEach(b => {
-          b.classList.remove('active', 'border-indigo-500', 'text-white', 'bg-slate-900/40');
-          b.classList.add('border-transparent', 'text-slate-400');
-        });
+        document.querySelectorAll('.playit-tab').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
 
-        tabBtn.classList.add('active', 'border-indigo-500', 'text-white', 'bg-slate-900/40');
-        tabBtn.classList.remove('border-transparent', 'text-slate-400');
-        
+        tabBtn.classList.add('active');
         const targetId = tabBtn.getAttribute('data-tab');
         document.getElementById(targetId)?.classList.remove('hidden');
       });
     });
 
-    // 3. Chargement global des données SuperAdmin
+    // 3. Chargement global des données
     async function loadAllSuperAdminData() {
       loadStatus();
+      loadGroupsForSelect();
       loadPermissions();
       loadNotifications();
       loadGiveaways();
@@ -797,7 +873,29 @@
       loadSuperConfig();
     }
 
-    // A. Statut du Bot & KPI
+    // A. Récupérer les groupes réels pour les sélecteurs
+    async function loadGroupsForSelect() {
+      try {
+        const res = await fetch(`${API_BASE}/groups`);
+        const data = await res.json();
+        availableGroups = data.groups || [];
+
+        const targetSelect = document.getElementById('targetGroupSelect');
+        const gwSelect = document.getElementById('gwGroupSelect');
+
+        let optionsHtml = '<option value="">-- Sélectionner un groupe WhatsApp --</option>';
+        availableGroups.forEach(g => {
+          const name = g.name || g.groupName || g.jid;
+          const count = g.participantCount ? ` (${g.participantCount} membres)` : '';
+          optionsHtml += `<option value="${g.jid}">${escapeHtml(name)}${count}</option>`;
+        });
+
+        if (targetSelect) targetSelect.innerHTML = optionsHtml;
+        if (gwSelect) gwSelect.innerHTML = optionsHtml;
+      } catch (err) {}
+    }
+
+    // B. Statut du Bot & KPI
     async function loadStatus() {
       try {
         const res = await fetch(`${API_BASE}/status`);
@@ -812,14 +910,14 @@
           document.getElementById('topUptime').textContent = `Uptime: ${uptimeHours}h`;
 
           document.getElementById('kpiStatusBadge').textContent = isOnline ? 'ONLINE' : 'OFFLINE';
-          document.getElementById('kpiStatusBadge').className = `px-2 py-0.5 rounded-md text-[10px] font-semibold border ${isOnline ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`;
+          document.getElementById('kpiStatusBadge').className = `px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${isOnline ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`;
           document.getElementById('kpiPhone').textContent = data.bot.phone ? `+${data.bot.phone}` : (isOnline ? 'Prêt' : 'Déconnecté');
           document.getElementById('kpiPushName').textContent = data.bot.pushName || 'ZyBot';
         }
       } catch (err) {}
     }
 
-    // B. Permissions & Sécurité
+    // C. Permissions & Sécurité
     async function loadPermissions() {
       try {
         const res = await fetch(`${API_BASE}/permissions`);
@@ -836,14 +934,14 @@
         // Rendu Membres Autorisés
         const trustedTbody = document.getElementById('trustedTableBody');
         if (trusted.length === 0) {
-          trustedTbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-slate-500">Aucun membre autorisé pour le moment.</td></tr>';
+          trustedTbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-[#8b9bb4]">Aucun membre autorisé pour le moment.</td></tr>';
         } else {
           trustedTbody.innerHTML = trusted.map(u => `
-            <tr class="hover:bg-slate-800/40 transition-colors">
-              <td class="py-2.5 px-4 font-mono font-medium text-slate-300">${u.target}</td>
-              <td class="py-2.5 px-4 text-slate-400">${u.name || '—'}</td>
+            <tr class="hover:bg-[#14253f]/40 transition-colors">
+              <td class="py-2.5 px-4 font-mono text-white">${u.target}</td>
+              <td class="py-2.5 px-4 text-[#8b9bb4]">${escapeHtml(u.name || '—')}</td>
               <td class="py-2.5 px-4 text-right">
-                <button onclick="removePerm('${u.target}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 text-[11px] transition-colors">
+                <button onclick="removePerm('${u.target}')" class="px-2 py-1 rounded bg-[#091322] border border-[#1d314c] hover:border-rose-800 text-rose-300 text-xs transition-colors">
                   Supprimer
                 </button>
               </td>
@@ -854,14 +952,14 @@
         // Rendu Membres Révoqués
         const revokedTbody = document.getElementById('revokedTableBody');
         if (revoked.length === 0) {
-          revokedTbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-slate-500">Aucun membre révoqué.</td></tr>';
+          revokedTbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-[#8b9bb4]">Aucun membre révoqué.</td></tr>';
         } else {
           revokedTbody.innerHTML = revoked.map(u => `
-            <tr class="hover:bg-slate-800/40 transition-colors">
-              <td class="py-2.5 px-4 font-mono font-medium text-slate-300">${u.target}</td>
-              <td class="py-2.5 px-4 text-slate-400">${u.name || '—'}</td>
+            <tr class="hover:bg-[#14253f]/40 transition-colors">
+              <td class="py-2.5 px-4 font-mono text-white">${u.target}</td>
+              <td class="py-2.5 px-4 text-[#8b9bb4]">${escapeHtml(u.name || '—')}</td>
               <td class="py-2.5 px-4 text-right">
-                <button onclick="removePerm('${u.target}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-emerald-900/40 text-slate-400 hover:text-emerald-400 text-[11px] transition-colors">
+                <button onclick="removePerm('${u.target}')" class="px-2 py-1 rounded bg-[#091322] border border-[#1d314c] hover:border-emerald-800 text-emerald-300 text-xs transition-colors">
                   Réhabiliter
                 </button>
               </td>
@@ -883,6 +981,7 @@
       });
       document.getElementById('permTargetInput').value = '';
       document.getElementById('permNameInput').value = '';
+      showToast('Membre autorisé avec succès.');
       loadPermissions();
     });
 
@@ -898,6 +997,7 @@
       });
       document.getElementById('permTargetInput').value = '';
       document.getElementById('permNameInput').value = '';
+      showToast('Membre révoqué.');
       loadPermissions();
     });
 
@@ -908,19 +1008,27 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target })
       });
+      showToast('Règle supprimée.');
       loadPermissions();
     };
 
-    // C. Centre de Notifications Hub
+    // D. Centre de Notifications Hub
     async function loadNotifications() {
       try {
         const res = await fetch(`${API_BASE}/superadmin/notifications`);
         const data = await res.json();
         currentNotifications = data.notifications || {};
 
+        if (data.targetGroup) {
+          const select = document.getElementById('targetGroupSelect');
+          if (select) select.value = data.targetGroup;
+          const manual = document.getElementById('targetGroupManualInput');
+          if (manual) manual.value = data.targetGroup;
+        }
+
         document.querySelectorAll('.notif-toggle').forEach(btn => {
           const key = btn.getAttribute('data-key');
-          const isEnabled = currentNotifications[key] !== false; // Actif par défaut
+          const isEnabled = currentNotifications[key] !== false;
           setSwitchVisual(btn, isEnabled);
         });
       } catch (err) {}
@@ -930,13 +1038,13 @@
       btn.setAttribute('aria-checked', isChecked ? 'true' : 'false');
       const dot = btn.querySelector('.switch-dot');
       if (isChecked) {
-        btn.classList.remove('bg-slate-800');
-        btn.classList.add('bg-indigo-600');
+        btn.classList.remove('bg-[#1d314c]');
+        btn.classList.add('bg-[#f97316]');
         dot.classList.add('translate-x-5');
         dot.classList.remove('translate-x-0');
       } else {
-        btn.classList.remove('bg-indigo-600');
-        btn.classList.add('bg-slate-800');
+        btn.classList.remove('bg-[#f97316]');
+        btn.classList.add('bg-[#1d314c]');
         dot.classList.add('translate-x-0');
         dot.classList.remove('translate-x-5');
       }
@@ -949,12 +1057,24 @@
       });
     });
 
+    document.getElementById('targetGroupSelect')?.addEventListener('change', (e) => {
+      if (e.target.value) {
+        document.getElementById('targetGroupManualInput').value = e.target.value;
+      }
+    });
+
     document.getElementById('btnSaveNotifications').addEventListener('click', async () => {
       const payload = {};
       document.querySelectorAll('.notif-toggle').forEach(btn => {
         const key = btn.getAttribute('data-key');
         payload[key] = btn.getAttribute('aria-checked') === 'true';
       });
+
+      const targetGroup = document.getElementById('targetGroupManualInput')?.value.trim() || 
+                          document.getElementById('targetGroupSelect')?.value;
+      if (targetGroup) {
+        payload.targetGroup = targetGroup;
+      }
 
       try {
         const res = await fetch(`${API_BASE}/superadmin/notifications`, {
@@ -963,14 +1083,14 @@
           body: JSON.stringify(payload)
         });
         if (res.ok) {
-          alert('✅ Préférences de notifications enregistrées avec succès.');
+          showToast('Préférences de notifications enregistrées.');
         }
       } catch (err) {
-        alert('Erreur lors de la sauvegarde.');
+        showToast('Erreur lors de la sauvegarde.', 'error');
       }
     });
 
-    // D. Gestion des Giveaways
+    // E. Giveaways (/gw)
     async function loadGiveaways() {
       try {
         const res = await fetch(`${API_BASE}/superadmin/giveaways`);
@@ -985,58 +1105,60 @@
 
         const container = document.getElementById('giveawaysContainer');
         if (list.length === 0) {
-          container.innerHTML = '<div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-8 text-center text-slate-500">Aucun giveaway enregistré. Lancez-en un avec /gw dans un groupe WhatsApp.</div>';
+          container.innerHTML = '<div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-8 text-center text-[#8b9bb4]">Aucun giveaway enregistré. Créez-en un avec le bouton ci-dessus ou via /gw.</div>';
           return;
         }
 
         container.innerHTML = list.slice().reverse().map(gw => {
           const isActive = gw.status === 'active';
           const remainingMs = Math.max(0, (gw.endsAt || 0) - Date.now());
-          const remainingSec = Math.floor(remainingMs / 1000);
-          const remainingMin = Math.floor(remainingSec / 60);
+          const remainingMin = Math.floor(remainingMs / 60000);
 
           return `
-            <div class="bg-slate-900/70 border ${isActive ? 'border-indigo-500/40 shadow-indigo-500/5' : 'border-slate-800'} rounded-xl p-5 shadow-sm space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+            <div class="bg-[#0e1b2e] border ${isActive ? 'border-[#f97316]/50' : 'border-[#1d314c]'} rounded-md p-5 shadow-sm space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1d314c] pb-3">
                 <div class="flex items-center gap-2">
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold border ${isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'}">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-[#091322] text-[#8b9bb4] border-[#1d314c]'}">
                     ${isActive ? 'ACTIF' : 'TERMINÉ'}
                   </span>
-                  <h4 class="text-sm font-bold text-white tracking-tight">🎁 ${gw.prize}</h4>
+                  <h4 class="text-sm font-bold text-white tracking-tight">🎁 ${escapeHtml(gw.prize)}</h4>
                 </div>
-                <div class="text-xs text-slate-400">
-                  ${isActive ? `Temps restant : <span class="font-mono text-indigo-400 font-bold">${remainingMin}m</span>` : `Gagnant : <span class="font-bold text-amber-400">@${gw.winner?.number || 'Aucun'}</span> (${gw.winner?.name || '—'})`}
+                <div class="text-xs text-[#8b9bb4]">
+                  ${isActive ? `Temps restant : <span class="font-mono text-[#f97316] font-bold">${remainingMin}m</span>` : `Gagnant : <span class="font-bold text-amber-400">@${gw.winner?.number || 'Aucun'}</span> (${escapeHtml(gw.winner?.name || '—')})`}
                 </div>
               </div>
 
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs text-slate-400">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs text-[#8b9bb4]">
                 <div class="space-y-1">
-                  <div>Groupe : <span class="font-mono text-slate-300">${gw.groupJid}</span></div>
-                  <div>Participants réels inscrits : <span class="font-bold text-white">${gw.participants?.length || 0}</span></div>
+                  <div>Groupe : <span class="font-mono text-slate-300">${escapeHtml(gw.groupJid)}</span></div>
+                  <div>Participants réels inscrits : <span class="font-bold font-mono text-white">${gw.participants?.length || 0}</span></div>
                 </div>
 
                 <div class="flex items-center gap-2">
                   ${isActive ? `
-                    <button onclick="endGiveaway('${gw.id}')" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors shadow-sm">
-                      Terminer & Tirer Maintenant
+                    <button onclick="endGiveaway('${gw.id}')" class="px-3 py-1.5 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-medium transition-colors shadow-sm">
+                      Terminer & Tirer
                     </button>
                   ` : `
-                    <button onclick="rerollGiveaway('${gw.id}')" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-colors shadow-sm">
+                    <button onclick="rerollGiveaway('${gw.id}')" class="px-3 py-1.5 rounded-md bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-colors shadow-sm">
                       Reroll (Nouveau Gagnant)
                     </button>
                   `}
+                  <button onclick="deleteGiveaway('${gw.id}')" class="px-3 py-1.5 rounded-md border border-rose-900/40 bg-rose-950/20 hover:bg-rose-900/40 text-rose-300 text-xs font-medium transition-colors">
+                    Supprimer
+                  </button>
                 </div>
               </div>
 
               <!-- Liste des participants réels -->
               ${gw.participants?.length > 0 ? `
-                <div class="mt-2 pt-3 border-t border-slate-800/50">
-                  <div class="text-[11px] font-medium text-slate-400 mb-2">Participants enregistrés :</div>
+                <div class="mt-2 pt-3 border-t border-[#1d314c]/60">
+                  <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-2">Participants Inscrits :</div>
                   <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto custom-scroll">
                     ${gw.participants.map(p => `
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950 text-slate-300 border border-slate-800 text-[11px]">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#091322] text-slate-300 border border-[#1d314c] text-xs">
                         <span>👤</span>
-                        <span class="font-medium">${p.name || p.number}</span>
+                        <span class="font-medium">${escapeHtml(p.name || p.number)}</span>
                       </span>
                     `).join('')}
                   </div>
@@ -1048,7 +1170,31 @@
       } catch (err) {}
     }
 
-    document.getElementById('btnRefreshGiveaways').addEventListener('click', loadGiveaways);
+    document.getElementById('btnRefreshGiveaways')?.addEventListener('click', loadGiveaways);
+
+    // Formulaire de création de giveaway SuperAdmin
+    document.getElementById('createGwForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const groupJid = document.getElementById('gwGroupSelect').value;
+      const prize = document.getElementById('gwPrizeInput').value.trim();
+      const durationMs = document.getElementById('gwDurationSelect').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/giveaways/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groupJid, prize, durationMs })
+        });
+        if (res.ok) {
+          closeModal('createGwModal');
+          document.getElementById('gwPrizeInput').value = '';
+          showToast('Giveaway créé avec succès.');
+          loadGiveaways();
+        }
+      } catch (err) {
+        showToast('Erreur création giveaway.', 'error');
+      }
+    });
 
     window.endGiveaway = async (giveawayId) => {
       if (!confirm('Clôturer ce giveaway et tirer un gagnant immédiatement ?')) return;
@@ -1057,6 +1203,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ giveawayId })
       });
+      showToast('Giveaway clôturé.');
       loadGiveaways();
     };
 
@@ -1067,10 +1214,22 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ giveawayId })
       });
+      showToast('Nouveau gagnant tiré au sort.');
       loadGiveaways();
     };
 
-    // E. Persopings & Vues Uniques
+    window.deleteGiveaway = async (giveawayId) => {
+      if (!confirm('Supprimer définitivement ce giveaway ?')) return;
+      await fetch(`${API_BASE}/superadmin/giveaways/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ giveawayId })
+      });
+      showToast('Giveaway supprimé.');
+      loadGiveaways();
+    };
+
+    // F. PersoPings
     let persopingsList = [];
 
     async function loadPersopings() {
@@ -1086,24 +1245,24 @@
     function renderPersopings(list) {
       const container = document.getElementById('persopingsContainer');
       if (list.length === 0) {
-        container.innerHTML = '<div class="col-span-full bg-slate-900/70 border border-slate-800/80 rounded-xl p-8 text-center text-slate-500">Aucun persoping sauvegardé. Enregistrez-en avec /persoping dans WhatsApp.</div>';
+        container.innerHTML = '<div class="col-span-full bg-[#0e1b2e] border border-[#1d314c] rounded-md p-8 text-center text-[#8b9bb4]">Aucun persoping sauvegardé. Enregistrez-en avec /persoping dans WhatsApp.</div>';
         return;
       }
 
       container.innerHTML = list.map(p => `
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm flex flex-col justify-between space-y-3">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 shadow-sm flex flex-col justify-between space-y-3">
           <div class="space-y-1.5">
-            <div class="flex items-center justify-between text-[11px] text-slate-400">
-              <span class="font-medium text-purple-400">Par ${p.author}</span>
-              <span class="font-mono text-slate-500">${p.originalDate}</span>
+            <div class="flex items-center justify-between text-xs text-[#8b9bb4]">
+              <span class="font-medium text-[#f97316]">Par ${escapeHtml(p.author)}</span>
+              <span class="font-mono text-[11px]">${escapeHtml(p.originalDate)}</span>
             </div>
-            <div class="text-[11px] text-slate-500">Origine: ${p.origin}</div>
-            <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 whitespace-pre-wrap font-sans">
-              ${p.text || '<i class="text-slate-500">Aucun texte</i>'}
+            <div class="text-[11px] text-[#8b9bb4]">Origine: ${escapeHtml(p.origin)}</div>
+            <div class="p-2.5 rounded bg-[#091322] border border-[#1d314c] text-xs text-white whitespace-pre-wrap font-sans">
+              ${escapeHtml(p.text) || '<i class="text-[#8b9bb4]">Aucun texte</i>'}
             </div>
           </div>
-          <div class="flex justify-end pt-2 border-t border-slate-800/50">
-            <button onclick="deletePerso('${p.id}')" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition-colors">
+          <div class="flex justify-end pt-2 border-t border-[#1d314c]/60">
+            <button onclick="deletePerso('${p.id}')" class="text-xs text-rose-300 hover:text-rose-200 font-medium transition-colors">
               Supprimer
             </button>
           </div>
@@ -1111,7 +1270,7 @@
       `).join('');
     }
 
-    document.getElementById('searchPersopingInput').addEventListener('input', (e) => {
+    document.getElementById('searchPersopingInput')?.addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase();
       const filtered = persopingsList.filter(p => 
         (p.text && p.text.toLowerCase().includes(q)) ||
@@ -1120,7 +1279,7 @@
       renderPersopings(filtered);
     });
 
-    document.getElementById('btnRefreshPersopings').addEventListener('click', loadPersopings);
+    document.getElementById('btnRefreshPersopings')?.addEventListener('click', loadPersopings);
 
     window.deletePerso = async (id) => {
       if (!confirm('Supprimer cette note persoping ?')) return;
@@ -1129,10 +1288,11 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
       });
+      showToast('Persoping supprimé.');
       loadPersopings();
     };
 
-    // F. Anti-Raid & Protection Anti-Lien
+    // G. Anti-Raid & Protection Anti-Lien
     async function loadAntiRaid() {
       try {
         const res = await fetch(`${API_BASE}/superadmin/antiraid`);
@@ -1158,17 +1318,17 @@
             const cleanNum = partJid.split('@')[0].split(':')[0];
 
             rows.push(`
-              <tr class="hover:bg-slate-800/40 transition-colors">
-                <td class="py-2.5 px-4 font-mono font-medium text-slate-300">+${cleanNum}</td>
-                <td class="py-2.5 px-4 text-slate-400 font-mono text-[11px]">${groupJid.split('@')[0].substring(0, 15)}...</td>
-                <td class="py-2.5 px-4 text-slate-400">Il y a ${elapsedMin} min</td>
+              <tr class="hover:bg-[#14253f]/40 transition-colors">
+                <td class="py-2.5 px-4 font-mono font-medium text-white">+${cleanNum}</td>
+                <td class="py-2.5 px-4 text-[#8b9bb4] font-mono text-xs">${groupJid.split('@')[0].substring(0, 15)}...</td>
+                <td class="py-2.5 px-4 text-[#8b9bb4]">Il y a ${elapsedMin} min</td>
                 <td class="py-2.5 px-4">
-                  <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${warnCount > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-slate-800 text-slate-400'}">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${warnCount > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-[#091322] text-[#8b9bb4] border border-[#1d314c]'}">
                     ${warnCount} avertissement${warnCount > 1 ? 's' : ''}
                   </span>
                 </td>
                 <td class="py-2.5 px-4 text-right">
-                  <button onclick="clearAntiRaidMember('${groupJid}', '${partJid}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-emerald-900/40 text-slate-400 hover:text-emerald-400 text-[11px] transition-colors">
+                  <button onclick="clearAntiRaidMember('${groupJid}', '${partJid}')" class="px-2.5 py-1 rounded bg-[#091322] border border-[#1d314c] hover:border-emerald-800 text-emerald-300 text-xs transition-colors">
                     Lever Surveillance
                   </button>
                 </td>
@@ -1178,20 +1338,20 @@
         }
 
         if (rows.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500">Aucun membre sous période probatoire active.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-[#8b9bb4]">Aucun membre en période de probation.</td></tr>';
         } else {
           tbody.innerHTML = rows.join('');
         }
       } catch (err) {}
     }
 
-    document.getElementById('antiRaidEnabledToggle').addEventListener('click', () => {
+    document.getElementById('antiRaidEnabledToggle')?.addEventListener('click', () => {
       const btn = document.getElementById('antiRaidEnabledToggle');
       const isChecked = btn.getAttribute('aria-checked') === 'true';
       setSwitchVisual(btn, !isChecked);
     });
 
-    document.getElementById('antiRaidConfigForm').addEventListener('submit', async (e) => {
+    document.getElementById('antiRaidConfigForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const enabled = document.getElementById('antiRaidEnabledToggle').getAttribute('aria-checked') === 'true';
       const probationMinutes = parseInt(document.getElementById('antiRaidProbationInput').value, 10);
@@ -1202,11 +1362,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled, probationMinutes, maxWarnings })
       });
-      alert('✅ Paramètres Anti-Raid sauvegardés.');
+      showToast('Paramètres Anti-Raid sauvegardés.');
       loadAntiRaid();
     });
-
-    document.getElementById('btnRefreshAntiRaidData').addEventListener('click', loadAntiRaid);
 
     window.clearAntiRaidMember = async (groupJid, participantJid) => {
       await fetch(`${API_BASE}/superadmin/antiraid/clear-member`, {
@@ -1214,10 +1372,11 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ groupJid, participantJid })
       });
+      showToast('Surveillance levée.');
       loadAntiRaid();
     };
 
-    // G. Réglages Bot & Mots-Clés
+    // H. Réglages Bot & Mots-Clés
     async function loadSuperConfig() {
       try {
         const res = await fetch(`${API_BASE}/superadmin/config`);
@@ -1244,18 +1403,18 @@
     function renderWords(words) {
       const container = document.getElementById('watchedWordsContainer');
       if (words.length === 0) {
-        container.innerHTML = '<span class="text-xs text-slate-500">Aucun mot-clé configuré.</span>';
+        container.innerHTML = '<span class="text-xs text-[#8b9bb4]">Aucun mot-clé configuré.</span>';
         return;
       }
       container.innerHTML = words.map(w => `
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-mono">
-          <span>${w}</span>
-          <button onclick="removeWord('${w}')" class="text-indigo-400 hover:text-rose-400 transition-colors font-bold ml-1">×</button>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#091322] border border-[#1d314c] text-white text-xs font-mono">
+          <span>${escapeHtml(w)}</span>
+          <button onclick="removeWord('${w}')" class="text-[#8b9bb4] hover:text-rose-400 font-bold ml-1">×</button>
         </span>
       `).join('');
     }
 
-    document.getElementById('addWordForm').addEventListener('submit', async (e) => {
+    document.getElementById('addWordForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const input = document.getElementById('newWordInput');
       const word = input.value.trim();
@@ -1269,6 +1428,7 @@
       const data = await res.json();
       input.value = '';
       renderWords(data.words || []);
+      showToast('Mot-clé ajouté.');
     });
 
     window.removeWord = async (word) => {
@@ -1279,25 +1439,26 @@
       });
       const data = await res.json();
       renderWords(data.words || []);
+      showToast('Mot-clé retiré.');
     };
 
     // Toggle switches DND & Stealth
-    document.getElementById('stealthToggle').addEventListener('click', () => {
+    document.getElementById('stealthToggle')?.addEventListener('click', () => {
       const btn = document.getElementById('stealthToggle');
       setSwitchVisual(btn, btn.getAttribute('aria-checked') !== 'true');
       saveGeneralConfig();
     });
 
-    document.getElementById('dndToggle').addEventListener('click', () => {
+    document.getElementById('dndToggle')?.addEventListener('click', () => {
       const btn = document.getElementById('dndToggle');
       setSwitchVisual(btn, btn.getAttribute('aria-checked') !== 'true');
       saveGeneralConfig();
     });
 
-    document.getElementById('stealthMinInput').addEventListener('change', saveGeneralConfig);
-    document.getElementById('stealthMaxInput').addEventListener('change', saveGeneralConfig);
-    document.getElementById('dndStartInput').addEventListener('change', saveGeneralConfig);
-    document.getElementById('dndEndInput').addEventListener('change', saveGeneralConfig);
+    document.getElementById('stealthMinInput')?.addEventListener('change', saveGeneralConfig);
+    document.getElementById('stealthMaxInput')?.addEventListener('change', saveGeneralConfig);
+    document.getElementById('dndStartInput')?.addEventListener('change', saveGeneralConfig);
+    document.getElementById('dndEndInput')?.addEventListener('change', saveGeneralConfig);
 
     async function saveGeneralConfig() {
       const stealthEnabled = document.getElementById('stealthToggle').getAttribute('aria-checked') === 'true';
@@ -1319,20 +1480,31 @@
           }
         })
       });
+      showToast('Réglages sauvegardés.');
     }
 
     // Redémarrage & Réauthentification
-    document.getElementById('btnRestartBot').addEventListener('click', async () => {
+    document.getElementById('btnRestartBot')?.addEventListener('click', async () => {
       if (!confirm('Redémarrer le bot ZyBot via PM2 ?')) return;
       await fetch(`${API_BASE}/bot/restart`, { method: 'POST' });
-      alert('⚡ Commande de redémarrage envoyée.');
+      showToast('Commande de redémarrage envoyée.');
     });
 
-    document.getElementById('btnReauthSession').addEventListener('click', async () => {
+    document.getElementById('btnReauthSession')?.addEventListener('click', async () => {
       if (!confirm('Attention : cela supprimera la session WhatsApp actuelle et générera un nouveau QR code. Continuer ?')) return;
       await fetch(`${API_BASE}/bot/reauth`, { method: 'POST' });
-      alert('🔄 Session réinitialisée. Rendez-vous sur le panel standard pour scanner le nouveau QR code.');
+      showToast('Session réinitialisée. Rendez-vous sur le panel standard pour scanner le QR.');
     });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
     // Démarrage
     checkSuperAuth();
