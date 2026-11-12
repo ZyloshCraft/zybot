@@ -884,8 +884,14 @@ export function startWebServer() {
       }
 
       let filePath;
-      if (pathname === '/superadmin' || pathname === '/superadmin/' || pathname === '/superadmin.html') {
-        filePath = path.join(PUBLIC_DIR, 'superadmin.html');
+      const wantsSuperadmin = pathname === '/superadmin' || pathname === '/superadmin/' || pathname === '/superadmin.html' || pathname === '/superadmin-login.html';
+
+      if (wantsSuperadmin) {
+        if (isSuperAdmin(req)) {
+          filePath = path.join(PUBLIC_DIR, 'superadmin.html');
+        } else {
+          filePath = path.join(PUBLIC_DIR, 'superadmin-login.html');
+        }
       } else if (pathname === '/admin' || pathname === '/admin/' || pathname === '/' || pathname === '/index.html') {
         filePath = path.join(PUBLIC_DIR, 'index.html');
       } else {
@@ -895,7 +901,11 @@ export function startWebServer() {
       // Si le fichier demandé n'existe pas ou s'il s'agit d'une route SPA
       if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
         if (pathname.startsWith('/superadmin')) {
-          filePath = path.join(PUBLIC_DIR, 'superadmin.html');
+          if (isSuperAdmin(req)) {
+            filePath = path.join(PUBLIC_DIR, 'superadmin.html');
+          } else {
+            filePath = path.join(PUBLIC_DIR, 'superadmin-login.html');
+          }
         } else {
           filePath = path.join(PUBLIC_DIR, 'index.html');
         }

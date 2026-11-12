@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZyBot // Accès SuperAdmin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #091322;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 antialiased selection:bg-[#f97316]/20 selection:text-[#f97316]">
+
+  <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-8 max-w-md w-full shadow-2xl relative">
+    <div class="text-center space-y-2 mb-6">
+      <div class="w-12 h-12 rounded-md bg-[#f97316]/10 border border-[#f97316]/30 text-[#f97316] flex items-center justify-center mx-auto text-xl font-bold">
+        👑
+      </div>
+      <h1 class="text-lg font-bold text-white tracking-tight">Accès SuperAdmin</h1>
+      <p class="text-xs text-[#8b9bb4] max-w-xs mx-auto">
+        Espace strictement réservé au propriétaire du bot. Mot de passe maître requis.
+      </p>
+    </div>
+
+    <form id="authForm" class="space-y-4">
+      <div>
+        <label for="superPasswordInput" class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1.5">
+          Mot de passe SuperAdmin
+        </label>
+        <input 
+          type="password" 
+          id="superPasswordInput" 
+          placeholder="••••••••••••••" 
+          class="w-full px-3.5 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-sm font-mono transition-colors outline-none"
+          required
+          autofocus
+        >
+      </div>
+
+      <div id="authErrorMsg" class="hidden text-xs text-rose-300 bg-rose-950/40 border border-rose-800/80 rounded p-2.5 text-center"></div>
+
+      <button 
+        type="submit" 
+        id="btnSubmitAuth"
+        class="w-full py-2.5 px-4 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-sm transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <span>Déverrouiller l'espace SuperAdmin</span>
+        <span>➔</span>
+      </button>
+
+      <div class="text-center pt-2 border-t border-[#1d314c]/70">
+        <a id="backToAdminLink" href="./" class="text-xs text-[#8b9bb4] hover:text-white transition-colors">
+          ← Retour au Panel Admin
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const BASE_PATH = window.location.pathname.startsWith('/bot') ? '/bot' : '';
+    const API_BASE = `${BASE_PATH}/api`;
+
+    document.getElementById('backToAdminLink').href = `${BASE_PATH || '/'}`;
+
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pwd = document.getElementById('superPasswordInput').value;
+      const errBox = document.getElementById('authErrorMsg');
+      const submitBtn = document.getElementById('btnSubmitAuth');
+      
+      errBox.classList.add('hidden');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-75');
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pwd })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.isSuperAdmin) {
+          // Recharger immédiatement la page : le serveur détectera la session SuperAdmin et servira le dashboard complet
+          window.location.reload();
+        } else {
+          errBox.textContent = data.error || 'Mot de passe SuperAdmin incorrect.';
+          errBox.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-75');
+        }
+      } catch (err) {
+        errBox.textContent = 'Erreur de communication avec le serveur.';
+        errBox.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-75');
+      }
+    });
+  </script>
+</body>
+</html>

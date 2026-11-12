@@ -134,57 +134,9 @@
   </header>
 
   <!-- ======================================================== -->
-  <!-- MODAL AUTHENTIFICATION SUPERADMIN (PLAYIT STYLE)          -->
-  <!-- ======================================================== -->
-  <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#091322] hidden">
-    <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-8 max-w-md w-full shadow-2xl relative">
-      <div class="text-center space-y-2 mb-6">
-        <div class="w-12 h-12 rounded-md bg-[#f97316]/10 border border-[#f97316]/30 text-[#f97316] flex items-center justify-center mx-auto text-xl font-bold">
-          👑
-        </div>
-        <h2 class="text-lg font-bold text-white tracking-tight">Accès SuperAdmin</h2>
-        <p class="text-xs text-[#8b9bb4] max-w-xs mx-auto">
-          Espace strictement réservé au propriétaire du bot. Mot de passe maître requis.
-        </p>
-      </div>
-
-      <form id="authForm" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1.5">Mot de passe SuperAdmin</label>
-          <input 
-            type="password" 
-            id="superPasswordInput" 
-            placeholder="••••••••••••••" 
-            class="w-full px-3.5 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-sm font-mono transition-colors outline-none"
-            required
-            autofocus
-          >
-        </div>
-
-        <div id="authErrorMsg" class="hidden text-xs text-rose-300 bg-rose-950/40 border border-rose-800/80 rounded p-2.5 text-center"></div>
-
-        <button 
-          type="submit" 
-          id="btnSubmitAuth"
-          class="w-full py-2.5 px-4 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white font-medium text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
-        >
-          <span>Déverrouiller l'espace SuperAdmin</span>
-          <span>➔</span>
-        </button>
-
-        <div class="text-center pt-2 border-t border-[#1d314c]/70">
-          <a href="./" class="nav-standard-link text-xs text-[#8b9bb4] hover:text-white transition-colors">
-            ← Retour au Panel Admin
-          </a>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
   <!-- CONTENU PRINCIPAL SUPERADMIN                             -->
   <!-- ======================================================== -->
-  <main id="mainContent" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6">
+  <main id="mainContent" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6 hidden">
 
     <!-- 4 Cartes KPI Playit.gg (Zéro Débordement) -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -805,43 +757,16 @@
         const data = await res.json();
         if (data.authenticated && data.isSuperAdmin) {
           currentAuth = data;
-          document.getElementById('authOverlay').classList.add('hidden');
+          document.getElementById('mainContent').classList.remove('hidden');
           loadAllSuperAdminData();
         } else {
-          document.getElementById('authOverlay').classList.remove('hidden');
+          // Si la session n'est plus superadmin, recharger pour afficher la mire de connexion sécurisée
+          window.location.reload();
         }
       } catch (err) {
-        document.getElementById('authOverlay').classList.remove('hidden');
+        window.location.reload();
       }
     }
-
-    // Gestion de la soumission du mot de passe SuperAdmin
-    document.getElementById('authForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const pwd = document.getElementById('superPasswordInput').value;
-      const errBox = document.getElementById('authErrorMsg');
-      errBox.classList.add('hidden');
-
-      try {
-        const res = await fetch(`${API_BASE}/superadmin/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pwd })
-        });
-        const data = await res.json();
-
-        if (res.ok && data.isSuperAdmin) {
-          document.getElementById('authOverlay').classList.add('hidden');
-          loadAllSuperAdminData();
-        } else {
-          errBox.textContent = data.error || 'Mot de passe SuperAdmin incorrect.';
-          errBox.classList.remove('hidden');
-        }
-      } catch (err) {
-        errBox.textContent = 'Erreur de connexion au serveur.';
-        errBox.classList.remove('hidden');
-      }
-    });
 
     // Déconnexion
     document.getElementById('superLogoutBtn').addEventListener('click', async () => {
