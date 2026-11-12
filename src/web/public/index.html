@@ -573,6 +573,102 @@
     </div>
   </div>
 
+  <!-- ======================================================== -->
+  <!-- MODALE : CONTAINER TRANSFORM ACTIVITÉ GROUPE             -->
+  <!-- ======================================================== -->
+  <!-- Backdrop semi-transparent avec transition d'opacité fluide -->
+  <div id="groupTransformBackdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <!-- Conteneur animé Container Transform qui s'agrandit fluidement depuis la carte cliquée -->
+  <div 
+    id="groupTransformModal" 
+    class="fixed z-50 overflow-hidden pointer-events-none opacity-0 bg-[#0e1b2e] border border-[#1d314c] flex flex-col will-change-[top,left,width,height,border-radius,opacity,box-shadow]"
+    style="display: none;"
+  >
+    <!-- En-tête de la modale agrandie -->
+    <div class="p-5 border-b border-[#1d314c] flex items-start justify-between gap-4 bg-[#0e1b2e] shrink-0">
+      <div class="flex items-center gap-3.5 min-w-0">
+        <div class="w-12 h-12 rounded-lg bg-[#f97316]/10 border border-[#f97316]/30 flex items-center justify-center text-[#f97316] font-bold text-xl shrink-0">
+          👥
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h3 id="gtModalGroupName" class="text-base sm:text-lg font-bold text-white tracking-tight truncate">
+              Nom du Groupe
+            </h3>
+            <span id="gtModalBadge" class="px-2.5 py-0.5 rounded font-mono font-bold text-xs bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30 shrink-0">
+              0 msgs
+            </span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 mt-1">
+            <span id="gtModalJid" class="font-mono text-xs text-[#8b9bb4] select-all truncate">
+              120363xxx@g.us
+            </span>
+            <button id="gtBtnCopyJid" class="px-2 py-0.5 rounded bg-[#091322] border border-[#1d314c] hover:border-[#f97316]/60 text-[11px] font-mono text-[#8b9bb4] hover:text-white transition-colors cursor-pointer">
+              Copier
+            </button>
+            <span class="text-[#8b9bb4] text-xs">•</span>
+            <span id="gtModalMembers" class="text-xs text-[#8b9bb4]">0 membres</span>
+          </div>
+        </div>
+      </div>
+
+      <button id="gtCloseBtn" class="w-8 h-8 rounded-md bg-[#091322] border border-[#1d314c] hover:border-[#f97316]/60 text-[#8b9bb4] hover:text-white flex items-center justify-center text-sm font-bold transition-colors shrink-0 cursor-pointer">
+        ✕
+      </button>
+    </div>
+
+    <!-- Corps scrollable avec métriques détaillées et classement complet -->
+    <div class="p-5 overflow-y-auto custom-scroll flex-1 space-y-5">
+      
+      <!-- 3 Mini KPI Playit.gg -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="p-3.5 rounded-md bg-[#091322] border border-[#1d314c]">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#8b9bb4]">Messages Totaux</div>
+          <div id="gtMetricMessages" class="mt-1 text-xl font-bold font-mono text-[#f97316]">0</div>
+          <div class="text-[11px] text-[#8b9bb4] mt-0.5">Enregistrés par ZyBot</div>
+        </div>
+        <div class="p-3.5 rounded-md bg-[#091322] border border-[#1d314c]">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#8b9bb4]">Membres Détectés</div>
+          <div id="gtMetricMembers" class="mt-1 text-xl font-bold font-mono text-white">0</div>
+          <div class="text-[11px] text-[#8b9bb4] mt-0.5">Participants WhatsApp</div>
+        </div>
+        <div class="p-3.5 rounded-md bg-[#091322] border border-[#1d314c]">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#8b9bb4]">Dernière Activité</div>
+          <div id="gtMetricLastActivity" class="mt-1 text-xs font-bold font-mono text-emerald-400">En direct</div>
+          <div class="text-[11px] text-[#8b9bb4] mt-0.5">Horodatage d'échange</div>
+        </div>
+      </div>
+
+      <!-- Classement complet des parleurs du groupe -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">
+            Classement & Volume de Messages :
+          </div>
+          <span id="gtSpeakersCount" class="text-xs font-mono text-[#8b9bb4]">0 membres actifs</span>
+        </div>
+
+        <div id="gtSpeakersList" class="space-y-2.5">
+          <!-- Injecté par JavaScript avec barres de progression graphiques -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Barre d'actions inférieure -->
+    <div class="p-3.5 px-5 bg-[#091322]/80 border-t border-[#1d314c] flex items-center justify-between shrink-0">
+      <span class="text-xs text-[#8b9bb4] flex items-center gap-1.5 font-mono">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        Synchronisé avec Baileys
+      </span>
+      <button id="gtBottomCloseBtn" class="px-4 py-1.5 rounded-md border border-[#1d314c] bg-[#0e1b2e] hover:border-[#f97316]/50 text-white text-xs font-medium transition-colors cursor-pointer">
+        Fermer (Échap)
+      </button>
+    </div>
+
+  </div>
+
   <!-- TOAST NOTIFICATION INTÉGRÉ -->
   <div id="toastNotification" class="hidden fixed top-5 right-5 z-[80] px-4 py-2.5 rounded-md border font-sans text-xs font-medium transition-all duration-300 shadow-2xl"></div>
 
@@ -1064,22 +1160,40 @@
         const speakers = (g.topSpeakers || g.topUsers || []).slice(0, 3);
 
         return `
-          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-4">
+          <div 
+            onclick="openGroupTransformModal('${escapeHtml(groupJid)}', this)"
+            role="button"
+            tabindex="0"
+            class="group-card-item bg-[#0e1b2e] border border-[#1d314c] hover:border-[#f97316]/60 rounded-md p-5 shadow-sm space-y-4 cursor-pointer hover:shadow-lg transition-all duration-200 group transform hover:-translate-y-0.5 select-none relative"
+          >
             <div class="flex items-start justify-between gap-3 border-b border-[#1d314c] pb-3">
-              <div class="min-w-0">
-                <h4 class="text-sm font-bold text-white tracking-tight truncate">${escapeHtml(groupName)}</h4>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <h4 class="text-sm font-bold text-white tracking-tight truncate group-hover:text-[#f97316] transition-colors">${escapeHtml(groupName)}</h4>
+                </div>
                 <div class="flex items-center gap-2 mt-1">
                   <span class="font-mono text-xs text-[#8b9bb4] truncate">${escapeHtml(groupJid)}</span>
                   ${partCount > 0 ? `<span class="text-xs text-[#8b9bb4]">• ${partCount} membres</span>` : ''}
                 </div>
               </div>
-              <span class="shrink-0 px-2.5 py-1 rounded bg-[#f97316]/10 border border-[#f97316]/30 text-[#f97316] font-bold text-xs font-mono">
-                ${msgCount} msgs
-              </span>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="px-2.5 py-1 rounded bg-[#f97316]/10 border border-[#f97316]/30 text-[#f97316] font-bold text-xs font-mono">
+                  ${msgCount} msgs
+                </span>
+                <span class="w-6 h-6 rounded flex items-center justify-center bg-[#091322] border border-[#1d314c] text-[#8b9bb4] group-hover:text-white group-hover:border-[#f97316]/50 text-xs transition-colors">
+                  ↗
+                </span>
+              </div>
             </div>
 
             <div>
-              <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-2.5">Top 3 Parleurs :</div>
+              <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-2.5">
+                <span>Top 3 Parleurs :</span>
+                <span class="text-[11px] font-normal normal-case text-[#8b9bb4] group-hover:text-[#f97316] transition-colors flex items-center gap-1">
+                  <span>Ouvrir l'analyse</span>
+                  <span>➔</span>
+                </span>
+              </div>
               <div class="space-y-1.5">
                 ${speakers.length > 0 ? speakers.map((s, idx) => `
                   <div class="flex items-center justify-between text-xs p-2 rounded bg-[#091322] border border-[#1d314c]/60">
@@ -1098,6 +1212,226 @@
     }
 
     document.getElementById('btnRefreshActivity')?.addEventListener('click', loadGroupsActivity);
+
+    // ══════════════════════════════════════════════
+    // CONTAINER TRANSFORM FLUIDE : ACTIVITÉ GROUPE
+    // ══════════════════════════════════════════════
+    let gtOriginCard = null;
+    let gtIsAnimating = false;
+    let isGtModalOpen = false;
+
+    function populateGroupModalData(group) {
+      const groupName = group.name || group.groupName || group.jid || 'Groupe WhatsApp';
+      const groupJid = group.jid || group.groupJid || '';
+      const totalMsgs = group.messageCount ?? group.totalMessages ?? 0;
+      const partCount = group.participantCount ?? group.userCount ?? 0;
+      const speakers = group.topSpeakers || group.topUsers || [];
+
+      document.getElementById('gtModalGroupName').textContent = groupName;
+      document.getElementById('gtModalBadge').textContent = `${totalMsgs} msgs`;
+      document.getElementById('gtModalJid').textContent = groupJid;
+      document.getElementById('gtModalMembers').textContent = `${partCount} membre${partCount > 1 ? 's' : ''}`;
+      
+      document.getElementById('gtMetricMessages').textContent = totalMsgs.toLocaleString('fr-FR');
+      document.getElementById('gtMetricMembers').textContent = partCount.toLocaleString('fr-FR');
+
+      // Dernière activité
+      const lastUpdateEl = document.getElementById('gtMetricLastActivity');
+      if (group.lastUpdate) {
+        const diffMin = Math.floor((Date.now() - group.lastUpdate) / 60000);
+        if (diffMin < 1) {
+          lastUpdateEl.textContent = "À l'instant";
+        } else if (diffMin < 60) {
+          lastUpdateEl.textContent = `Il y a ${diffMin} min`;
+        } else if (diffMin < 1440) {
+          const h = Math.floor(diffMin / 60);
+          lastUpdateEl.textContent = `Il y a ${h}h`;
+        } else {
+          const d = Math.floor(diffMin / 1440);
+          lastUpdateEl.textContent = `Il y a ${d}j`;
+        }
+      } else {
+        lastUpdateEl.textContent = 'En direct';
+      }
+
+      // Nombre de membres actifs
+      document.getElementById('gtSpeakersCount').textContent = `${speakers.length} membre${speakers.length > 1 ? 's' : ''} classé${speakers.length > 1 ? 's' : ''}`;
+
+      // Rendu de la liste avec barres de progression
+      const listContainer = document.getElementById('gtSpeakersList');
+      if (speakers.length === 0) {
+        listContainer.innerHTML = '<div class="p-6 text-center text-[#8b9bb4] text-xs bg-[#091322] rounded-md border border-[#1d314c]">Aucun message répertorié dans ce groupe.</div>';
+        return;
+      }
+
+      const maxSpeakerCount = Math.max(1, speakers[0]?.count || 1);
+      const groupMsgBase = Math.max(1, totalMsgs);
+
+      listContainer.innerHTML = speakers.map((s, idx) => {
+        const rankLabels = ['🥇 #1', '🥈 #2', '🥉 #3'];
+        const rankBadge = rankLabels[idx] || `#${idx + 1}`;
+        const sCount = s.count || 0;
+        const groupSharePct = Math.min(100, Math.round((sCount / groupMsgBase) * 1000) / 10);
+        const barWidthPct = Math.min(100, Math.round((sCount / maxSpeakerCount) * 100));
+
+        return `
+          <div class="p-3 rounded-md bg-[#091322] border border-[#1d314c] hover:border-[#1d314c]/90 transition-colors space-y-2">
+            <div class="flex items-center justify-between text-xs gap-3">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold ${idx === 0 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : (idx === 1 ? 'bg-slate-300/10 text-slate-300 border border-slate-400/20' : (idx === 2 ? 'bg-amber-700/10 text-amber-600 border border-amber-700/20' : 'bg-[#0e1b2e] text-[#8b9bb4] border border-[#1d314c]'))}">
+                  ${rankBadge}
+                </span>
+                <span class="text-white font-semibold truncate">${escapeHtml(s.name || 'Membre')}</span>
+                ${s.id ? `<span class="text-[11px] text-[#8b9bb4] font-mono truncate hidden sm:inline">(${escapeHtml(s.id.split('@')[0])})</span>` : ''}
+              </div>
+              <div class="flex items-center gap-2.5 shrink-0">
+                <span class="text-[11px] font-mono text-[#8b9bb4]">${groupSharePct}% du total</span>
+                <span class="px-2.5 py-0.5 rounded bg-[#0e1b2e] border border-[#1d314c] font-mono font-bold text-xs text-[#f97316]">
+                  ${sCount} msgs
+                </span>
+              </div>
+            </div>
+
+            <!-- Barre de progression fluide -->
+            <div class="w-full bg-[#0e1b2e] h-2 rounded-full overflow-hidden border border-[#1d314c]/70">
+              <div 
+                class="bg-gradient-to-r from-[#f97316] to-amber-500 h-full rounded-full transition-all duration-700 ease-out" 
+                style="width: ${barWidthPct}%;"
+              ></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.openGroupTransformModal = (jid, cardEl) => {
+      if (gtIsAnimating) return;
+      const group = allGroupsActivity.find(g => (g.jid || g.groupJid) === jid);
+      if (!group) return;
+
+      gtOriginCard = cardEl;
+      gtIsAnimating = true;
+      isGtModalOpen = true;
+
+      const backdrop = document.getElementById('groupTransformBackdrop');
+      const modal = document.getElementById('groupTransformModal');
+
+      // 1. Remplir les données
+      populateGroupModalData(group);
+
+      // 2. Mesurer la géométrie de la carte de départ
+      const startRect = cardEl.getBoundingClientRect();
+
+      // 3. Positionner la modale pile au-dessus de la carte de départ
+      modal.style.transition = 'none';
+      modal.style.display = 'flex';
+      modal.style.top = `${startRect.top}px`;
+      modal.style.left = `${startRect.left}px`;
+      modal.style.width = `${startRect.width}px`;
+      modal.style.height = `${startRect.height}px`;
+      modal.style.borderRadius = '6px';
+      modal.style.opacity = '1';
+      modal.style.pointerEvents = 'none';
+
+      // Afficher le backdrop et masquer l'élément source sans briser le layout
+      backdrop.classList.remove('pointer-events-none');
+      cardEl.style.visibility = 'hidden';
+
+      // 4. Calculer la géométrie cible (modal centré)
+      const padX = window.innerWidth < 640 ? 16 : 32;
+      const padY = window.innerWidth < 640 ? 24 : 48;
+      const targetWidth = Math.min(window.innerWidth - padX, 740);
+      const targetHeight = Math.min(window.innerHeight - padY, 680);
+      const targetLeft = Math.max(8, (window.innerWidth - targetWidth) / 2);
+      const targetTop = Math.max(12, (window.innerHeight - targetHeight) / 2);
+
+      // 5. Forcer le reflow du navigateur
+      void modal.offsetHeight;
+
+      // 6. Déclencher la transition fluide (Container Transform)
+      modal.style.transition = 'top 360ms cubic-bezier(0.16, 1, 0.3, 1), left 360ms cubic-bezier(0.16, 1, 0.3, 1), width 360ms cubic-bezier(0.16, 1, 0.3, 1), height 360ms cubic-bezier(0.16, 1, 0.3, 1), border-radius 360ms ease, border-color 360ms ease, box-shadow 360ms ease';
+      
+      backdrop.style.opacity = '1';
+      modal.style.top = `${targetTop}px`;
+      modal.style.left = `${targetLeft}px`;
+      modal.style.width = `${targetWidth}px`;
+      modal.style.height = `${targetHeight}px`;
+      modal.style.borderRadius = '12px';
+      modal.style.borderColor = '#2a4468';
+      modal.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(249, 115, 22, 0.2)';
+
+      setTimeout(() => {
+        modal.style.pointerEvents = 'auto';
+        gtIsAnimating = false;
+      }, 360);
+    };
+
+    window.closeGroupTransformModal = () => {
+      if (gtIsAnimating || !isGtModalOpen) return;
+      const backdrop = document.getElementById('groupTransformBackdrop');
+      const modal = document.getElementById('groupTransformModal');
+
+      gtIsAnimating = true;
+      modal.style.pointerEvents = 'none';
+
+      // Mesurer la position actuelle de la carte d'origine (en cas de scroll)
+      let endRect = null;
+      if (gtOriginCard) {
+        endRect = gtOriginCard.getBoundingClientRect();
+      }
+
+      if (endRect) {
+        modal.style.transition = 'top 300ms cubic-bezier(0.2, 0.8, 0.2, 1), left 300ms cubic-bezier(0.2, 0.8, 0.2, 1), width 300ms cubic-bezier(0.2, 0.8, 0.2, 1), height 300ms cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 300ms ease, opacity 260ms ease';
+        modal.style.top = `${endRect.top}px`;
+        modal.style.left = `${endRect.left}px`;
+        modal.style.width = `${endRect.width}px`;
+        modal.style.height = `${endRect.height}px`;
+        modal.style.borderRadius = '6px';
+        modal.style.opacity = '0';
+      } else {
+        modal.style.transition = 'opacity 200ms ease, transform 200ms ease';
+        modal.style.opacity = '0';
+        modal.style.transform = 'scale(0.95)';
+      }
+
+      backdrop.style.opacity = '0';
+
+      setTimeout(() => {
+        backdrop.classList.add('pointer-events-none');
+        modal.style.display = 'none';
+        modal.style.transition = 'none';
+        if (gtOriginCard) {
+          gtOriginCard.style.visibility = 'visible';
+          gtOriginCard = null;
+        }
+        gtIsAnimating = false;
+        isGtModalOpen = false;
+      }, 300);
+    };
+
+    // Événements de fermeture
+    document.getElementById('groupTransformBackdrop')?.addEventListener('click', closeGroupTransformModal);
+    document.getElementById('gtCloseBtn')?.addEventListener('click', closeGroupTransformModal);
+    document.getElementById('gtBottomCloseBtn')?.addEventListener('click', closeGroupTransformModal);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isGtModalOpen) {
+        closeGroupTransformModal();
+      }
+    });
+
+    // Copier le JID
+    document.getElementById('gtBtnCopyJid')?.addEventListener('click', async () => {
+      const jid = document.getElementById('gtModalJid')?.textContent?.trim();
+      if (jid) {
+        try {
+          await navigator.clipboard.writeText(jid);
+          showToast('JID copié dans le presse-papiers !');
+        } catch {
+          showToast('Impossible de copier automatiquement.', 'error');
+        }
+      }
+    });
 
     // 5. Flux de logs PM2
     async function loadLogs() {
