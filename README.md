@@ -7,6 +7,8 @@
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
+> 📖 **[Guide Complet du Bot (Wiki)](WIKI.md)** — Découvrez la documentation exhaustive de toutes les 36 commandes, de l'architecture furtive, du système Anti-Raid et du tableau de bord WebGUI (Playit.gg).
+
 **ZyBot** est un selfbot WhatsApp modulaire, discret et ultra-épuré pour compte personnel, conçu sur l'architecture **Baileys** (`@whiskeysockets/baileys`). Doté d'un **moteur anti-détection avancé (Stealth Engine)**, d'un **système Anti-Delete & Anti-Edit**, d'un **mode éphémère sélectif (`/temp`)** et d'un **Hub Communautaire privé**, il s'exécute directement sur votre session sans laisser de traces suspectes.
 
 ---
