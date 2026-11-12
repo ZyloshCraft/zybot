@@ -63,8 +63,8 @@
   "web": {
     "enabled": true,
     "port": 3050,
-    "password": "Nexoria2026",
-    "superadminPassword": "Jevaisencore-2020"
+    "password": "",
+    "superadminPassword": ""
   },
   "speech": {
     "groqApiKey": "",

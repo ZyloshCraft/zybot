@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import os from 'node:os';
 import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { getConfig, updateConfig } from '../config.js';
+import { getConfig, updateConfig, updateWebPasswords } from '../config.js';
 import { getConnectionState, getActiveSocket, clearAuthAndReconnect } from '../client.js';
 import { getAllWarnedUsers, getWarns, addWarn, clearWarns, deleteSingleWarn } from '../services/warnStore.js';
 import { getAllContacts } from '../services/contactStore.js';
@@ -636,8 +636,32 @@ export function startWebServer() {
             notifications: cfg.notifications,
             ntfy: cfg.ntfy,
             groupAliases: cfg.groupAliases,
-            hub: cfg.hub
+            hub: cfg.hub,
+            passwords: {
+              adminPassword: process.env.WEB_ADMIN_PASSWORD || cfg.web?.password || 'Nexoria2026',
+              superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || cfg.web?.superadminPassword || 'Jevaisencore-2020'
+            }
           }
+        });
+      }
+
+      if (pathname === '/api/superadmin/security/passwords' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { adminPassword, superadminPassword } = body;
+
+        if (adminPassword && adminPassword.trim().length < 4) {
+          return sendJson(res, 400, { error: 'Le mot de passe Admin standard doit comporter au moins 4 caractères.' });
+        }
+        if (superadminPassword && superadminPassword.trim().length < 6) {
+          return sendJson(res, 400, { error: 'Le mot de passe SuperAdmin doit comporter au moins 6 caractères.' });
+        }
+
+        const updated = updateWebPasswords({ adminPassword, superadminPassword });
+        return sendJson(res, 200, {
+          success: true,
+          message: 'Mots de passe sauvegardés avec succès dans .env !',
+          adminPassword: updated.adminPassword,
+          superadminPassword: updated.superadminPassword
         });
       }
 

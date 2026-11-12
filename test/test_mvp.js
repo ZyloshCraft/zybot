@@ -376,7 +376,7 @@ const gw = createGiveaway({
   messageKey: { remoteJid: 'test_group_gw@g.us', id: 'gw_announce_123' },
   prize: 'Discord Nitro 1 mois',
   durationMs: 60000,
-  creatorJid: '33766337937@s.whatsapp.net'
+  creatorJid: '33600000000@s.whatsapp.net'
 });
 
 assert.strictEqual(gw.status, 'active');
@@ -450,7 +450,7 @@ let kicked = false;
 const sentMessages = [];
 
 const antiRaidMockSock = {
-  user: { id: '33766337937:1@s.whatsapp.net' },
+  user: { id: '33600000000:1@s.whatsapp.net' },
   sendMessage: async (dest, content) => {
     if (content.delete) {
       deletedCount++;
@@ -461,7 +461,7 @@ const antiRaidMockSock = {
   groupMetadata: async () => ({
     subject: 'Groupe Test AntiRaid',
     participants: [
-      { id: '33766337937:1@s.whatsapp.net', admin: 'admin' },
+      { id: '33600000000:1@s.whatsapp.net', admin: 'admin' },
       { id: newMember, admin: null }
     ]
   }),
@@ -519,7 +519,7 @@ assert.ok(brefCmd, 'La commande bref doit être disponible');
 // 1. Test message trop court (pas besoin d appel IA)
 let brefSent = null;
 const brefMockSock = {
-  user: { id: '33766337937:1@s.whatsapp.net' },
+  user: { id: '33600000000:1@s.whatsapp.net' },
   sendMessage: async (dest, content) => {
     brefSent = { dest, content };
   }

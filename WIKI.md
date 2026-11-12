@@ -141,7 +141,7 @@ ZyBot embarque une interface Web complète accessible sur le port `3050` (ou via
 L'interface respecte strictement le design system épuré de **Playit.gg** :
 - **Palette** : Fond `#091322`, cartes `#0e1b2e` avec bordure nette `1px solid #1d314c`, accent orange vif `#f97316`.
 - **Typographie** : Inter pour l'interface générale, et police **Monospace** (`JetBrains Mono`) pour tous les numéros de téléphone, JIDs et compteurs.
-- **Zéro Débordement** : Tous les numéros (ex: `+33766337937`) sont tronqués proprement pour ne jamais déborder des cartes KPI sur mobile ou petit écran.
+- **Zéro Débordement** : Tous les numéros (ex: `+33612345678`) sont tronqués proprement pour ne jamais déborder des cartes KPI sur mobile ou petit écran.
 - **Navigation par onglets texte** : Onglets discrets avec soulignement orange sous l'onglet actif.
 
 ### Espace Public : Casier Communautaire
@@ -231,23 +231,13 @@ location = /superadmin {
 | Élément | Statut | Protection |
 | :--- | :--- | :--- |
 | **Identifiants de connexion WhatsApp (`auth_info/`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. Vos clés privées, sessions et base SQLite libsignal restent 100% locales sur votre machine. |
+| **Mots de passe des panels WebGUI (`.env`)** | ❌ **Non présent sur GitHub** | Stockés dans le fichier `.env` local (protégé par `.gitignore`) et configurables directement depuis le SuperAdmin. |
 | **Historique des messages (`message_history.json`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. Aucun message privé ou de groupe n'est envoyé sur GitHub. |
 | **Statuts & Stories WhatsApp (`statuses/`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. |
-| **Base des Warns & Casier (`warns.json`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. Les vraies infractions de votre serveur restent locales. |
+| **Base des Warns & Casier (`warns.json`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. Les infractions restent locales. |
 | **Activité des Groupes (`group_activity.json`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. |
 | **Contacts & Pseudos réels (`contacts.json`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. |
 | **Giveaways réels (`giveaways.json`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. |
 | **Permissions accordées (`permissions.json`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. |
 | **Fichiers de logs (`*.log`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. |
 | **Variables d'environnement (`.env`)** | ❌ **Non présent sur GitHub** | Protégé par `.gitignore`. |
-| **Mot de passe SSH Raspberry Pi (`Jevaisencorse-2020`)** | ❌ **Non présent sur GitHub** | Jamais commité dans le code source ni dans l'historique Git. |
-
-### Ce qui est ACTUELLEMENT COMMITTÉ sur GitHub (À noter) :
-1. **Les mots de passe des pannels WebGUI** :
-   - `password`: `Nexoria2026` (Admin standard)
-   - `superadminPassword`: `Jevaisencore-2020` (SuperAdmin)
-   - *Pourquoi ?* Ces valeurs figurent dans `config.json` et en valeurs de repli par défaut dans le code.
-2. **Votre numéro de téléphone (`+33766337937`)** :
-   - Présent uniquement dans les fichiers de test unitaire fictifs (`test/test_mvp.js`) en tant qu'identifiant mocké pour simuler l'administrateur.
-3. **Les JIDs de vos groupes du Hub** :
-   - Les identifiants WhatsApp de vos 6 groupes système (ex: `120363430044075107@g.us`) figurent dans `config.json`.

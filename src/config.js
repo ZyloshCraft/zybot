@@ -100,8 +100,8 @@ const DEFAULT_CONFIG = {
   web: {
     enabled: true,
     port: 3050,
-    password: 'Nexoria2026',
-    superadminPassword: 'Jevaisencore-2020'
+    password: process.env.WEB_ADMIN_PASSWORD || 'Nexoria2026',
+    superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || 'Jevaisencore-2020'
   }
 };
 
@@ -120,12 +120,26 @@ export function loadConfig() {
     console.error('Erreur lors du chargement de config.json, utilisation des valeurs par défaut:', error);
     inMemoryConfig = { ...DEFAULT_CONFIG };
   }
+
+  // Injecter les mots de passe depuis les variables d'environnement (.env)
+  if (!inMemoryConfig.web) inMemoryConfig.web = {};
+  inMemoryConfig.web.password = process.env.WEB_ADMIN_PASSWORD || inMemoryConfig.web.password || 'Nexoria2026';
+  inMemoryConfig.web.superadminPassword = process.env.WEB_SUPERADMIN_PASSWORD || inMemoryConfig.web.superadminPassword || 'Jevaisencore-2020';
+
   return inMemoryConfig;
 }
 
 export function getConfig() {
   if (!inMemoryConfig) {
     return loadConfig();
+  }
+  // Toujours s'assurer que les mots de passe reflètent l'environnement .env le plus récent
+  if (!inMemoryConfig.web) inMemoryConfig.web = {};
+  if (process.env.WEB_ADMIN_PASSWORD) {
+    inMemoryConfig.web.password = process.env.WEB_ADMIN_PASSWORD;
+  }
+  if (process.env.WEB_SUPERADMIN_PASSWORD) {
+    inMemoryConfig.web.superadminPassword = process.env.WEB_SUPERADMIN_PASSWORD;
   }
   return inMemoryConfig;
 }
@@ -140,10 +154,71 @@ export function updateConfig(updater) {
 
 export function saveConfig(config) {
   try {
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8');
+    // Ne jamais écrire les mots de passe en clair dans config.json pour éviter tout commit accidentel
+    const sanitizedConfig = { ...config };
+    if (sanitizedConfig.web) {
+      sanitizedConfig.web = {
+        ...sanitizedConfig.web,
+        password: '',
+        superadminPassword: ''
+      };
+    }
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(sanitizedConfig, null, 2), 'utf-8');
   } catch (err) {
     console.error('Erreur lors de la sauvegarde de config.json:', err);
   }
+}
+
+export function getEnvPath() {
+  return path.resolve(__dirname, '../.env');
+}
+
+export function updateWebPasswords({ adminPassword, superadminPassword }) {
+  const envPath = getEnvPath();
+  let envLines = [];
+  try {
+    if (fs.existsSync(envPath)) {
+      envLines = fs.readFileSync(envPath, 'utf-8').split('\n');
+    }
+  } catch {}
+
+  const setKey = (key, val) => {
+    let found = false;
+    envLines = envLines.map((line) => {
+      if (line.trim().startsWith(`${key}=`)) {
+        found = true;
+        return `${key}=${val}`;
+      }
+      return line;
+    });
+    if (!found) {
+      envLines.push(`${key}=${val}`);
+    }
+    process.env[key] = val;
+  };
+
+  if (adminPassword && adminPassword.trim()) {
+    const cleanAdmin = adminPassword.trim();
+    setKey('WEB_ADMIN_PASSWORD', cleanAdmin);
+    if (inMemoryConfig?.web) inMemoryConfig.web.password = cleanAdmin;
+  }
+
+  if (superadminPassword && superadminPassword.trim()) {
+    const cleanSuper = superadminPassword.trim();
+    setKey('WEB_SUPERADMIN_PASSWORD', cleanSuper);
+    if (inMemoryConfig?.web) inMemoryConfig.web.superadminPassword = cleanSuper;
+  }
+
+  try {
+    fs.writeFileSync(envPath, envLines.filter(Boolean).join('\n') + '\n', 'utf-8');
+  } catch (err) {
+    console.error('Erreur lors de l écriture de .env:', err);
+  }
+
+  return {
+    adminPassword: process.env.WEB_ADMIN_PASSWORD || 'Nexoria2026',
+    superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || 'Jevaisencore-2020'
+  };
 }
 
 /**
