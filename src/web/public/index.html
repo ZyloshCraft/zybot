@@ -1316,54 +1316,64 @@
       const backdrop = document.getElementById('groupTransformBackdrop');
       const modal = document.getElementById('groupTransformModal');
 
-      // 1. Remplir les données
+      // 1. Remplir les données détaillées du groupe
       populateGroupModalData(group);
 
-      // 2. Mesurer la géométrie de la carte de départ
-      const startRect = cardEl.getBoundingClientRect();
+      // 2. Bloquer le défilement de la page en arrière-plan sans saut de page
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
 
-      // 3. Positionner la modale pile au-dessus de la carte de départ
+      // 3. Mesurer la géométrie de la carte cliquée
+      const cardRect = cardEl.getBoundingClientRect();
+      const modalWidth = Math.min(window.innerWidth - (window.innerWidth < 640 ? 24 : 48), 740);
+      const modalHeight = Math.min(window.innerHeight - (window.innerWidth < 640 ? 32 : 64), 680);
+
+      // Calculer l'écart par rapport au centre de l'écran
+      const viewportCenterX = window.innerWidth / 2;
+      const viewportCenterY = window.innerHeight / 2;
+      const cardCenterX = cardRect.left + cardRect.width / 2;
+      const cardCenterY = cardRect.top + cardRect.height / 2;
+
+      const startDeltaX = cardCenterX - viewportCenterX;
+      const startDeltaY = cardCenterY - viewportCenterY;
+      const startScaleX = Math.max(0.35, cardRect.width / modalWidth);
+      const startScaleY = Math.max(0.35, cardRect.height / modalHeight);
+
+      // 4. Positionner la modale centrée avec la transformation initiale calée sur la carte
       modal.style.transition = 'none';
       modal.style.display = 'flex';
-      modal.style.top = `${startRect.top}px`;
-      modal.style.left = `${startRect.left}px`;
-      modal.style.width = `${startRect.width}px`;
-      modal.style.height = `${startRect.height}px`;
-      modal.style.borderRadius = '6px';
-      modal.style.opacity = '1';
+      modal.style.top = '50%';
+      modal.style.left = '50%';
+      modal.style.width = `${modalWidth}px`;
+      modal.style.height = `${modalHeight}px`;
+      modal.style.transform = `translate(calc(-50% + ${startDeltaX}px), calc(-50% + ${startDeltaY}px)) scale(${startScaleX}, ${startScaleY})`;
+      modal.style.borderRadius = '8px';
+      modal.style.opacity = '0.6';
       modal.style.pointerEvents = 'none';
 
-      // Afficher le backdrop et masquer l'élément source sans briser le layout
+      // Afficher le backdrop et masquer temporairement la carte source
       backdrop.classList.remove('pointer-events-none');
       cardEl.style.visibility = 'hidden';
-
-      // 4. Calculer la géométrie cible (modal centré)
-      const padX = window.innerWidth < 640 ? 16 : 32;
-      const padY = window.innerWidth < 640 ? 24 : 48;
-      const targetWidth = Math.min(window.innerWidth - padX, 740);
-      const targetHeight = Math.min(window.innerHeight - padY, 680);
-      const targetLeft = Math.max(8, (window.innerWidth - targetWidth) / 2);
-      const targetTop = Math.max(12, (window.innerHeight - targetHeight) / 2);
 
       // 5. Forcer le reflow du navigateur
       void modal.offsetHeight;
 
-      // 6. Déclencher la transition fluide (Container Transform)
-      modal.style.transition = 'top 360ms cubic-bezier(0.16, 1, 0.3, 1), left 360ms cubic-bezier(0.16, 1, 0.3, 1), width 360ms cubic-bezier(0.16, 1, 0.3, 1), height 360ms cubic-bezier(0.16, 1, 0.3, 1), border-radius 360ms ease, border-color 360ms ease, box-shadow 360ms ease';
-      
+      // 6. Animation d'ouverture fluide (GPU Transform) vers le centre
+      modal.style.transition = 'transform 340ms cubic-bezier(0.16, 1, 0.3, 1), opacity 260ms ease, border-radius 340ms ease, box-shadow 340ms ease';
       backdrop.style.opacity = '1';
-      modal.style.top = `${targetTop}px`;
-      modal.style.left = `${targetLeft}px`;
-      modal.style.width = `${targetWidth}px`;
-      modal.style.height = `${targetHeight}px`;
+      modal.style.transform = 'translate(-50%, -50%) scale(1)';
       modal.style.borderRadius = '12px';
+      modal.style.opacity = '1';
       modal.style.borderColor = '#2a4468';
-      modal.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(249, 115, 22, 0.2)';
+      modal.style.boxShadow = '0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(249, 115, 22, 0.25)';
 
       setTimeout(() => {
         modal.style.pointerEvents = 'auto';
         gtIsAnimating = false;
-      }, 360);
+      }, 340);
     };
 
     window.closeGroupTransformModal = () => {
@@ -1374,39 +1384,46 @@
       gtIsAnimating = true;
       modal.style.pointerEvents = 'none';
 
-      // Mesurer la position actuelle de la carte d'origine (en cas de scroll)
-      let endRect = null;
+      // Réafficher immédiatement la carte d'origine dans la grille pour une réintégration parfaite
       if (gtOriginCard) {
-        endRect = gtOriginCard.getBoundingClientRect();
+        gtOriginCard.style.visibility = 'visible';
       }
 
-      if (endRect) {
-        modal.style.transition = 'top 300ms cubic-bezier(0.2, 0.8, 0.2, 1), left 300ms cubic-bezier(0.2, 0.8, 0.2, 1), width 300ms cubic-bezier(0.2, 0.8, 0.2, 1), height 300ms cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 300ms ease, opacity 260ms ease';
-        modal.style.top = `${endRect.top}px`;
-        modal.style.left = `${endRect.left}px`;
-        modal.style.width = `${endRect.width}px`;
-        modal.style.height = `${endRect.height}px`;
-        modal.style.borderRadius = '6px';
-        modal.style.opacity = '0';
-      } else {
-        modal.style.transition = 'opacity 200ms ease, transform 200ms ease';
-        modal.style.opacity = '0';
-        modal.style.transform = 'scale(0.95)';
+      // Calculer un vecteur de retour doux bridé (max 70px) vers la carte, évitant tout décrochage sur le côté
+      let closeDeltaX = 0;
+      let closeDeltaY = 0;
+      if (gtOriginCard) {
+        const cardRect = gtOriginCard.getBoundingClientRect();
+        const viewportCenterX = window.innerWidth / 2;
+        const viewportCenterY = window.innerHeight / 2;
+        const cardCenterX = cardRect.left + cardRect.width / 2;
+        const cardCenterY = cardRect.top + cardRect.height / 2;
+
+        const rawDx = (cardCenterX - viewportCenterX) * 0.3;
+        const rawDy = (cardCenterY - viewportCenterY) * 0.3;
+        closeDeltaX = Math.max(-70, Math.min(70, rawDx));
+        closeDeltaY = Math.max(-50, Math.min(50, rawDy));
       }
 
+      // Animation de fermeture fluide : léger retrait centré sans dérive et fondu rapide
+      modal.style.transition = 'transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 220ms ease';
+      modal.style.transform = `translate(calc(-50% + ${closeDeltaX}px), calc(-50% + ${closeDeltaY}px)) scale(0.92)`;
+      modal.style.opacity = '0';
       backdrop.style.opacity = '0';
 
       setTimeout(() => {
         backdrop.classList.add('pointer-events-none');
         modal.style.display = 'none';
         modal.style.transition = 'none';
-        if (gtOriginCard) {
-          gtOriginCard.style.visibility = 'visible';
-          gtOriginCard = null;
-        }
+        modal.style.transform = 'translate(-50%, -50%) scale(1)';
+
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+
+        gtOriginCard = null;
         gtIsAnimating = false;
         isGtModalOpen = false;
-      }, 300);
+      }, 240);
     };
 
     // Événements de fermeture
