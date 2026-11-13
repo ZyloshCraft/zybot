@@ -15,7 +15,7 @@ export default {
   adminOnly: true,
   async execute({ sock, msg, jid, args, isOwner, isAdmin }) {
     const config = getConfig();
-    const adminTaverneJid = config.hub?.admintaverne || config.groupAliases?.admintaverne || '120363424594930135@g.us';
+    const adminTaverneJid = config.groupAliases?.admintaverne || config.hub?.admintaverne || '120363424594930135@g.us';
 
     // Déterminer l'administrateur émetteur et son JID
     const adminJid = msg.key.participant || msg.key.remoteJid;
@@ -29,12 +29,7 @@ export default {
     if (args[0]?.toLowerCase() === 'help' || args[0]?.toLowerCase() === 'aide' || args[0]?.toLowerCase() === 'guide') {
       const p = config.prefix || '/';
       const guideText = getWarnHelpGuide(p);
-      if (isPrivate || isModerationHub) {
-        await replyOrEdit(sock, jid, msg, guideText);
-      } else {
-        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-        await sock.sendMessage(adminJid, { text: guideText });
-      }
+      await replyOrEdit(sock, jid, msg, guideText);
       return;
     }
 
@@ -71,12 +66,7 @@ export default {
       reportLines.push(`👮 Action exécutée par : @${adminNum}`);
 
       const reportText = reportLines.join('\n');
-      if (isPrivate || isModerationHub) {
-        await replyOrEdit(sock, jid, msg, reportText);
-      } else {
-        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-        await sock.sendMessage(adminTaverneJid, { text: reportText, mentions: [adminJid] });
-      }
+      await replyOrEdit(sock, jid, msg, reportText);
       return;
     }
 
@@ -106,15 +96,7 @@ export default {
         const userWarns = getWarns(targetNum);
         if (!userWarns.length) {
           const emptyText = `ℹ️ L'utilisateur +${targetNum} n'a aucun avertissement actif.`;
-          if (isPrivate || isModerationHub) {
-            await replyOrEdit(sock, jid, msg, emptyText);
-          } else {
-            try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-            await sock.sendMessage(adminTaverneJid, { text: emptyText, mentions: [adminJid] });
-            if (adminJid && adminJid !== jid) {
-              try { await sock.sendMessage(adminJid, { text: emptyText }); } catch {}
-            }
-          }
+          await replyOrEdit(sock, jid, msg, emptyText);
           return;
         }
 
@@ -138,15 +120,7 @@ export default {
         lines.push(`👮 Consultation par : @${adminNum}`);
 
         const resultText = lines.join('\n');
-        if (isPrivate || isModerationHub) {
-          await replyOrEdit(sock, jid, msg, resultText);
-        } else {
-          try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-          await sock.sendMessage(adminTaverneJid, { text: resultText, mentions: [adminJid] });
-          if (adminJid && adminJid !== jid) {
-            try { await sock.sendMessage(adminJid, { text: resultText }); } catch {}
-          }
-        }
+        await replyOrEdit(sock, jid, msg, resultText);
         return;
       }
 
@@ -154,12 +128,7 @@ export default {
       const allWarned = getAllWarnedUsers();
       if (!allWarned.length) {
         const emptyText = `📭 Aucun membre n'a d'avertissement actif dans la base.`;
-        if (isPrivate || isModerationHub) {
-          await replyOrEdit(sock, jid, msg, emptyText);
-        } else {
-          try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-          await sock.sendMessage(adminTaverneJid, { text: emptyText, mentions: [adminJid] });
-        }
+        await replyOrEdit(sock, jid, msg, emptyText);
         return;
       }
 
@@ -180,15 +149,7 @@ export default {
       listLines.push(`👮 Liste demandée par : @${adminNum}`);
 
       const fullListText = listLines.join('\n');
-      if (isPrivate || isModerationHub) {
-        await replyOrEdit(sock, jid, msg, fullListText);
-      } else {
-        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-        await sock.sendMessage(adminTaverneJid, { text: fullListText, mentions: [adminJid] });
-        if (adminJid && adminJid !== jid) {
-          try { await sock.sendMessage(adminJid, { text: fullListText }); } catch {}
-        }
-      }
+      await replyOrEdit(sock, jid, msg, fullListText);
       return;
     }
 
@@ -217,15 +178,7 @@ export default {
 
       if (!targetNum || targetNum.length < 6) {
         const notFoundText = `⚠️ Erreur /warn del : Cible introuvable.\n(Demandé par @${adminNum})`;
-        if (isPrivate || isModerationHub) {
-          await replyOrEdit(sock, jid, msg, notFoundText);
-        } else {
-          try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-          await sock.sendMessage(adminTaverneJid, {
-            text: notFoundText,
-            mentions: [adminJid]
-          });
-        }
+        await replyOrEdit(sock, jid, msg, notFoundText);
         return;
       }
 
@@ -239,17 +192,18 @@ export default {
         `━━━━━━━━━━━━━━━━━━━━`
       ].join('\n');
 
-      if (isPrivate || isModerationHub) {
-        await replyOrEdit(sock, jid, msg, logText);
-      } else {
-        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-        await sock.sendMessage(adminTaverneJid, {
-          text: logText,
-          mentions: [adminJid]
-        });
+      await replyOrEdit(sock, jid, msg, logText);
+
+      if (adminTaverneJid && adminTaverneJid !== jid) {
+        try {
+          await sock.sendMessage(adminTaverneJid, {
+            text: logText,
+            mentions: [adminJid]
+          });
+        } catch {}
       }
 
-      if (config.hub?.systemNotifs && config.hub.systemNotifs !== adminTaverneJid) {
+      if (config.hub?.systemNotifs && config.hub.systemNotifs !== adminTaverneJid && config.hub.systemNotifs !== jid) {
         try {
           await sock.sendMessage(config.hub.systemNotifs, {
             text: logText
@@ -295,15 +249,7 @@ export default {
 
     if (!targetNum) {
       const errMsg = `⚠️ *Échec de la commande /warn :*\nImpossible d'identifier la cible "${args[0] || 'inconnue'}".\n💡 Veuillez mentionner le membre (@membre), répondre à son message, ou taper son numéro/pseudo exact.`;
-      if (isPrivate || isModerationHub) {
-        await replyOrEdit(sock, jid, msg, errMsg);
-      } else {
-        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
-        await sock.sendMessage(adminTaverneJid, {
-          text: errMsg,
-          mentions: [adminJid]
-        });
-      }
+      await replyOrEdit(sock, jid, msg, errMsg);
       return;
     }
 
