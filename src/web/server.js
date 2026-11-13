@@ -21,6 +21,8 @@ import {
 import { getAllGiveaways, finishGiveaway, rerollGiveaway, createGiveaway, deleteGiveaway } from '../services/giveawayStore.js';
 import { getAllPersopings, deletePersoping, updatePersoping } from '../services/persopingStore.js';
 import { getAntiRaidData, clearMemberAntiRaid } from '../services/antiLinkProtection.js';
+import { getInterceptedMessages, clearInterceptedMessages } from '../services/antiDeleteStore.js';
+import { getAuditLogs, clearAuditLogs, recordAuditLog } from '../services/auditLogStore.js';
 
 // Cache des groupes WhatsApp pour éviter le spam de requêtes Baileys
 let groupsParticipatingCache = { data: null, timestamp: 0 };
@@ -76,7 +78,9 @@ async function getEnrichedGroups() {
       totalMessages,
       lastUpdate: act ? act.lastUpdate : null,
       topSpeakers: topUsers.slice(0, 5),
-      topUsers: topUsers.slice(0, 5)
+      topUsers: topUsers.slice(0, 5),
+      hourlyActivity: act?.hourlyActivity || Array(24).fill(0),
+      peakInfo: act?.peakInfo || { peakHour: null, peakCount: 0, formatted: 'Calme' }
     });
   }
 
@@ -100,7 +104,9 @@ async function getEnrichedGroups() {
         totalMessages: act.totalMessages || 0,
         lastUpdate: act.lastUpdate || null,
         topSpeakers: topUsers.slice(0, 5),
-        topUsers: topUsers.slice(0, 5)
+        topUsers: topUsers.slice(0, 5),
+        hourlyActivity: act.hourlyActivity || Array(24).fill(0),
+        peakInfo: act.peakInfo || { peakHour: null, peakCount: 0, formatted: 'Calme' }
       });
     }
   }
@@ -305,6 +311,14 @@ export function startWebServer() {
         }
 
         if (role) {
+          recordAuditLog({
+            type: 'security',
+            action: role === 'superadmin' ? 'LOGIN_SUPERADMIN_SUCCESS' : 'LOGIN_ADMIN_SUCCESS',
+            user: `IP: ${ip}`,
+            details: `Connexion WebGUI (${role})`,
+            status: 'success'
+          });
+
           // Réinitialiser le compteur de tentatives
           loginRateLimit.delete(ip);
 
@@ -322,6 +336,14 @@ export function startWebServer() {
             isSuperAdmin: role === 'superadmin'
           }, { 'Set-Cookie': cookieHeader });
         } else {
+          recordAuditLog({
+            type: 'security',
+            action: 'LOGIN_FAILED',
+            user: `IP: ${ip}`,
+            details: `Échec mot de passe sur ${pathname}`,
+            status: 'warning'
+          });
+
           rate.attempts = (rate.attempts || 0) + 1;
           if (rate.attempts >= 5) {
             rate.lockUntil = Date.now() + 10 * 60 * 1000; // 10 minutes de ban
@@ -639,7 +661,8 @@ export function startWebServer() {
             hub: cfg.hub,
             passwords: {
               adminPassword: process.env.WEB_ADMIN_PASSWORD || cfg.web?.password || 'Nexoria2026',
-              superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || cfg.web?.superadminPassword || 'Jevaisencore-2020'
+              superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || cfg.web?.superadminPassword || 'Jevaisencore-2020',
+              geminiApiKey: process.env.GEMINI_API_KEY || cfg.speech?.geminiApiKey || ''
             }
           }
         });
@@ -647,7 +670,7 @@ export function startWebServer() {
 
       if (pathname === '/api/superadmin/security/passwords' && method === 'POST') {
         const body = await parseJsonBody(req);
-        const { adminPassword, superadminPassword } = body;
+        const { adminPassword, superadminPassword, geminiApiKey } = body;
 
         if (adminPassword && adminPassword.trim().length < 4) {
           return sendJson(res, 400, { error: 'Le mot de passe Admin standard doit comporter au moins 4 caractères.' });
@@ -656,13 +679,55 @@ export function startWebServer() {
           return sendJson(res, 400, { error: 'Le mot de passe SuperAdmin doit comporter au moins 6 caractères.' });
         }
 
-        const updated = updateWebPasswords({ adminPassword, superadminPassword });
+        const updated = updateWebPasswords({ adminPassword, superadminPassword, geminiApiKey });
+        recordAuditLog({
+          type: 'security',
+          action: 'SECURITY_CONFIG_UPDATED',
+          user: 'SuperAdmin WebGUI',
+          details: 'Mots de passe WebGUI ou clé Gemini mis à jour',
+          status: 'success'
+        });
+
         return sendJson(res, 200, {
           success: true,
-          message: 'Mots de passe sauvegardés avec succès dans .env !',
+          message: 'Mots de passe et clés sauvegardés avec succès dans .env !',
           adminPassword: updated.adminPassword,
-          superadminPassword: updated.superadminPassword
+          superadminPassword: updated.superadminPassword,
+          geminiApiKey: updated.geminiApiKey
         });
+      }
+
+      // 6. Explorateur Anti-Delete (SuperAdmin)
+      if (pathname === '/api/superadmin/antidelete' && method === 'GET') {
+        const type = parsedUrl.searchParams.get('type') || null;
+        const search = parsedUrl.searchParams.get('search') || null;
+        const list = getInterceptedMessages({ limit: 120, type, search });
+        return sendJson(res, 200, { success: true, count: list.length, messages: list });
+      }
+
+      if (pathname === '/api/superadmin/antidelete' && method === 'DELETE') {
+        clearInterceptedMessages();
+        recordAuditLog({
+          type: 'security',
+          action: 'ANTIDELETE_CLEARED',
+          user: 'SuperAdmin WebGUI',
+          details: 'Historique des messages supprimés vidé',
+          status: 'success'
+        });
+        return sendJson(res, 200, { success: true, message: 'Historique Anti-Delete vidé.' });
+      }
+
+      // 7. Audit Log centralisé (SuperAdmin)
+      if (pathname === '/api/superadmin/audit' && method === 'GET') {
+        const type = parsedUrl.searchParams.get('type') || null;
+        const search = parsedUrl.searchParams.get('search') || null;
+        const list = getAuditLogs({ limit: 150, type, search });
+        return sendJson(res, 200, { success: true, count: list.length, logs: list });
+      }
+
+      if (pathname === '/api/superadmin/audit' && method === 'DELETE') {
+        clearAuditLogs();
+        return sendJson(res, 200, { success: true, message: 'Journal d\'audit réinitialisé.' });
       }
 
       if (pathname === '/api/superadmin/config/update' && method === 'POST') {

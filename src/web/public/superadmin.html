@@ -191,6 +191,12 @@
         <button class="playit-tab" data-tab="tab-gwperso">
           Giveaways & PersoPings
         </button>
+        <button class="playit-tab" data-tab="tab-antidelete">
+          Anti-Delete
+        </button>
+        <button class="playit-tab" data-tab="tab-audit">
+          Audit Logs
+        </button>
         <button class="playit-tab" data-tab="tab-settings">
           Réglages Bot
         </button>
@@ -479,7 +485,149 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 4 : RÉGLAGES BOT                                     -->
+    <!-- TAB 4 : ANTI-DELETE & ANTI-EDIT EXPLORER                 -->
+    <!-- ======================================================== -->
+    <section id="tab-antidelete" class="tab-panel hidden space-y-6">
+      
+      <!-- En-tête avec statistiques et actions -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+            <span>🗑️</span>
+            <span>Explorateur Anti-Delete & Anti-Edit</span>
+          </h3>
+          <p class="text-xs text-[#8b9bb4] mt-0.5">
+            Historique complet des messages supprimés (Revoke) et modifiés (Edit) interceptés en temps réel par ZyBot.
+          </p>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button id="btnRefreshAntiDelete" class="px-3.5 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors cursor-pointer">
+            ↻ Actualiser
+          </button>
+          <button id="btnClearAntiDelete" class="px-3.5 py-1.5 rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium transition-colors cursor-pointer">
+            🗑️ Vider l'historique
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 KPI Sobres Playit.gg -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="p-3.5 rounded-md bg-[#0e1b2e] border border-[#1d314c]">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#8b9bb4]">Total Interceptés</div>
+          <div id="adKpiTotal" class="mt-1 text-2xl font-bold font-mono text-[#f97316]">0</div>
+          <div class="text-[11px] text-[#8b9bb4] mt-0.5">Enregistrés en mémoire</div>
+        </div>
+        <div class="p-3.5 rounded-md bg-[#0e1b2e] border border-[#1d314c]">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#8b9bb4]">Suppressions (Revoke)</div>
+          <div id="adKpiDeleted" class="mt-1 text-2xl font-bold font-mono text-rose-400">0</div>
+          <div class="text-[11px] text-[#8b9bb4] mt-0.5">Messages effacés rattrapés</div>
+        </div>
+        <div class="p-3.5 rounded-md bg-[#0e1b2e] border border-[#1d314c]">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#8b9bb4]">Modifications (Edit)</div>
+          <div id="adKpiEdited" class="mt-1 text-2xl font-bold font-mono text-amber-400">0</div>
+          <div class="text-[11px] text-[#8b9bb4] mt-0.5">Anciennes versions capturées</div>
+        </div>
+      </div>
+
+      <!-- Filtres et Recherche -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-1.5 w-full sm:w-auto">
+          <button class="ad-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#f97316] text-white cursor-pointer" data-filter="all">Tous</button>
+          <button class="ad-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#091322] border border-[#1d314c] text-[#8b9bb4] hover:text-white cursor-pointer" data-filter="deleted">Supprimés</button>
+          <button class="ad-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#091322] border border-[#1d314c] text-[#8b9bb4] hover:text-white cursor-pointer" data-filter="edited">Modifiés</button>
+        </div>
+        <div class="w-full sm:w-72">
+          <input 
+            type="text" 
+            id="adSearchInput" 
+            placeholder="Rechercher (auteur, contenu, groupe)..." 
+            class="w-full px-3 py-1.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-xs text-white placeholder-[#8b9bb4]/60 outline-none"
+          >
+        </div>
+      </div>
+
+      <!-- Liste des messages interceptés -->
+      <div id="adItemsContainer" class="space-y-3">
+        <div class="p-8 text-center text-[#8b9bb4] text-xs bg-[#0e1b2e] border border-[#1d314c] rounded-md">
+          Chargement des messages interceptés...
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5 : AUDIT LOG CENTRALISÉ                             -->
+    <!-- ======================================================== -->
+    <section id="tab-audit" class="tab-panel hidden space-y-6">
+      
+      <!-- En-tête avec actions -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+            <span>📜</span>
+            <span>Journal d'Audit Centralisé</span>
+          </h3>
+          <p class="text-xs text-[#8b9bb4] mt-0.5">
+            Historique en direct de toutes les commandes WhatsApp, actions de modération, verrouillages de groupe et sécurité.
+          </p>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button id="btnRefreshAudit" class="px-3.5 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors cursor-pointer">
+            ↻ Actualiser
+          </button>
+          <button id="btnClearAudit" class="px-3.5 py-1.5 rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium transition-colors cursor-pointer">
+            🗑️ Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtres et Recherche -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+          <button class="audit-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#f97316] text-white cursor-pointer" data-filter="all">Tous</button>
+          <button class="audit-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#091322] border border-[#1d314c] text-[#8b9bb4] hover:text-white cursor-pointer" data-filter="command">Commandes</button>
+          <button class="audit-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#091322] border border-[#1d314c] text-[#8b9bb4] hover:text-white cursor-pointer" data-filter="moderation">Modération</button>
+          <button class="audit-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#091322] border border-[#1d314c] text-[#8b9bb4] hover:text-white cursor-pointer" data-filter="lock">Group Lock</button>
+          <button class="audit-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#091322] border border-[#1d314c] text-[#8b9bb4] hover:text-white cursor-pointer" data-filter="security">Sécurité</button>
+        </div>
+        <div class="w-full sm:w-72">
+          <input 
+            type="text" 
+            id="auditSearchInput" 
+            placeholder="Filtrer (action, user, chat)..." 
+            class="w-full px-3 py-1.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-xs text-white placeholder-[#8b9bb4]/60 outline-none"
+          >
+        </div>
+      </div>
+
+      <!-- Tableau des logs -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-[#091322] border-b border-[#1d314c] text-[11px] font-semibold uppercase tracking-wider text-[#8b9bb4]">
+                <th class="p-3">Horodatage</th>
+                <th class="p-3">Type</th>
+                <th class="p-3">Action</th>
+                <th class="p-3">Utilisateur</th>
+                <th class="p-3">Discussion</th>
+                <th class="p-3">Détails</th>
+                <th class="p-3 text-right">Statut</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody" class="divide-y divide-[#1d314c]/60">
+              <tr>
+                <td colspan="7" class="p-8 text-center text-[#8b9bb4]">Chargement du journal d'audit...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 6 : RÉGLAGES BOT                                     -->
     <!-- ======================================================== -->
     <section id="tab-settings" class="tab-panel hidden space-y-6">
       
@@ -682,6 +830,19 @@
             <p class="text-[11px] text-[#8b9bb4]">Donne un accès exclusif à cette console de gestion complète.</p>
           </div>
 
+          <div class="md:col-span-2 space-y-1.5">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">
+              Clé API Google Gemini (IA /ask & /resume)
+            </label>
+            <input 
+              type="password" 
+              id="geminiApiKeyInput" 
+              placeholder="Ex: AIzaSy..." 
+              class="w-full px-3.5 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white text-xs font-mono outline-none transition-colors"
+            >
+            <p class="text-[11px] text-[#8b9bb4]">Sauvegardée dans <code class="font-mono text-amber-400">.env</code> (hors de GitHub). Utilisée par <code class="font-mono text-[#f97316]">/ask</code> et <code class="font-mono text-[#f97316]">/resume</code>.</p>
+          </div>
+
           <div class="md:col-span-2 flex justify-end pt-2">
             <button 
               type="submit" 
@@ -842,6 +1003,9 @@
         tabBtn.classList.add('active');
         const targetId = tabBtn.getAttribute('data-tab');
         document.getElementById(targetId)?.classList.remove('hidden');
+
+        if (targetId === 'tab-antidelete') loadAntiDeleteHistory();
+        if (targetId === 'tab-audit') loadAuditLogs();
       });
     });
 
@@ -854,6 +1018,8 @@
       loadGiveaways();
       loadPersopings();
       loadAntiRaid();
+      loadAntiDeleteHistory();
+      loadAuditLogs();
       loadSuperConfig();
     }
 
@@ -1386,11 +1552,15 @@
         if (currentConfig.passwords) {
           const adminInput = document.getElementById('adminPasswordInput');
           const superInput = document.getElementById('superadminPasswordInput');
+          const geminiInput = document.getElementById('geminiApiKeyInput');
           if (adminInput && currentConfig.passwords.adminPassword) {
             adminInput.value = currentConfig.passwords.adminPassword;
           }
           if (superInput && currentConfig.passwords.superadminPassword) {
             superInput.value = currentConfig.passwords.superadminPassword;
+          }
+          if (geminiInput && currentConfig.passwords.geminiApiKey) {
+            geminiInput.value = currentConfig.passwords.geminiApiKey;
           }
         }
       } catch (err) {}
@@ -1479,11 +1649,12 @@
       showToast('Réglages sauvegardés.');
     }
 
-    // Sauvegarde des mots de passe dans .env
+    // Sauvegarde des mots de passe et clé Gemini dans .env
     document.getElementById('passwordsConfigForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const adminPassword = document.getElementById('adminPasswordInput').value.trim();
       const superadminPassword = document.getElementById('superadminPasswordInput').value.trim();
+      const geminiApiKey = document.getElementById('geminiApiKeyInput')?.value?.trim() || '';
 
       const btn = document.getElementById('btnSavePasswords');
       btn.disabled = true;
@@ -1493,11 +1664,11 @@
         const res = await fetch(`${API_BASE}/superadmin/security/passwords`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminPassword, superadminPassword })
+          body: JSON.stringify({ adminPassword, superadminPassword, geminiApiKey })
         });
         const data = await res.json();
         if (res.ok) {
-          showToast('Mots de passe mis à jour dans .env !');
+          showToast('Mots de passe et clé Gemini enregistrés dans .env !');
         } else {
           showToast(data.error || 'Erreur lors de la mise à jour', 'error');
         }
@@ -1520,6 +1691,236 @@
       if (!confirm('Attention : cela supprimera la session WhatsApp actuelle et générera un nouveau QR code. Continuer ?')) return;
       await fetch(`${API_BASE}/bot/reauth`, { method: 'POST' });
       showToast('Session réinitialisée. Rendez-vous sur le panel standard pour scanner le QR.');
+    });
+
+    // ══════════════════════════════════════════════
+    // I. EXPLORATEUR ANTI-DELETE & ANTI-EDIT
+    // ══════════════════════════════════════════════
+    let adCache = [];
+    let adCurrentFilter = 'all';
+
+    async function loadAntiDeleteHistory() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/antidelete`);
+        const data = await res.json();
+        adCache = data.messages || [];
+
+        // KPI
+        const total = adCache.length;
+        const deleted = adCache.filter(x => x.type === 'deleted').length;
+        const edited = adCache.filter(x => x.type === 'edited').length;
+
+        document.getElementById('adKpiTotal').textContent = total;
+        document.getElementById('adKpiDeleted').textContent = deleted;
+        document.getElementById('adKpiEdited').textContent = edited;
+
+        renderAntiDeleteItems();
+      } catch (err) {
+        console.error('Erreur chargement AntiDelete:', err);
+      }
+    }
+
+    function renderAntiDeleteItems() {
+      const container = document.getElementById('adItemsContainer');
+      const search = (document.getElementById('adSearchInput')?.value || '').toLowerCase().trim();
+
+      let filtered = adCache;
+      if (adCurrentFilter !== 'all') {
+        filtered = filtered.filter(x => x.type === adCurrentFilter);
+      }
+      if (search) {
+        filtered = filtered.filter(x => 
+          (x.sender && x.sender.toLowerCase().includes(search)) ||
+          (x.senderPushName && x.senderPushName.toLowerCase().includes(search)) ||
+          (x.chatName && x.chatName.toLowerCase().includes(search)) ||
+          (x.text && x.text.toLowerCase().includes(search)) ||
+          (x.oldText && x.oldText.toLowerCase().includes(search)) ||
+          (x.newText && x.newText.toLowerCase().includes(search))
+        );
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-[#8b9bb4] text-xs bg-[#0e1b2e] border border-[#1d314c] rounded-md">Aucun message intercepté correspondant.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const isDeleted = item.type === 'deleted';
+        const dateStr = item.interceptedAt ? new Date(item.interceptedAt).toLocaleString('fr-FR', {
+          day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }) : 'Date inconnue';
+
+        const mediaIcons = {
+          text: '📝 Texte',
+          image: '📷 Photo',
+          video: '🎥 Vidéo',
+          audio: '🎙️ Vocal / Audio',
+          sticker: '🖼️ Sticker',
+          document: '📄 Document'
+        };
+        const mediaLabel = mediaIcons[item.mediaType] || '📝 Message';
+
+        return `
+          <div class="p-4 rounded-md bg-[#0e1b2e] border border-[#1d314c] hover:border-[#1d314c]/90 transition-colors space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1d314c]/60 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${isDeleted ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                  ${isDeleted ? '🗑️ SUPPRIMÉ' : '✏️ MODIFIÉ'}
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono text-[#8b9bb4] bg-[#091322] border border-[#1d314c]">
+                  ${mediaLabel}
+                </span>
+                <span class="text-xs text-white font-medium">
+                  ${escapeHtml(item.senderPushName ? `${item.senderPushName} (${item.sender})` : item.sender)}
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-mono text-[#8b9bb4]">${dateStr}</span>
+                <span class="text-xs text-[#8b9bb4]">•</span>
+                <span class="text-xs text-[#8b9bb4] font-medium truncate max-w-xs">${escapeHtml(item.chatName)}</span>
+              </div>
+            </div>
+
+            ${isDeleted ? `
+              <div class="p-3 rounded bg-[#091322] border border-[#1d314c]/70 text-xs text-slate-200 font-mono leading-relaxed break-words whitespace-pre-wrap select-all">
+                ${escapeHtml(item.text || '(Contenu multimédia supprimé)')}
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs font-mono">
+                <div class="p-3 rounded bg-[#091322] border border-rose-500/30 text-rose-300 break-words whitespace-pre-wrap select-all">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400 block mb-1">❌ Avant :</span>
+                  ${escapeHtml(item.oldText || '(Non disponible)')}
+                </div>
+                <div class="p-3 rounded bg-[#091322] border border-emerald-500/30 text-emerald-300 break-words whitespace-pre-wrap select-all">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">✅ Après :</span>
+                  ${escapeHtml(item.newText || '(Non disponible)')}
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.querySelectorAll('.ad-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ad-filter-btn').forEach(b => {
+          b.className = 'ad-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#091322] border border-[#1d314c] text-[#8b9bb4] hover:text-white cursor-pointer';
+        });
+        btn.className = 'ad-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#f97316] text-white cursor-pointer';
+        adCurrentFilter = btn.getAttribute('data-filter') || 'all';
+        renderAntiDeleteItems();
+      });
+    });
+
+    document.getElementById('adSearchInput')?.addEventListener('input', renderAntiDeleteItems);
+    document.getElementById('btnRefreshAntiDelete')?.addEventListener('click', loadAntiDeleteHistory);
+    document.getElementById('btnClearAntiDelete')?.addEventListener('click', async () => {
+      if (!confirm('Vider tout l\'historique des messages supprimés et modifiés ?')) return;
+      await fetch(`${API_BASE}/superadmin/antidelete`, { method: 'DELETE' });
+      showToast('Historique Anti-Delete vidé.');
+      loadAntiDeleteHistory();
+    });
+
+    // ══════════════════════════════════════════════
+    // J. JOURNAL D'AUDIT CENTRALISÉ
+    // ══════════════════════════════════════════════
+    let auditCache = [];
+    let auditCurrentFilter = 'all';
+
+    async function loadAuditLogs() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/audit`);
+        const data = await res.json();
+        auditCache = data.logs || [];
+        renderAuditTable();
+      } catch (err) {
+        console.error('Erreur chargement audit logs:', err);
+      }
+    }
+
+    function renderAuditTable() {
+      const tbody = document.getElementById('auditTableBody');
+      const search = (document.getElementById('auditSearchInput')?.value || '').toLowerCase().trim();
+
+      let filtered = auditCache;
+      if (auditCurrentFilter !== 'all') {
+        filtered = filtered.filter(l => l.type === auditCurrentFilter);
+      }
+      if (search) {
+        filtered = filtered.filter(l =>
+          (l.action && l.action.toLowerCase().includes(search)) ||
+          (l.user && l.user.toLowerCase().includes(search)) ||
+          (l.pushName && l.pushName.toLowerCase().includes(search)) ||
+          (l.chatName && l.chatName.toLowerCase().includes(search)) ||
+          (l.details && l.details.toLowerCase().includes(search))
+        );
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-[#8b9bb4]">Aucun événement d\'audit enregistré.</td></tr>';
+        return;
+      }
+
+      const typeStyles = {
+        command: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+        moderation: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
+        security: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+        lock: 'bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30',
+        system: 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
+      };
+
+      const statusStyles = {
+        success: 'text-emerald-400',
+        warning: 'text-amber-400',
+        error: 'text-rose-400'
+      };
+
+      tbody.innerHTML = filtered.map(l => {
+        const dateStr = l.timestamp ? new Date(l.timestamp).toLocaleString('fr-FR', {
+          day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }) : 'Inconnu';
+
+        const userDisplay = l.pushName ? `${l.pushName} (${l.user})` : l.user;
+
+        return `
+          <tr class="hover:bg-[#091322]/50 transition-colors">
+            <td class="p-3 font-mono text-[11px] text-[#8b9bb4] whitespace-nowrap">${dateStr}</td>
+            <td class="p-3 whitespace-nowrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${typeStyles[l.type] || typeStyles.system}">
+                ${escapeHtml(l.type)}
+              </span>
+            </td>
+            <td class="p-3 font-mono font-semibold text-white whitespace-nowrap">${escapeHtml(l.action)}</td>
+            <td class="p-3 font-mono text-slate-300 truncate max-w-[150px]">${escapeHtml(userDisplay)}</td>
+            <td class="p-3 text-[#8b9bb4] truncate max-w-[150px]">${escapeHtml(l.chatName || l.chatJid || '-')}</td>
+            <td class="p-3 text-slate-300 font-mono text-[11px] break-words">${escapeHtml(l.details || '')}</td>
+            <td class="p-3 text-right font-mono font-semibold ${statusStyles[l.status] || 'text-slate-300'} whitespace-nowrap">
+              ${l.status === 'success' ? '✓ SUCCÈS' : (l.status === 'error' ? '✕ ERREUR' : '⚠ ALERTE')}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    document.querySelectorAll('.audit-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.audit-filter-btn').forEach(b => {
+          b.className = 'audit-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#091322] border border-[#1d314c] text-[#8b9bb4] hover:text-white cursor-pointer';
+        });
+        btn.className = 'audit-filter-btn px-3 py-1 rounded text-xs font-medium transition-colors bg-[#f97316] text-white cursor-pointer';
+        auditCurrentFilter = btn.getAttribute('data-filter') || 'all';
+        renderAuditTable();
+      });
+    });
+
+    document.getElementById('auditSearchInput')?.addEventListener('input', renderAuditTable);
+    document.getElementById('btnRefreshAudit')?.addEventListener('click', loadAuditLogs);
+    document.getElementById('btnClearAudit')?.addEventListener('click', async () => {
+      if (!confirm('Réinitialiser tout le journal d\'audit ?')) return;
+      await fetch(`${API_BASE}/superadmin/audit`, { method: 'DELETE' });
+      showToast('Journal d\'audit réinitialisé.');
+      loadAuditLogs();
     });
 
     function escapeHtml(str) {

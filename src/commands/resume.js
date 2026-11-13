@@ -1,6 +1,7 @@
 import { getConfig } from '../config.js';
 import { replyOrEdit } from '../utils/stealth.js';
 import { getChatMessages } from '../services/messageStore.js';
+import { recordAuditLog } from '../services/auditLogStore.js';
 
 export default {
   name: 'resume',
@@ -15,7 +16,7 @@ export default {
         sock,
         jid,
         msg,
-        '❌ Clé Gemini introuvable. Veuillez vérifier votre clé API dans `~/.env`.'
+        '❌ Clé Gemini introuvable. Veuillez configurer votre clé API Gemini dans le panneau SuperAdmin ou dans `.env` (`GEMINI_API_KEY=...`).'
       );
       return;
     }
@@ -71,33 +72,43 @@ ${compactDialog.join('\n')}
 
 Résume en français cette discussion en 3 à 5 puces courtes et directes. Mets en valeur uniquement les informations clés, les rendez-vous, les décisions ou le sujet principal. Sois très concis.`;
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`;
+      const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+      let summaryText = null;
+      let lastErr = null;
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }]
+      for (const model of models) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                maxOutputTokens: 380,
+                temperature: 0.3
+              }
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (text) {
+              summaryText = text;
+              break;
             }
-          ],
-          generationConfig: {
-            maxOutputTokens: 380,
-            temperature: 0.3
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            lastErr = new Error(`HTTP ${res.status}: ${errData.error?.message || res.statusText}`);
           }
-        })
-      });
-
-      if (!res.ok) {
-        throw new Error(`API Gemini HTTP ${res.status}`);
+        } catch (e) {
+          lastErr = e;
+        }
       }
 
-      const data = await res.json();
-      const summaryText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
       if (!summaryText) {
-        throw new Error('Réponse vide de l\'IA.');
+        throw lastErr || new Error('Réponse vide de l\'IA.');
       }
 
       const resultLines = [
@@ -109,8 +120,27 @@ Résume en français cette discussion en 3 à 5 puces courtes et directes. Mets 
       ];
 
       await replyOrEdit(sock, jid, msg, resultLines.join('\n'));
+
+      recordAuditLog({
+        type: 'command',
+        action: 'AI_RESUME',
+        user: msg.key.participant || msg.key.remoteJid,
+        pushName: msg.pushName || '',
+        chatJid: jid,
+        details: `${compactDialog.length} messages résumés`,
+        status: 'success'
+      });
     } catch (err) {
       console.error('[Resume] Erreur résumé Gemini:', err);
+      recordAuditLog({
+        type: 'command',
+        action: 'AI_RESUME_ERROR',
+        user: msg.key.participant || msg.key.remoteJid,
+        pushName: msg.pushName || '',
+        chatJid: jid,
+        details: err.message,
+        status: 'error'
+      });
       await replyOrEdit(sock, jid, msg, `⚠️ Erreur lors de la génération du résumé : ${err.message}`);
     }
   }

@@ -7,6 +7,10 @@ group_activity.json
 contacts.json
 permissions.json
 giveaways.json
+persopings.json
+anti_raid.json
+antidelete_history.json
+audit_logs.json
 bot.pid
 .DS_Store
 *.log

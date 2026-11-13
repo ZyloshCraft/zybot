@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { getConfig } from '../config.js';
 import { getCachedGroupMetadata } from '../utils/groupCache.js';
 import { isUserTrusted } from './permissionStore.js';
+import { recordAuditLog } from './auditLogStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -242,6 +243,17 @@ export async function handleGroupAntiLink({ sock, msg, jid, text, senderJid }) {
   const warnCount = recordLinkAttempt(jid, senderJid);
   const targetJid = senderPart?.id || senderJid;
   const groupName = meta?.subject || jid;
+
+  recordAuditLog({
+    type: 'moderation',
+    action: warnCount >= maxWarnings ? 'ANTILINK_BAN' : 'ANTILINK_WARN',
+    user: `+${cleanNumber}`,
+    pushName: msg.pushName || '',
+    chatJid: jid,
+    chatName: groupName,
+    details: warnCount >= maxWarnings ? `Expulsion automatique suite à ${warnCount} tentatives de lien` : `Lien supprimé (tentative ${warnCount}/${maxWarnings})`,
+    status: warnCount >= maxWarnings ? 'error' : 'warning'
+  });
 
   if (warnCount >= maxWarnings) {
     // 7. Expulsion du membre (ban)

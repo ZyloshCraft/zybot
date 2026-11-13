@@ -5,6 +5,8 @@ import { recordDeletedIntercepted, recordEditedIntercepted } from './statsTracke
 import { markChatUnread } from '../utils/stealth.js';
 import { sendNtfyNotification } from './ntfy.js';
 import { getCachedGroupMetadata } from '../utils/groupCache.js';
+import { recordInterceptedMessage } from './antiDeleteStore.js';
+import { recordAuditLog } from './auditLogStore.js';
 
 // Cache des IDs de messages supprimés déjà traités pour éviter les doublons
 const handledRevokedIds = new Set();
@@ -78,6 +80,43 @@ export async function handleRevokedMessage({ sock, revokedKey, revokerKey, times
 
   console.log(`[AntiDelete] Message supprimé détecté de +${senderNumber} dans ${chatOrigin} (id: ${messageId})`);
   recordDeletedIntercepted();
+
+  // Déterminer le type de média pour l'historique
+  let detectedMediaType = 'text';
+  if (stored?.rawMessage) {
+    const raw = stored.rawMessage;
+    if (raw.imageMessage) detectedMediaType = 'image';
+    else if (raw.videoMessage) detectedMediaType = 'video';
+    else if (raw.audioMessage) detectedMediaType = 'audio';
+    else if (raw.stickerMessage) detectedMediaType = 'sticker';
+    else if (raw.documentMessage) detectedMediaType = 'document';
+  }
+
+  // Enregistrer dans le store pour l'explorateur SuperAdmin
+  recordInterceptedMessage({
+    id: messageId,
+    type: 'deleted',
+    sender: `+${senderNumber}`,
+    senderPushName: stored?.pushName || '',
+    chatJid,
+    chatName: chatOrigin,
+    text: stored?.text || '(Média ou message supprimé)',
+    mediaType: detectedMediaType,
+    sentAt: stored?.timestamp || null,
+    interceptedAt: Date.now()
+  });
+
+  // Audit log
+  recordAuditLog({
+    type: 'security',
+    action: 'MESSAGE_REVOKED',
+    user: `+${senderNumber}`,
+    pushName: stored?.pushName || '',
+    chatJid,
+    chatName: chatOrigin,
+    details: `Message supprimé (${detectedMediaType}) : ${(stored?.text || '').slice(0, 50)}`,
+    status: 'warning'
+  });
 
   // Notification push instantanée sur le smartphone
   sendNtfyNotification({
@@ -267,6 +306,33 @@ export async function handleEditedMessage({ sock, targetKey, newText, newRawMess
   const editTime = new Date().toLocaleTimeString('fr-FR');
   console.log(`[AntiEdit] Modification interceptée de +${senderNumber} dans ${chatOrigin} (id: ${messageId})`);
   recordEditedIntercepted();
+
+  // Enregistrer dans le store pour l'explorateur SuperAdmin
+  recordInterceptedMessage({
+    id: messageId,
+    type: 'edited',
+    sender: `+${senderNumber}`,
+    senderPushName: stored?.pushName || '',
+    chatJid,
+    chatName: chatOrigin,
+    oldText: oldText || '',
+    newText: newText || '',
+    mediaType: 'text',
+    sentAt: stored?.timestamp || null,
+    interceptedAt: Date.now()
+  });
+
+  // Audit log
+  recordAuditLog({
+    type: 'security',
+    action: 'MESSAGE_EDITED',
+    user: `+${senderNumber}`,
+    pushName: stored?.pushName || '',
+    chatJid,
+    chatName: chatOrigin,
+    details: `Message modifié : "${(oldText || '').slice(0, 30)}" -> "${(newText || '').slice(0, 30)}"`,
+    status: 'warning'
+  });
 
   // Notification push instantanée sur le smartphone
   sendNtfyNotification({

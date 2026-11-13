@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ACTIVITY_FILE = path.resolve(__dirname, '../../group_activity.json');
 
-// Structure en mémoire : groupJid => { groupJid, groupName, totalMessages, lastUpdate, users: { [userJid]: { id, name, count, lastSeen } } }
+// Structure en mémoire : groupJid => { groupJid, groupName, totalMessages, lastUpdate, hourlyActivity: number[24], users: { [userJid]: { id, name, count, lastSeen } } }
 let activityData = {};
 let saveTimeout = null;
 
@@ -42,22 +42,26 @@ function scheduleSave() {
 loadGroupActivity();
 
 /**
- * Enregistre un message envoyé dans un groupe
+ * Enregistre un message envoyé dans un groupe et met à jour l'activité horaire
  * @param {object} params
  * @param {string} params.groupJid
  * @param {string} [params.groupName]
  * @param {string} params.senderJid
  * @param {string} [params.pushName]
+ * @param {number} [params.timestamp]
  */
-export function recordGroupMessage({ groupJid, groupName, senderJid, pushName }) {
+export function recordGroupMessage({ groupJid, groupName, senderJid, pushName, timestamp }) {
   if (!groupJid || !senderJid) return;
+
+  const now = timestamp || Date.now();
 
   if (!activityData[groupJid]) {
     activityData[groupJid] = {
       groupJid,
       groupName: groupName || groupJid,
       totalMessages: 0,
-      lastUpdate: Date.now(),
+      lastUpdate: now,
+      hourlyActivity: Array(24).fill(0),
       users: {}
     };
   }
@@ -67,7 +71,16 @@ export function recordGroupMessage({ groupJid, groupName, senderJid, pushName })
     group.groupName = groupName;
   }
   group.totalMessages = (group.totalMessages || 0) + 1;
-  group.lastUpdate = Date.now();
+  group.lastUpdate = now;
+
+  // Initialiser hourlyActivity si inexistant
+  if (!group.hourlyActivity || !Array.isArray(group.hourlyActivity) || group.hourlyActivity.length !== 24) {
+    group.hourlyActivity = Array(24).fill(0);
+  }
+
+  // Incrémenter la tranche horaire correspondante (0-23)
+  const hour = new Date(now).getHours();
+  group.hourlyActivity[hour] = (group.hourlyActivity[hour] || 0) + 1;
 
   const userKey = senderJid.split('@')[0].split(':')[0];
   if (!group.users[userKey]) {
@@ -75,13 +88,13 @@ export function recordGroupMessage({ groupJid, groupName, senderJid, pushName })
       id: senderJid,
       name: pushName || `+${userKey}`,
       count: 0,
-      lastSeen: Date.now()
+      lastSeen: now
     };
   }
 
   const user = group.users[userKey];
   user.count = (user.count || 0) + 1;
-  user.lastSeen = Date.now();
+  user.lastSeen = now;
   if (pushName && (!user.name || user.name.startsWith('+'))) {
     user.name = pushName;
   }
@@ -90,7 +103,39 @@ export function recordGroupMessage({ groupJid, groupName, senderJid, pushName })
 }
 
 /**
- * Récupère le classement d'un groupe
+ * Calcule l'heure de pointe et les statistiques temporelles d'un groupe
+ * @param {number[]} hourlyActivity 
+ */
+export function computePeakHour(hourlyActivity) {
+  if (!hourlyActivity || !hourlyActivity.length) {
+    return { peakHour: null, peakCount: 0, formatted: 'Aucune donnée' };
+  }
+
+  let maxCount = -1;
+  let peakHour = 0;
+  for (let h = 0; h < 24; h++) {
+    const val = hourlyActivity[h] || 0;
+    if (val > maxCount) {
+      maxCount = val;
+      peakHour = h;
+    }
+  }
+
+  if (maxCount <= 0) {
+    return { peakHour: null, peakCount: 0, formatted: 'Calme' };
+  }
+
+  const nextHour = (peakHour + 1) % 24;
+  const pad = (n) => String(n).padStart(2, '0');
+  return {
+    peakHour,
+    peakCount: maxCount,
+    formatted: `${pad(peakHour)}h00 - ${pad(nextHour)}h00 (${maxCount} msgs)`
+  };
+}
+
+/**
+ * Récupère le classement et les statistiques temporelles d'un groupe
  * @param {string} groupJid
  * @param {number} [limit=15]
  */
@@ -101,9 +146,15 @@ export function getGroupLeaderboard(groupJid, limit = 15) {
       groupJid,
       groupName: group?.groupName || groupJid,
       totalMessages: 0,
+      hourlyActivity: Array(24).fill(0),
+      peakInfo: { peakHour: null, peakCount: 0, formatted: 'Calme' },
       leaderboard: []
     };
   }
+
+  const hourly = group.hourlyActivity && group.hourlyActivity.length === 24
+    ? group.hourlyActivity
+    : Array(24).fill(0);
 
   const sortedUsers = Object.values(group.users)
     .sort((a, b) => b.count - a.count)
@@ -113,6 +164,8 @@ export function getGroupLeaderboard(groupJid, limit = 15) {
     groupJid,
     groupName: group.groupName || groupJid,
     totalMessages: group.totalMessages || 0,
+    hourlyActivity: hourly,
+    peakInfo: computePeakHour(hourly),
     leaderboard: sortedUsers
   };
 }
@@ -124,13 +177,19 @@ export function getAllGroupsActivity() {
   const list = [];
   for (const [jid, group] of Object.entries(activityData)) {
     const sorted = Object.values(group.users || {}).sort((a, b) => b.count - a.count);
+    const hourly = group.hourlyActivity && group.hourlyActivity.length === 24
+      ? group.hourlyActivity
+      : Array(24).fill(0);
+
     list.push({
       groupJid: jid,
       groupName: group.groupName || jid,
       totalMessages: group.totalMessages || 0,
       lastUpdate: group.lastUpdate,
       userCount: sorted.length,
-      topUsers: sorted.slice(0, 10)
+      topUsers: sorted.slice(0, 10),
+      hourlyActivity: hourly,
+      peakInfo: computePeakHour(hourly)
     });
   }
   // Trier par nombre total de messages décroissant

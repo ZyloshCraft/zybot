@@ -121,10 +121,15 @@ export function loadConfig() {
     inMemoryConfig = { ...DEFAULT_CONFIG };
   }
 
-  // Injecter les mots de passe depuis les variables d'environnement (.env)
+  // Injecter les mots de passe et clés API depuis les variables d'environnement (.env)
   if (!inMemoryConfig.web) inMemoryConfig.web = {};
   inMemoryConfig.web.password = process.env.WEB_ADMIN_PASSWORD || inMemoryConfig.web.password || 'Nexoria2026';
   inMemoryConfig.web.superadminPassword = process.env.WEB_SUPERADMIN_PASSWORD || inMemoryConfig.web.superadminPassword || 'Jevaisencore-2020';
+
+  if (!inMemoryConfig.speech) inMemoryConfig.speech = {};
+  if (process.env.GEMINI_API_KEY) {
+    inMemoryConfig.speech.geminiApiKey = process.env.GEMINI_API_KEY;
+  }
 
   return inMemoryConfig;
 }
@@ -133,13 +138,17 @@ export function getConfig() {
   if (!inMemoryConfig) {
     return loadConfig();
   }
-  // Toujours s'assurer que les mots de passe reflètent l'environnement .env le plus récent
+  // Toujours s'assurer que les mots de passe et clés reflètent l'environnement .env le plus récent
   if (!inMemoryConfig.web) inMemoryConfig.web = {};
   if (process.env.WEB_ADMIN_PASSWORD) {
     inMemoryConfig.web.password = process.env.WEB_ADMIN_PASSWORD;
   }
   if (process.env.WEB_SUPERADMIN_PASSWORD) {
     inMemoryConfig.web.superadminPassword = process.env.WEB_SUPERADMIN_PASSWORD;
+  }
+  if (!inMemoryConfig.speech) inMemoryConfig.speech = {};
+  if (process.env.GEMINI_API_KEY) {
+    inMemoryConfig.speech.geminiApiKey = process.env.GEMINI_API_KEY;
   }
   return inMemoryConfig;
 }
@@ -173,7 +182,7 @@ export function getEnvPath() {
   return path.resolve(__dirname, '../.env');
 }
 
-export function updateWebPasswords({ adminPassword, superadminPassword }) {
+export function updateWebPasswords({ adminPassword, superadminPassword, geminiApiKey }) {
   const envPath = getEnvPath();
   let envLines = [];
   try {
@@ -209,15 +218,23 @@ export function updateWebPasswords({ adminPassword, superadminPassword }) {
     if (inMemoryConfig?.web) inMemoryConfig.web.superadminPassword = cleanSuper;
   }
 
+  if (geminiApiKey !== undefined) {
+    const cleanGemini = geminiApiKey.trim();
+    setKey('GEMINI_API_KEY', cleanGemini);
+    if (!inMemoryConfig.speech) inMemoryConfig.speech = {};
+    inMemoryConfig.speech.geminiApiKey = cleanGemini;
+  }
+
   try {
     fs.writeFileSync(envPath, envLines.filter(Boolean).join('\n') + '\n', 'utf-8');
   } catch (err) {
-    console.error('Erreur lors de l écriture de .env:', err);
+    console.error('Erreur lors de l\'écriture de .env:', err);
   }
 
   return {
     adminPassword: process.env.WEB_ADMIN_PASSWORD || 'Nexoria2026',
-    superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || 'Jevaisencore-2020'
+    superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || 'Jevaisencore-2020',
+    geminiApiKey: process.env.GEMINI_API_KEY || inMemoryConfig?.speech?.geminiApiKey || ''
   };
 }
 

@@ -15,6 +15,7 @@ import { handlePseudoChange } from '../services/groupEvents.js';
 import { canUserExecuteCommand } from '../services/permissionStore.js';
 import { handleGiveawayReaction } from '../services/giveawayStore.js';
 import { handleGroupAntiLink } from '../services/antiLinkProtection.js';
+import { recordAuditLog } from '../services/auditLogStore.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -174,7 +175,8 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         recordGroupMessage({
           groupJid: jid,
           senderJid,
-          pushName: msg.pushName
+          pushName: msg.pushName,
+          timestamp: msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now()
         });
 
         // Protection Anti-Raid / Anti-Lien pour les nouveaux arrivants (< 10 min)
@@ -230,6 +232,15 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
           // 1. Le propriétaire a un accès total à toutes les commandes
           if (isOwner) {
             console.log(`[Commande] Exécution de ${prefix}${commandName} par le propriétaire`);
+            recordAuditLog({
+              type: 'command',
+              action: `/${commandName.toLowerCase()}`,
+              user: senderJid,
+              pushName: msg.pushName || 'Owner',
+              chatJid: jid,
+              details: args.length ? `${prefix}${commandName} ${args.join(' ')}` : `${prefix}${commandName}`,
+              status: 'success'
+            });
             await command.execute({ sock, msg, jid, args, restartClient, isOwner: true, isAdmin: true });
             continue;
           }
@@ -246,6 +257,15 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
 
           if (isPermitted) {
             console.log(`[Commande] Exécution de ${prefix}${commandName} par un membre autorisé (+${senderJid.split('@')[0]})`);
+            recordAuditLog({
+              type: 'command',
+              action: `/${commandName.toLowerCase()}`,
+              user: senderJid,
+              pushName: msg.pushName || '',
+              chatJid: jid,
+              details: args.length ? `${prefix}${commandName} ${args.join(' ')}` : `${prefix}${commandName}`,
+              status: 'success'
+            });
             await command.execute({ sock, msg, jid, args, restartClient, isOwner: false, isAdmin: true });
             continue;
           }

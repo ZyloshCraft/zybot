@@ -34,6 +34,8 @@ import topCmd from './top.js';
 import trustCmd from './trust.js';
 import gwCmd from './gw.js';
 import brefCmd from './bref.js';
+import lockCmd from './lock.js';
+import askCmd from './ask.js';
 
 const commands = new Map();
 
@@ -82,6 +84,8 @@ registerCommand(topCmd);
 registerCommand(trustCmd);
 registerCommand(gwCmd);
 registerCommand(brefCmd);
+registerCommand(lockCmd);
+registerCommand(askCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

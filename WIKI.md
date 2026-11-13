@@ -8,7 +8,7 @@ Bienvenue sur la documentation exhaustive de **ZyBot**, selfbot WhatsApp pour co
 1. [Vue d'ensemble & Philosophie](#1-vue-densemble--philosophie)
 2. [Architecture Furtive (Zero-Trace)](#2-architecture-furtive-zero-trace)
 3. [Hub Communautaire Dédié](#3-hub-communautaire-dédié)
-4. [Répertoire Exhaustif des Commandes (36 commandes)](#4-répertoire-exhaustif-des-commandes)
+4. [Répertoire Exhaustif des Commandes (38 commandes)](#4-répertoire-exhaustif-des-commandes)
    - [A. Modération & Sécurité](#a-modération--sécurité)
    - [B. Vie Privée, Anti-Delete & Anti-Edit](#b-vie-privée-anti-delete--anti-edit)
    - [C. Giveaways & Animations](#c-giveaways--animations)
@@ -78,6 +78,7 @@ Toutes les commandes s'exécutent avec le préfixe configuré (par défaut `/`).
 - `/kick <cible>` : Éjecte un membre du groupe actuel (nécessite que le compte bot soit administrateur du groupe).
 - `/trust <cible> [nom]` : Autorise un utilisateur tiers à utiliser les commandes modérateur de ZyBot.
 - `/untrust <cible>` : Révoque immédiatement les droits d'un utilisateur.
+- `/lock [on|off]` (alias: `/fermer`, `/unlock`, `/ouvrir`) : Bascule ou verrouille l'envoi de messages dans le groupe (admins uniquement ou tout le monde). Nécessite les droits admin.
 - `/permissions` (alias: `/perms`) : Affiche la liste des membres autorisés et révoqués.
 
 ### B. Vie Privée, Anti-Delete & Anti-Edit
@@ -100,8 +101,9 @@ Toutes les commandes s'exécutent avec le préfixe configuré (par défaut `/`).
 - `/toimg` : Reconvertit un sticker en image JPEG plein écran.
 
 ### E. Utilitaires & Programmation
+- `/ask <question>` (alias: `/ai`, `/ia`, `/gemini`) : Interroge l'intelligence artificielle Gemini directement dans le chat (ou sur un message cité pour obtenir une explication, traduction ou analyse).
+- `/resume [n]` (alias: `/summary`, `/recapitulatif`) : Synthèse IA intelligente des derniers messages d'un groupe via Gemini.
 - `/program` : Ouvre un assistant interactif pas-à-pas pour planifier l'envoi d'un message à une date et heure précise. À la fin, les messages du guide sont auto-supprimés pour ne laisser aucune trace.
-- `/rappel <temps> <texte>` : Programme un rappel rapide (ex: `/rappel 45m Penser à sortir le pain`).
 - `/bref` (alias: `/tldr`) : Génère un résumé condensé et humain des derniers échanges de la discussion courante.
 - `/top [messages]` : Affiche le classement des membres les plus bavards dans le groupe courant avec décompte exact.
 - `/persoping <note>` : Sauvegarde une citation ou un message important avec son contexte d'origine dans le groupe `persopingunevue`.

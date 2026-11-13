@@ -361,9 +361,17 @@
               Noms réels des groupes synchronisés via Baileys, participants, total des messages et Top 3 parleurs.
             </p>
           </div>
-          <button id="btnRefreshActivity" class="px-3.5 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors">
-            ↻ Actualiser
-          </button>
+          <div class="flex items-center gap-2.5">
+            <input 
+              type="text" 
+              id="groupSearchInput" 
+              placeholder="Rechercher (nom, JID)..." 
+              class="w-full sm:w-56 px-3 py-1.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-xs text-white placeholder-[#8b9bb4]/60 outline-none"
+            >
+            <button id="btnRefreshActivity" class="px-3.5 py-1.5 rounded-md border border-[#1d314c] bg-[#091322] hover:border-[#f97316]/50 text-[#8b9bb4] hover:text-white text-xs font-medium transition-colors shrink-0">
+              ↻ Actualiser
+            </button>
+          </div>
         </div>
 
         <div id="groupsActivityContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -637,6 +645,35 @@
           <div class="text-[11px] font-semibold uppercase tracking-wider text-[#8b9bb4]">Dernière Activité</div>
           <div id="gtMetricLastActivity" class="mt-1 text-xs font-bold font-mono text-emerald-400">En direct</div>
           <div class="text-[11px] text-[#8b9bb4] mt-0.5">Horodatage d'échange</div>
+        </div>
+      </div>
+
+      <!-- Graphique d'activité temporelle (Heatmap / Heures de pointe 24h) -->
+      <div class="p-4 rounded-md bg-[#091322] border border-[#1d314c]">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] flex items-center gap-1.5">
+            <span>📊</span>
+            <span>Activité Temporelle (24 Heures) :</span>
+          </div>
+          <span id="gtPeakHourBadge" class="text-xs font-mono px-2 py-0.5 rounded bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">
+            🔥 Pic : Calme
+          </span>
+        </div>
+        
+        <!-- 24 barres horaires stylisées Playit.gg -->
+        <div id="gtHourlyBars" class="flex items-end gap-1 h-20 pt-2 px-1 border-b border-[#1d314c]">
+          <!-- Barres générées en JS -->
+        </div>
+        
+        <!-- Repères d'heures -->
+        <div class="flex justify-between text-[10px] font-mono text-[#8b9bb4] mt-1.5 px-0.5">
+          <span>00h</span>
+          <span>04h</span>
+          <span>08h</span>
+          <span>12h</span>
+          <span>16h</span>
+          <span>20h</span>
+          <span>23h</span>
         </div>
       </div>
 
@@ -1213,6 +1250,20 @@
 
     document.getElementById('btnRefreshActivity')?.addEventListener('click', loadGroupsActivity);
 
+    document.getElementById('groupSearchInput')?.addEventListener('input', (e) => {
+      const q = (e.target.value || '').toLowerCase().trim();
+      if (!q) {
+        renderGroupsActivity(allGroupsActivity);
+        return;
+      }
+      const filtered = allGroupsActivity.filter(g => {
+        const name = (g.name || g.groupName || '').toLowerCase();
+        const jid = (g.jid || g.groupJid || '').toLowerCase();
+        return name.includes(q) || jid.includes(q);
+      });
+      renderGroupsActivity(filtered);
+    });
+
     // ══════════════════════════════════════════════
     // CONTAINER TRANSFORM FLUIDE : ACTIVITÉ GROUPE
     // ══════════════════════════════════════════════
@@ -1252,6 +1303,36 @@
         }
       } else {
         lastUpdateEl.textContent = 'En direct';
+      }
+
+      // Graphique d'activité temporelle (Heatmap / Heures de pointe 24h)
+      const hourly = (group.hourlyActivity && group.hourlyActivity.length === 24)
+        ? group.hourlyActivity
+        : Array(24).fill(0);
+      const maxHourly = Math.max(...hourly, 1);
+      const peakFormatted = group.peakInfo?.formatted || 'Calme';
+      document.getElementById('gtPeakHourBadge').textContent = `🔥 Pic : ${peakFormatted}`;
+
+      const barsContainer = document.getElementById('gtHourlyBars');
+      if (barsContainer) {
+        barsContainer.innerHTML = hourly.map((count, hour) => {
+          const heightPct = count > 0 ? Math.max(8, Math.round((count / maxHourly) * 100)) : 4;
+          const padHour = String(hour).padStart(2, '0');
+          const isPeak = count === maxHourly && count > 0;
+          return `
+            <div class="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer">
+              <!-- Tooltip au survol -->
+              <div class="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-[#0e1b2e] border border-[#1d314c] text-[10px] font-mono text-white px-1.5 py-0.5 rounded shadow whitespace-nowrap z-20">
+                ${padHour}h: ${count} msg${count > 1 ? 's' : ''}
+              </div>
+              <!-- Barre -->
+              <div 
+                class="w-full rounded-t transition-all duration-300 ${isPeak ? 'bg-gradient-to-t from-[#f97316] to-amber-400 shadow-sm shadow-[#f97316]/50' : (count > 0 ? 'bg-[#f97316]/70 group-hover:bg-[#f97316]' : 'bg-[#1d314c]/40')}" 
+                style="height: ${heightPct}%;"
+              ></div>
+            </div>
+          `;
+        }).join('');
       }
 
       // Nombre de membres actifs

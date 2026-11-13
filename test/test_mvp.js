@@ -26,13 +26,14 @@ import {
 
 console.log('🧪 Début des tests unitaires...');
 
-// Test 1: Vérification des 36 commandes actives et de la version v1.28
+// Test 1: Vérification des 38 commandes actives et de la version v1.28
 const expected = [
   'bot', 'help', 'persoping', 'program',
   'alert', 'translate', 'clear', 'vv', 'reboot', 'edit', 'calc',
   'meteo', 'id', 'groupe', 'alias', 'temp', 'recap', 'ntfy', 'update',
   'dnd', 'whois', 'statut', 'export', 'sticker', 'dl', 'texte',
-  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top', 'trust', 'gw', 'bref'
+  'resume', 'warn', 'antinsfw', 'music', 'toimg', 'pfp', 'top', 'trust', 'gw', 'bref',
+  'lock', 'ask'
 ];
 for (const name of expected) {
   const cmd = getCommand(name);
@@ -64,6 +65,10 @@ assert.ok(getCommand('trusted'), 'L\'alias "trusted" pour trust doit exister');
 assert.ok(getCommand('untrust'), 'L\'alias "untrust" pour trust doit exister');
 assert.ok(getCommand('perms'), 'L\'alias "perms" pour trust doit exister');
 assert.ok(getCommand('giveaway'), 'L\'alias "giveaway" pour gw doit exister');
+assert.ok(getCommand('fermer'), 'L\'alias "fermer" pour lock doit exister');
+assert.ok(getCommand('unlock'), 'L\'alias "unlock" pour lock doit exister');
+assert.ok(getCommand('ai'), 'L\'alias "ai" pour ask doit exister');
+assert.ok(getCommand('gemini'), 'L\'alias "gemini" pour ask doit exister');
 
 // Vérification stricte des commandes supprimées
 assert.strictEqual(getCommand('rappel'), undefined, 'rappel doit être supprimé');
@@ -75,7 +80,7 @@ assert.strictEqual(getCommand('crypto'), undefined, 'crypto doit être supprimé
 
 const currentVersion = getBotVersion();
 assert.ok(currentVersion.includes('1.28'), `La version doit être v1.28 (obtenu: ${currentVersion})`);
-console.log(`✅ Test 1 réussi : 36 commandes actives enregistrées, version ${currentVersion} validée.`);
+console.log(`✅ Test 1 réussi : 38 commandes actives enregistrées, version ${currentVersion} validée.`);
 
 // Test 2: Groupes du Hub Communautaire (y compris antidelete et admintaverne)
 assert.strictEqual(isHubGroup('120363412992633770@g.us'), true, 'testbot doit être reconnu comme Hub Group');
@@ -559,5 +564,65 @@ assert.ok(cfgTest.notifications, 'Les notifications doivent être configurées')
 assert.strictEqual(cfgTest.web?.superadminPassword, 'Jevaisencore-2020', 'Le mot de passe superadmin doit être Jevaisencore-2020');
 
 console.log('✅ Test 20 réussi : PersopingStore, Notifications et SuperAdmin validés.');
+
+// Test 21: AntiDeleteStore, AuditLogStore, Heatmap horaire et nouvelles commandes (/lock, /ask)
+const { recordInterceptedMessage, getInterceptedMessages, clearInterceptedMessages } = await import('../src/services/antiDeleteStore.js');
+const { recordAuditLog, getAuditLogs, clearAuditLogs } = await import('../src/services/auditLogStore.js');
+const { computePeakHour } = await import('../src/services/groupActivityStore.js');
+
+// 1. AntiDeleteStore
+clearInterceptedMessages();
+recordInterceptedMessage({
+  id: 'test_deleted_123',
+  type: 'deleted',
+  sender: '+33611223344',
+  senderPushName: 'TestUser',
+  chatJid: 'test_group@g.us',
+  chatName: 'Groupe Test',
+  text: 'Message supprimé test',
+  mediaType: 'text'
+});
+const intercepted = getInterceptedMessages();
+assert.ok(intercepted.length >= 1, 'Au moins un message supprimé doit être enregistré');
+assert.strictEqual(intercepted[0].id, 'test_deleted_123');
+assert.strictEqual(intercepted[0].type, 'deleted');
+
+// 2. AuditLogStore
+clearAuditLogs();
+recordAuditLog({
+  type: 'command',
+  action: '/lock',
+  user: '+33600000000',
+  pushName: 'Admin',
+  chatJid: 'test_group@g.us',
+  details: 'Groupe verrouillé',
+  status: 'success'
+});
+const logs = getAuditLogs();
+assert.ok(logs.length >= 1, 'Au moins un audit log doit être enregistré');
+assert.strictEqual(logs[0].action, '/lock');
+assert.strictEqual(logs[0].status, 'success');
+
+// 3. PeakHour Heatmap
+const sampleHourly = Array(24).fill(0);
+sampleHourly[14] = 42; // pic à 14h
+sampleHourly[20] = 85; // pic maximal à 20h
+const peak = computePeakHour(sampleHourly);
+assert.strictEqual(peak.peakHour, 20);
+assert.strictEqual(peak.peakCount, 85);
+assert.ok(peak.formatted.includes('20h00 - 21h00'), 'La plage de pointe doit être 20h00 - 21h00');
+
+// 4. Commandes /lock et /ask
+const lockCmd = getCommand('lock');
+assert.ok(lockCmd, 'La commande /lock doit exister');
+assert.ok(lockCmd.aliases.includes('fermer'));
+assert.ok(lockCmd.aliases.includes('unlock'));
+
+const askCmd = getCommand('ask');
+assert.ok(askCmd, 'La commande /ask doit exister');
+assert.ok(askCmd.aliases.includes('ai'));
+assert.ok(askCmd.aliases.includes('gemini'));
+
+console.log('✅ Test 21 réussi : AntiDeleteStore, AuditLogStore, Heatmap Heures de pointe, /lock et /ask validés.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
