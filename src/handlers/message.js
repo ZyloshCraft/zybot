@@ -246,7 +246,6 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
           }
 
           // 2. Vérification des permissions pour les membres délégués / modérateurs (Trusted ou Admins Taverne)
-          const senderJid = msg.key.participant || msg.key.remoteJid;
           const isPermitted = await canUserExecuteCommand({
             sock,
             senderJid,
