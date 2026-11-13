@@ -138,12 +138,12 @@
           </div>
         </div>
 
-        <!-- Recherche par pseudo -->
+        <!-- Recherche par pseudo ou numéro -->
         <div class="relative">
           <input 
             type="text" 
             id="publicSearchInput" 
-            placeholder="Rechercher par pseudo (ex: Hugo, Axel, Mme chaise Ikea)..." 
+            placeholder="Rechercher par pseudo ou numéro (ex: Axel, +33 7, 07 66)..." 
             class="w-full px-4 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-xs sm:text-sm font-sans outline-none transition-colors"
           >
         </div>
@@ -155,14 +155,16 @@
           <table class="w-full text-left text-xs sm:text-sm">
             <thead class="bg-[#091322] text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
               <tr>
-                <th class="py-3 px-4 w-16 font-mono">#</th>
+                <th class="py-3 px-4 w-12 font-mono">#</th>
                 <th class="py-3 px-4 font-semibold">Membre (Pseudo)</th>
-                <th class="py-3 px-4 text-right font-semibold w-48">Statut Modération</th>
+                <th class="py-3 px-4 font-mono font-semibold">Numéro WhatsApp</th>
+                <th class="py-3 px-4 font-semibold">Statut Modération</th>
+                <th class="py-3 px-4 text-right font-semibold">Détails</th>
               </tr>
             </thead>
             <tbody id="publicWarnsTableBody" class="divide-y divide-[#1d314c]/70">
               <tr>
-                <td colspan="3" class="py-8 text-center text-[#8b9bb4]">Chargement du casier...</td>
+                <td colspan="5" class="py-8 text-center text-[#8b9bb4]">Chargement du casier...</td>
               </tr>
             </tbody>
           </table>
@@ -170,9 +172,47 @@
       </div>
 
       <div class="text-[11px] text-[#8b9bb4] text-center tracking-wide font-sans">
-        ZyBot • Modération Discrète & Stricte pour WhatsApp
+        ZyBot • Modération Discrète & Stricte pour WhatsApp • Cliquez sur une ligne pour afficher les motifs des avertissements
       </div>
     </main>
+
+    <!-- MODALE PUBLIQUE : DÉTAIL DES RAISONS DES WARNS -->
+    <div id="publicWarnModalBackdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <!-- En-tête -->
+        <div class="p-4 border-b border-[#1d314c] flex items-center justify-between bg-[#091322]">
+          <div class="min-w-0">
+            <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2 truncate">
+              <span>🛡️</span>
+              <span id="pwmPseudo">Membre</span>
+            </h3>
+            <p id="pwmNumber" class="text-xs font-mono text-[#f97316] mt-0.5">+33 7 XX XX XX XX</p>
+          </div>
+          <button id="pwmCloseBtn" class="w-7 h-7 rounded bg-[#0e1b2e] border border-[#1d314c] text-[#8b9bb4] hover:text-white flex items-center justify-center text-xs font-bold transition-colors cursor-pointer">
+            ✕
+          </button>
+        </div>
+
+        <!-- Corps avec liste des raisons -->
+        <div class="p-4 overflow-y-auto custom-scroll flex-1 space-y-3">
+          <div class="flex items-center justify-between text-xs pb-1 border-b border-[#1d314c]/60">
+            <span class="text-[#8b9bb4] font-semibold uppercase tracking-wider text-[11px]">Historique des Infractions</span>
+            <span id="pwmStatusBadge" class="px-2 py-0.5 rounded font-mono font-bold text-[11px]">0 warn</span>
+          </div>
+          
+          <div id="pwmWarnsList" class="space-y-2.5">
+            <!-- Injecté par JS -->
+          </div>
+        </div>
+
+        <!-- Pied -->
+        <div class="p-3 border-t border-[#1d314c] bg-[#091322] flex justify-end">
+          <button id="pwmBottomCloseBtn" class="px-3.5 py-1.5 rounded bg-[#0e1b2e] border border-[#1d314c] hover:border-[#f97316]/50 text-white text-xs font-medium transition-colors cursor-pointer">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ======================================================== -->
@@ -909,19 +949,30 @@
     function renderPublicWarns(users) {
       const tbody = document.getElementById('publicWarnsTableBody');
       if (users.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-[#8b9bb4]">Aucun membre répertorié.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-[#8b9bb4]">Aucun membre répertorié.</td></tr>';
         return;
       }
 
       tbody.innerHTML = users.map((u, i) => {
         const isBan = u.count >= 3;
+        const displayNum = u.formattedNumber || (u.number ? `+${u.number}` : 'Numéro masqué');
         return `
-          <tr class="hover:bg-[#14253f]/40 transition-colors">
+          <tr 
+            onclick="openPublicWarnModal('${escapeHtml(u.number)}')" 
+            class="hover:bg-[#14253f]/50 transition-colors cursor-pointer group"
+          >
             <td class="py-3 px-4 font-mono text-[#8b9bb4] text-xs">${i + 1}</td>
-            <td class="py-3 px-4 font-medium text-white">${u.pseudo || 'Membre Taverne'}</td>
-            <td class="py-3 px-4 text-right">
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+            <td class="py-3 px-4 font-medium text-white group-hover:text-[#f97316] transition-colors">${escapeHtml(u.pseudo || 'Membre Taverne')}</td>
+            <td class="py-3 px-4 font-mono text-slate-200 text-xs sm:text-sm font-semibold">${escapeHtml(displayNum)}</td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-mono font-medium ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
                 ${isBan ? 'BAN (3+)' : `${u.count} avertissement${u.count > 1 ? 's' : ''}`}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-right">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#091322] border border-[#1d314c] group-hover:border-[#f97316]/60 text-xs font-medium text-[#8b9bb4] group-hover:text-white transition-colors">
+                <span>Raisons (${u.count})</span>
+                <span>➔</span>
               </span>
             </td>
           </tr>
@@ -929,9 +980,65 @@
       }).join('');
     }
 
+    // Modal public des raisons d'avertissement
+    window.openPublicWarnModal = (number) => {
+      const user = publicWarnsData.find(u => String(u.number) === String(number));
+      if (!user) return;
+
+      document.getElementById('pwmPseudo').textContent = user.pseudo || 'Membre Taverne';
+      document.getElementById('pwmNumber').textContent = user.formattedNumber || (user.number ? `+${user.number}` : '');
+
+      const isBan = user.count >= 3;
+      const statusBadge = document.getElementById('pwmStatusBadge');
+      statusBadge.textContent = isBan ? 'STATUT : BAN (3+)' : `${user.count} AVERTISSEMENT${user.count > 1 ? 'S' : ''}`;
+      statusBadge.className = `px-2 py-0.5 rounded font-mono font-bold text-[11px] ${isBan ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}`;
+
+      const listContainer = document.getElementById('pwmWarnsList');
+      const warns = user.warns || [];
+
+      if (warns.length === 0) {
+        listContainer.innerHTML = '<div class="p-4 text-center text-[#8b9bb4] text-xs">Aucun détail de motif disponible.</div>';
+      } else {
+        listContainer.innerHTML = warns.map((w, idx) => `
+          <div class="p-3.5 rounded-md bg-[#091322] border border-[#1d314c] space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">
+                Avertissement #${idx + 1}
+              </span>
+              <span class="text-[11px] font-mono text-[#8b9bb4]">${escapeHtml(w.date || 'Date inconnue')}</span>
+            </div>
+            <div>
+              <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b9bb4] block mb-0.5">Motif / Règle enfreinte :</span>
+              <div class="text-xs text-white font-medium bg-[#0e1b2e] p-2.5 rounded border border-[#1d314c]/70 break-words">
+                ${escapeHtml(w.reason || 'Raison non spécifiée')}
+              </div>
+            </div>
+            ${w.groupName ? `<div class="text-[11px] text-[#8b9bb4]">Groupe : <span class="text-slate-300 font-medium">${escapeHtml(w.groupName)}</span></div>` : ''}
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('publicWarnModalBackdrop').classList.remove('hidden');
+    };
+
+    window.closePublicWarnModal = () => {
+      document.getElementById('publicWarnModalBackdrop').classList.add('hidden');
+    };
+
+    document.getElementById('pwmCloseBtn')?.addEventListener('click', closePublicWarnModal);
+    document.getElementById('pwmBottomCloseBtn')?.addEventListener('click', closePublicWarnModal);
+    document.getElementById('publicWarnModalBackdrop')?.addEventListener('click', (e) => {
+      if (e.target.id === 'publicWarnModalBackdrop') closePublicWarnModal();
+    });
+
     document.getElementById('publicSearchInput')?.addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
-      const filtered = publicWarnsData.filter(u => u.pseudo && u.pseudo.toLowerCase().includes(q));
+      const filtered = publicWarnsData.filter(u => {
+        const pseudo = (u.pseudo || '').toLowerCase();
+        const num = (u.number || '').toLowerCase();
+        const fmt = (u.formattedNumber || '').toLowerCase();
+        return pseudo.includes(q) || num.includes(q) || fmt.includes(q);
+      });
       renderPublicWarns(filtered);
     });
 
@@ -1513,8 +1620,10 @@
     document.getElementById('gtBottomCloseBtn')?.addEventListener('click', closeGroupTransformModal);
 
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isGtModalOpen) {
-        closeGroupTransformModal();
+      if (e.key === 'Escape') {
+        if (isGtModalOpen) closeGroupTransformModal();
+        const pwm = document.getElementById('publicWarnModalBackdrop');
+        if (pwm && !pwm.classList.contains('hidden')) closePublicWarnModal();
       }
     });
 

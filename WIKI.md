@@ -148,8 +148,9 @@ L'interface respecte strictement le design system épuré de **Playit.gg** :
 
 ### Espace Public : Casier Communautaire
 Accessible librement à la racine (`/bot/` si déconnecté) :
-- Permet à n'importe quel membre de la communauté de rechercher son pseudo pour vérifier l'état de son casier de modération (nombre de warns, statut normal ou ban).
-- Données anonymisées pour préserver la vie privée (seul le pseudo est affiché, aucun numéro de téléphone ni JID n'est exposé publiquement).
+- Permet à n'importe quel membre de la communauté de rechercher son pseudo ou son numéro pour vérifier l'état de son casier de modération (nombre de warns, statut normal ou ban).
+- Affichage clair du numéro de téléphone au format international (`+33 7 XX XX XX XX`) et du pseudo WhatsApp.
+- En cliquant sur n'importe quelle ligne ou membre, une modale détaillée s'ouvre affichant la liste complète des avertissements avec l'historique chronologique, le groupe et le motif précis de chaque infraction.
 
 ### Panel Admin (`/admin`)
 Protégé par le mot de passe modérateur :

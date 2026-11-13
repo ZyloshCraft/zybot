@@ -378,17 +378,53 @@ export function startWebServer() {
         });
       }
 
-      // 4. GET /api/public/warns : Consultation publique anonymisée (pseudo & nb de warns uniquement)
+function formatPhoneNumber(num) {
+  if (!num) return '';
+  const clean = String(num).replace(/[^0-9]/g, '');
+  // Format international français: 33 6/7 XX XX XX XX -> +33 X XX XX XX XX
+  if (clean.startsWith('33') && (clean.length === 11 || clean.length === 12)) {
+    const prefix = clean.slice(0, 2);
+    const mobile = clean.slice(2, 3);
+    const rest = clean.slice(3);
+    const pairs = rest.match(/.{1,2}/g)?.join(' ') || rest;
+    return `+${prefix} ${mobile} ${pairs}`;
+  }
+  if (clean.startsWith('0') && clean.length === 10) {
+    const mobile = clean.slice(1, 2);
+    const rest = clean.slice(2);
+    const pairs = rest.match(/.{1,2}/g)?.join(' ') || rest;
+    return `+33 ${mobile} ${pairs}`;
+  }
+  if (clean.length > 6) {
+    const first3 = clean.slice(0, 3);
+    const rest = clean.slice(3);
+    const pairs = rest.match(/.{1,2}/g)?.join(' ') || rest;
+    return `+${first3} ${pairs}`;
+  }
+  return `+${clean}`;
+}
+
+      // 4. GET /api/public/warns : Consultation publique du casier communautaire
       if (pathname === '/api/public/warns' && method === 'GET') {
         const users = getAllWarnedUsers();
         const publicList = users.map((u) => {
           const count = u.count || 0;
+          const userWarns = getWarns(u.number);
           let status = `${count} avertissement${count > 1 ? 's' : ''}`;
-          if (count >= 3) status = 'BAN';
+          if (count >= 3) status = 'BAN (3+)';
           return {
+            number: u.number,
+            formattedNumber: formatPhoneNumber(u.number),
             pseudo: u.pushName || 'Membre Taverne',
             count,
-            status
+            status,
+            warns: userWarns.map((w, idx) => ({
+              index: idx + 1,
+              id: w.id || `W_${idx + 1}`,
+              date: w.date || (w.timestamp ? new Date(w.timestamp).toLocaleString('fr-FR') : 'Date inconnue'),
+              reason: w.reason || 'Non spécifiée',
+              groupName: w.groupName || 'Taverne'
+            }))
           };
         });
         publicList.sort((a, b) => b.count - a.count);
