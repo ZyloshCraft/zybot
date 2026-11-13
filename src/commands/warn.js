@@ -22,24 +22,18 @@ export default {
     const adminNum = adminJid.split('@')[0].split(':')[0];
     const adminName = isOwner ? 'Le Propriétaire' : (msg.pushName ? `${msg.pushName} (+${adminNum})` : `+${adminNum}`);
 
-    // Nettoyage furtif de la commande si émise par le propriétaire
-    if (msg.key.fromMe) {
-      try {
-        await sock.sendMessage(jid, { delete: msg.key });
-      } catch {}
-    }
+    const isPrivate = !jid.endsWith('@g.us');
+    const isModerationHub = jid === adminTaverneJid;
 
-    // 0. /warn help (ou /warn aide / guide) : Guide complet envoyé discrètement en privé à l'administrateur
+    // 0. /warn help (ou /warn aide / guide)
     if (args[0]?.toLowerCase() === 'help' || args[0]?.toLowerCase() === 'aide' || args[0]?.toLowerCase() === 'guide') {
       const p = config.prefix || '/';
       const guideText = getWarnHelpGuide(p);
-      try {
+      if (isPrivate || isModerationHub) {
+        await replyOrEdit(sock, jid, msg, guideText);
+      } else {
+        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
         await sock.sendMessage(adminJid, { text: guideText });
-      } catch {
-        await sock.sendMessage(adminTaverneJid, {
-          text: `📖 *Guide /warn demandé par @${adminNum} :*\n\n${guideText}`,
-          mentions: [adminJid]
-        });
       }
       return;
     }
@@ -76,11 +70,13 @@ export default {
       reportLines.push('━━━━━━━━━━━━━━━━━━━━');
       reportLines.push(`👮 Action exécutée par : @${adminNum}`);
 
-      // Envoyer le rapport uniquement dans admintaverne
-      await sock.sendMessage(adminTaverneJid, {
-        text: reportLines.join('\n'),
-        mentions: [adminJid]
-      });
+      const reportText = reportLines.join('\n');
+      if (isPrivate || isModerationHub) {
+        await replyOrEdit(sock, jid, msg, reportText);
+      } else {
+        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
+        await sock.sendMessage(adminTaverneJid, { text: reportText, mentions: [adminJid] });
+      }
       return;
     }
 
@@ -105,14 +101,20 @@ export default {
         targetNum = subTarget.replace(/[^0-9]/g, '');
       }
 
-      // Si une cible est spécifiée, afficher l'historique détaillé dans admintaverne
+      // Si une cible est spécifiée, afficher l'historique détaillé
       if (targetNum && targetNum.length >= 6) {
         const userWarns = getWarns(targetNum);
         if (!userWarns.length) {
-          await sock.sendMessage(adminTaverneJid, {
-            text: `ℹ️ L'utilisateur +${targetNum} n'a aucun avertissement actif.\n(Demandé par @${adminNum})`,
-            mentions: [adminJid]
-          });
+          const emptyText = `ℹ️ L'utilisateur +${targetNum} n'a aucun avertissement actif.`;
+          if (isPrivate || isModerationHub) {
+            await replyOrEdit(sock, jid, msg, emptyText);
+          } else {
+            try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
+            await sock.sendMessage(adminTaverneJid, { text: emptyText, mentions: [adminJid] });
+            if (adminJid && adminJid !== jid) {
+              try { await sock.sendMessage(adminJid, { text: emptyText }); } catch {}
+            }
+          }
           return;
         }
 
@@ -135,20 +137,29 @@ export default {
         lines.push('━━━━━━━━━━━━━━━━━━━━');
         lines.push(`👮 Consultation par : @${adminNum}`);
 
-        await sock.sendMessage(adminTaverneJid, {
-          text: lines.join('\n'),
-          mentions: [adminJid]
-        });
+        const resultText = lines.join('\n');
+        if (isPrivate || isModerationHub) {
+          await replyOrEdit(sock, jid, msg, resultText);
+        } else {
+          try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
+          await sock.sendMessage(adminTaverneJid, { text: resultText, mentions: [adminJid] });
+          if (adminJid && adminJid !== jid) {
+            try { await sock.sendMessage(adminJid, { text: resultText }); } catch {}
+          }
+        }
         return;
       }
 
-      // Sinon, lister tous les membres avertis dans admintaverne
+      // Sinon, lister tous les membres avertis
       const allWarned = getAllWarnedUsers();
       if (!allWarned.length) {
-        await sock.sendMessage(adminTaverneJid, {
-          text: `📭 Aucun membre n'a d'avertissement actif dans la base.\n(Demandé par @${adminNum})`,
-          mentions: [adminJid]
-        });
+        const emptyText = `📭 Aucun membre n'a d'avertissement actif dans la base.`;
+        if (isPrivate || isModerationHub) {
+          await replyOrEdit(sock, jid, msg, emptyText);
+        } else {
+          try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
+          await sock.sendMessage(adminTaverneJid, { text: emptyText, mentions: [adminJid] });
+        }
         return;
       }
 
@@ -160,17 +171,24 @@ export default {
 
       allWarned.forEach((item, index) => {
         const namePart = item.pushName ? ` (${item.pushName})` : '';
-        listLines.push(`${index + 1}. +${item.number}${namePart} : *${item.count} avertissement(s)*`);
+        const isBan = item.count >= 3 ? ' 🚫 *BAN*' : '';
+        listLines.push(`${index + 1}. +${item.number}${namePart} : *${item.count} avertissement(s)*${isBan}`);
       });
 
       listLines.push('━━━━━━━━━━━━━━━━━━━━');
       listLines.push('💡 Voir les détails : `/warn list <@membre>`\n💡 Supprimer : `/warn del <@membre>`');
       listLines.push(`👮 Liste demandée par : @${adminNum}`);
 
-      await sock.sendMessage(adminTaverneJid, {
-        text: listLines.join('\n'),
-        mentions: [adminJid]
-      });
+      const fullListText = listLines.join('\n');
+      if (isPrivate || isModerationHub) {
+        await replyOrEdit(sock, jid, msg, fullListText);
+      } else {
+        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
+        await sock.sendMessage(adminTaverneJid, { text: fullListText, mentions: [adminJid] });
+        if (adminJid && adminJid !== jid) {
+          try { await sock.sendMessage(adminJid, { text: fullListText }); } catch {}
+        }
+      }
       return;
     }
 
@@ -198,10 +216,16 @@ export default {
       }
 
       if (!targetNum || targetNum.length < 6) {
-        await sock.sendMessage(adminTaverneJid, {
-          text: `⚠️ Erreur /warn del : Cible introuvable.\n(Demandé par @${adminNum})`,
-          mentions: [adminJid]
-        });
+        const notFoundText = `⚠️ Erreur /warn del : Cible introuvable.\n(Demandé par @${adminNum})`;
+        if (isPrivate || isModerationHub) {
+          await replyOrEdit(sock, jid, msg, notFoundText);
+        } else {
+          try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
+          await sock.sendMessage(adminTaverneJid, {
+            text: notFoundText,
+            mentions: [adminJid]
+          });
+        }
         return;
       }
 
@@ -215,11 +239,15 @@ export default {
         `━━━━━━━━━━━━━━━━━━━━`
       ].join('\n');
 
-      // Notification uniquement dans admintaverne et notifds (RIEN dans le groupe d'origine)
-      await sock.sendMessage(adminTaverneJid, {
-        text: logText,
-        mentions: [adminJid]
-      });
+      if (isPrivate || isModerationHub) {
+        await replyOrEdit(sock, jid, msg, logText);
+      } else {
+        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
+        await sock.sendMessage(adminTaverneJid, {
+          text: logText,
+          mentions: [adminJid]
+        });
+      }
 
       if (config.hub?.systemNotifs && config.hub.systemNotifs !== adminTaverneJid) {
         try {
@@ -266,11 +294,16 @@ export default {
     }
 
     if (!targetNum) {
-      // Si la cible n'est pas reconnue, alerter uniquement l'admin dans admintaverne (zéro trace dans le groupe public)
-      await sock.sendMessage(adminTaverneJid, {
-        text: `⚠️ *Échec de la commande /warn par @${adminNum} :*\nImpossible d'identifier la cible "${args[0] || 'inconnue'}".\n💡 Veuillez mentionner le membre (@membre), répondre à son message, ou taper son numéro/LID exact.`,
-        mentions: [adminJid]
-      });
+      const errMsg = `⚠️ *Échec de la commande /warn :*\nImpossible d'identifier la cible "${args[0] || 'inconnue'}".\n💡 Veuillez mentionner le membre (@membre), répondre à son message, ou taper son numéro/pseudo exact.`;
+      if (isPrivate || isModerationHub) {
+        await replyOrEdit(sock, jid, msg, errMsg);
+      } else {
+        try { await sock.sendMessage(jid, { delete: msg.key }); } catch {}
+        await sock.sendMessage(adminTaverneJid, {
+          text: errMsg,
+          mentions: [adminJid]
+        });
+      }
       return;
     }
 
@@ -324,6 +357,20 @@ export default {
       warnHistoryLines,
       `━━━━━━━━━━━━━━━━━━━━`
     ].join('\n');
+
+    // Supprimer la commande uniquement si émise dans un groupe public tiers (pour discrétion)
+    if (!isPrivate && !isModerationHub) {
+      try {
+        await sock.sendMessage(jid, { delete: msg.key });
+      } catch {}
+    } else {
+      await replyOrEdit(
+        sock,
+        jid,
+        msg,
+        `✅ *Avertissement enregistré pour +${targetNum}* (Total : ${totalWarns} av)\n💬 Raison : "${reason}"`
+      );
+    }
 
     // 1. Envoyer dans admintaverne avec MENTION de l'admin émetteur (@adminNum)
     try {
