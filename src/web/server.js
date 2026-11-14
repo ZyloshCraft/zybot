@@ -23,6 +23,7 @@ import { getAllPersopings, deletePersoping, updatePersoping } from '../services/
 import { getAntiRaidData, clearMemberAntiRaid } from '../services/antiLinkProtection.js';
 import { getInterceptedMessages, clearInterceptedMessages } from '../services/antiDeleteStore.js';
 import { getAuditLogs, clearAuditLogs, recordAuditLog } from '../services/auditLogStore.js';
+import { getCandidateModels } from '../services/geminiService.js';
 
 // Cache des groupes WhatsApp pour éviter le spam de requêtes Baileys
 let groupsParticipatingCache = { data: null, timestamp: 0 };
@@ -698,7 +699,8 @@ function formatPhoneNumber(num) {
             passwords: {
               adminPassword: process.env.WEB_ADMIN_PASSWORD || cfg.web?.password || 'Nexoria2026',
               superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || cfg.web?.superadminPassword || 'Jevaisencore-2020',
-              geminiApiKey: process.env.GEMINI_API_KEY || cfg.speech?.geminiApiKey || ''
+              geminiApiKey: process.env.GEMINI_API_KEY || cfg.speech?.geminiApiKey || '',
+              aiModel: cfg.speech?.aiModel || 'auto'
             }
           }
         });
@@ -706,7 +708,7 @@ function formatPhoneNumber(num) {
 
       if (pathname === '/api/superadmin/security/passwords' && method === 'POST') {
         const body = await parseJsonBody(req);
-        const { adminPassword, superadminPassword, geminiApiKey } = body;
+        const { adminPassword, superadminPassword, geminiApiKey, aiModel } = body;
 
         if (adminPassword && adminPassword.trim().length < 4) {
           return sendJson(res, 400, { error: 'Le mot de passe Admin standard doit comporter au moins 4 caractères.' });
@@ -715,21 +717,35 @@ function formatPhoneNumber(num) {
           return sendJson(res, 400, { error: 'Le mot de passe SuperAdmin doit comporter au moins 6 caractères.' });
         }
 
-        const updated = updateWebPasswords({ adminPassword, superadminPassword, geminiApiKey });
+        const updated = updateWebPasswords({ adminPassword, superadminPassword, geminiApiKey, aiModel });
         recordAuditLog({
           type: 'security',
           action: 'SECURITY_CONFIG_UPDATED',
           user: 'SuperAdmin WebGUI',
-          details: 'Mots de passe WebGUI ou clé Gemini mis à jour',
+          details: `Réglages WebGUI mis à jour (Modèle IA: ${updated.aiModel || 'auto'})`,
           status: 'success'
         });
 
         return sendJson(res, 200, {
           success: true,
-          message: 'Mots de passe et clés sauvegardés avec succès dans .env !',
+          message: 'Mots de passe, clés et modèle IA sauvegardés avec succès !',
           adminPassword: updated.adminPassword,
           superadminPassword: updated.superadminPassword,
-          geminiApiKey: updated.geminiApiKey
+          geminiApiKey: updated.geminiApiKey,
+          aiModel: updated.aiModel
+        });
+      }
+
+      // Endpoint dynamique pour lister les modèles IA compatibles
+      if (pathname === '/api/superadmin/ai/models' && method === 'GET') {
+        const cfg = getConfig();
+        const key = cfg.speech?.geminiApiKey || process.env.GEMINI_API_KEY;
+        const currentModel = cfg.speech?.aiModel || 'auto';
+        const dynamicModels = await getCandidateModels(key);
+        return sendJson(res, 200, {
+          success: true,
+          currentModel,
+          models: dynamicModels
         });
       }
 

@@ -95,7 +95,8 @@ const DEFAULT_CONFIG = {
   },
   speech: {
     groqApiKey: '',
-    geminiApiKey: ''
+    geminiApiKey: '',
+    aiModel: 'auto'
   },
   web: {
     enabled: true,
@@ -182,7 +183,7 @@ export function getEnvPath() {
   return path.resolve(__dirname, '../.env');
 }
 
-export function updateWebPasswords({ adminPassword, superadminPassword, geminiApiKey }) {
+export function updateWebPasswords({ adminPassword, superadminPassword, geminiApiKey, aiModel }) {
   const envPath = getEnvPath();
   let envLines = [];
   try {
@@ -225,6 +226,19 @@ export function updateWebPasswords({ adminPassword, superadminPassword, geminiAp
     inMemoryConfig.speech.geminiApiKey = cleanGemini;
   }
 
+  if (aiModel !== undefined) {
+    const cleanModel = (aiModel || 'auto').trim();
+    if (!inMemoryConfig.speech) inMemoryConfig.speech = {};
+    inMemoryConfig.speech.aiModel = cleanModel;
+    updateConfig((cur) => ({
+      ...cur,
+      speech: {
+        ...(cur.speech || {}),
+        aiModel: cleanModel
+      }
+    }));
+  }
+
   try {
     fs.writeFileSync(envPath, envLines.filter(Boolean).join('\n') + '\n', 'utf-8');
   } catch (err) {
@@ -234,7 +248,8 @@ export function updateWebPasswords({ adminPassword, superadminPassword, geminiAp
   return {
     adminPassword: process.env.WEB_ADMIN_PASSWORD || 'Nexoria2026',
     superadminPassword: process.env.WEB_SUPERADMIN_PASSWORD || 'Jevaisencore-2020',
-    geminiApiKey: process.env.GEMINI_API_KEY || inMemoryConfig?.speech?.geminiApiKey || ''
+    geminiApiKey: process.env.GEMINI_API_KEY || inMemoryConfig?.speech?.geminiApiKey || '',
+    aiModel: inMemoryConfig?.speech?.aiModel || 'auto'
   };
 }
 

@@ -60,14 +60,15 @@
     "dailyRecap": true,
     "antiLink": true
   },
+  "speech": {
+    "groqApiKey": "",
+    "geminiApiKey": "",
+    "aiModel": "gemma-4-31b-it"
+  },
   "web": {
     "enabled": true,
     "port": 3050,
     "password": "",
     "superadminPassword": ""
-  },
-  "speech": {
-    "groqApiKey": "",
-    "geminiApiKey": ""
   }
 }

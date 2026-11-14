@@ -40,15 +40,19 @@ export async function getSupportedGeminiModels(apiKey) {
 }
 
 /**
- * Filtre et sélectionne les meilleurs modèles dans l'ordre de priorité (avec Gemma-4-31b en priorité provisoire)
+ * Filtre et sélectionne les meilleurs modèles dans l'ordre de priorité (respectant le choix SuperAdmin)
  */
 export async function getCandidateModels(apiKey) {
   const dynamic = await getSupportedGeminiModels(apiKey);
+  const config = getConfig();
+  const configuredModel = (config.speech?.aiModel || 'auto').trim();
 
   // Exclure les modèles TTS, Image, Lyria, Robotics, etc.
-  // Autoriser Gemma-4-31b explicitement selon la demande utilisateur
   const isEligible = (m) => {
     const lower = m.toLowerCase();
+    if (configuredModel && configuredModel !== 'auto' && lower === configuredModel.toLowerCase()) {
+      return true;
+    }
     if (lower.startsWith('gemma-4-31b') || lower.includes('gemma-4-31b')) return true;
     if (lower.startsWith('gemma') || lower.includes('gemma')) return false;
     if (
@@ -69,7 +73,7 @@ export async function getCandidateModels(apiKey) {
 
   const filteredDynamic = dynamic.filter(isEligible);
 
-  // Ordre de priorité : Gemma-4-31b en tête (provisoire), puis les modèles Gemini Flash et Hydrogen
+  // Ordre de priorité par défaut
   const preferences = [
     'gemma-4-31b-it',
     'gemma-4-31b',
@@ -84,7 +88,12 @@ export async function getCandidateModels(apiKey) {
     'gemini-pro-latest'
   ];
 
-  const candidates = [];
+  let candidates = [];
+
+  // Si l'utilisateur a choisi un modèle spécifique dans le SuperAdmin, le placer en tête absolue
+  if (configuredModel && configuredModel !== 'auto') {
+    candidates.push(configuredModel);
+  }
 
   // 1. Ajouter d'abord les modèles préférés
   for (const pref of preferences) {
@@ -103,6 +112,9 @@ export async function getCandidateModels(apiKey) {
 
   // 3. Fallback dur si aucun modèle détecté
   if (candidates.length === 0) {
+    if (configuredModel && configuredModel !== 'auto') {
+      candidates.push(configuredModel);
+    }
     candidates.push('gemma-4-31b-it', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen');
   }
 

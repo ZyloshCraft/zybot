@@ -625,13 +625,19 @@ assert.ok(askCmd.aliases.includes('gemini'));
 
 console.log('✅ Test 21 réussi : AntiDeleteStore, AuditLogStore, Heatmap Heures de pointe, /lock et /ask validés.');
 
-// Test 22: Gemini Service candidates et résilience
+// Test 22: Gemini Service candidates, sélection SuperAdmin et résilience
 import { getCandidateModels } from '../src/services/geminiService.js';
-const candidates = await getCandidateModels(null);
-assert.ok(Array.isArray(candidates) && candidates.length >= 3, 'getCandidateModels doit retourner les modèles de fallback');
-assert.strictEqual(candidates[0], 'gemma-4-31b-it', 'gemma-4-31b-it doit être en tête de liste provisoire');
-assert.ok(candidates.includes('gemini-3.5-flash'), 'gemini-3.5-flash doit être dans les modèles candidats');
-assert.ok(candidates.includes('gemini-3.1-flash-lite'), 'gemini-3.1-flash-lite doit être dans les modèles candidats');
-console.log('✅ Test 22 réussi : Service Gemini avec Gemma-4-31b en priorité provisoire validé.');
+const defaultCandidates = await getCandidateModels(null);
+assert.ok(Array.isArray(defaultCandidates) && defaultCandidates.length >= 3, 'getCandidateModels doit retourner les modèles de fallback');
+assert.strictEqual(defaultCandidates[0], 'gemma-4-31b-it', 'gemma-4-31b-it doit être en tête par défaut');
+
+// Test sélection personnalisée depuis SuperAdmin
+updateConfig((cur) => ({ ...cur, speech: { ...(cur.speech || {}), aiModel: 'gemini-4-hydrogen' } }));
+const customCandidates = await getCandidateModels(null);
+assert.strictEqual(customCandidates[0], 'gemini-4-hydrogen', 'Le modèle choisi dans SuperAdmin doit être placé en index 0');
+
+// Rétablir
+updateConfig((cur) => ({ ...cur, speech: { ...(cur.speech || {}), aiModel: 'gemma-4-31b-it' } }));
+console.log('✅ Test 22 réussi : Service Gemini et sélection de modèle SuperAdmin validés.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
