@@ -1,6 +1,7 @@
 import { getConfig } from '../config.js';
 import { replyOrEdit } from '../utils/stealth.js';
 import { recordAuditLog } from '../services/auditLogStore.js';
+import { generateWithGemini } from '../services/geminiService.js';
 import { extractTextFromMessage } from '../handlers/message.js';
 
 export default {
@@ -60,53 +61,17 @@ export default {
       const systemInstruction =
         "Tu es ZyBot, un assistant WhatsApp rapide, précis, convivial et concis. Réponds en français avec un formatage WhatsApp soigné (*gras*, _italique_, puces). Sois direct et évite le bavardage inutile.";
 
-      // Modèles à tester dans l'ordre (2.5 flash puis 1.5 flash)
-      const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
-      let answerText = null;
-      let lastErr = null;
-
-      for (const model of models) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: 'user',
-                  parts: [{ text: `${systemInstruction}\n\n${finalPrompt}` }]
-                }
-              ],
-              generationConfig: {
-                maxOutputTokens: 800,
-                temperature: 0.6
-              }
-            })
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-            if (text) {
-              answerText = text;
-              break;
-            }
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            lastErr = new Error(`HTTP ${res.status}: ${errData.error?.message || res.statusText}`);
-          }
-        } catch (e) {
-          lastErr = e;
-        }
-      }
-
-      if (!answerText) {
-        throw lastErr || new Error('Aucune réponse générée par les modèles Gemini.');
-      }
+      const { text: answerText, model } = await generateWithGemini({
+        prompt: finalPrompt,
+        systemInstruction,
+        maxTokens: 800,
+        temperature: 0.6,
+        geminiKey
+      });
 
       const responseMessage = [
         '✨ *RÉPONSE GEMINI IA*',
+        `🤖 _Modèle : ${model}_`,
         '━━━━━━━━━━━━━━━━━━━━',
         answerText,
         '━━━━━━━━━━━━━━━━━━━━'

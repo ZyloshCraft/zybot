@@ -625,4 +625,11 @@ assert.ok(askCmd.aliases.includes('gemini'));
 
 console.log('✅ Test 21 réussi : AntiDeleteStore, AuditLogStore, Heatmap Heures de pointe, /lock et /ask validés.');
 
+// Test 22: Gemini Service candidates et résilience
+import { getCandidateModels } from '../src/services/geminiService.js';
+const candidates = await getCandidateModels(null);
+assert.ok(Array.isArray(candidates) && candidates.length >= 3, 'getCandidateModels doit retourner les modèles de fallback');
+assert.ok(candidates.includes('gemini-2.0-flash'), 'gemini-2.0-flash doit être dans les modèles candidats');
+console.log('✅ Test 22 réussi : Service Gemini et fallback multi-modèles validés.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

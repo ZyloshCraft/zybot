@@ -142,8 +142,14 @@ export function initDailyRecapScheduler(sock) {
         if (target && sock) {
           const stats = getTodayStats();
           const text = formatRecapText(stats);
-          await sock.sendMessage(target, { text });
-          console.log('[StatsTracker] Récapitulatif journalier envoyé dans notifds à 23h00.');
+          try {
+            await sock.sendMessage(target, { text });
+            console.log('[StatsTracker] Récapitulatif journalier envoyé dans notifds à 23h00.');
+          } catch (sendErr) {
+            console.error('[StatsTracker] Erreur envoi automatique récapitulatif:', sendErr.message);
+            // Si la connexion était momentanément fermée, lever le verrou pour retenter au prochain tick
+            recapScheduledToday = false;
+          }
         }
       }
 

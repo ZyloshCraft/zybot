@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { getConfig } from '../config.js';
+import { generateWithGemini, generateMultimodalWithGemini } from './geminiService.js';
 
 /**
  * Convertit un buffer audio WhatsApp (OGG Opus) en WAV 16kHz mono
@@ -116,35 +117,25 @@ export async function transcribeAudioFile(wavPath) {
 
   // 2. Transcription via Gemini API si clé configurée
   if (geminiKey) {
-    const audioBase64 = fs.readFileSync(wavPath).toString('base64');
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
+    try {
+      const audioBase64 = fs.readFileSync(wavPath).toString('base64');
+      const { text } = await generateMultimodalWithGemini({
+        parts: [
           {
-            parts: [
-              {
-                text: 'Transcris fidèlement cet enregistrement audio en français. Ne rajoute aucun commentaire ni préambule, uniquement le texte exact prononcé.'
-              },
-              {
-                inlineData: {
-                  mimeType: 'audio/wav',
-                  data: audioBase64
-                }
-              }
-            ]
+            text: 'Transcris fidèlement cet enregistrement audio en français. Ne rajoute aucun commentaire ni préambule, uniquement le texte exact prononcé.'
+          },
+          {
+            inlineData: {
+              mimeType: 'audio/wav',
+              data: audioBase64
+            }
           }
-        ]
-      })
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        ],
+        geminiKey
+      });
       if (text) return text.trim();
+    } catch (err) {
+      console.warn('[Transcriber] Échec transcription Gemini:', err.message);
     }
   }
 
@@ -201,24 +192,13 @@ export async function summarizeBriefly(text) {
   // 2. Tenter Gemini
   if (geminiKey) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            maxOutputTokens: 180,
-            temperature: 0.3
-          }
-        })
+      const { text: content } = await generateWithGemini({
+        prompt,
+        maxTokens: 180,
+        temperature: 0.3,
+        geminiKey
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (content) return content;
-      }
+      if (content) return content;
     } catch {}
   }
 

@@ -2,6 +2,7 @@ import { getConfig } from '../config.js';
 import { replyOrEdit } from '../utils/stealth.js';
 import { getChatMessages } from '../services/messageStore.js';
 import { recordAuditLog } from '../services/auditLogStore.js';
+import { generateWithGemini } from '../services/geminiService.js';
 
 export default {
   name: 'resume',
@@ -72,48 +73,16 @@ ${compactDialog.join('\n')}
 
 Résume en français cette discussion en 3 à 5 puces courtes et directes. Mets en valeur uniquement les informations clés, les rendez-vous, les décisions ou le sujet principal. Sois très concis.`;
 
-      const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
-      let summaryText = null;
-      let lastErr = null;
-
-      for (const model of models) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                maxOutputTokens: 380,
-                temperature: 0.3
-              }
-            })
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-            if (text) {
-              summaryText = text;
-              break;
-            }
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            lastErr = new Error(`HTTP ${res.status}: ${errData.error?.message || res.statusText}`);
-          }
-        } catch (e) {
-          lastErr = e;
-        }
-      }
-
-      if (!summaryText) {
-        throw lastErr || new Error('Réponse vide de l\'IA.');
-      }
+      const { text: summaryText, model } = await generateWithGemini({
+        prompt,
+        maxTokens: 380,
+        temperature: 0.3,
+        geminiKey
+      });
 
       const resultLines = [
         `🧠 *RÉSUMÉ IA DE LA CONVERSATION*`,
-        `📊 *${compactDialog.length} messages analysés* (mode économe)`,
+        `📊 *${compactDialog.length} messages analysés* (_${model}_)`,
         `━━━━━━━━━━━━━━━━━━━━`,
         summaryText,
         `━━━━━━━━━━━━━━━━━━━━`
