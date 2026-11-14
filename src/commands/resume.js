@@ -68,17 +68,60 @@ export default {
     await replyOrEdit(sock, jid, msg, `🧠 Synthèse IA de ${compactDialog.length} messages en cours (mode éco)...`);
 
     try {
-      const prompt = `Voici les derniers messages d'une discussion WhatsApp :
-${compactDialog.join('\n')}
+      const systemInstruction = [
+        "Tu es un synthétiseur WhatsApp ultra-concis et direct.",
+        "Règles strictes :",
+        "1. Rédige UNIQUEMENT entre 3 et 5 puces courtes en français (utilisant le tiret •).",
+        "2. Sois percutant, va à l'essentiel : les faits marquants, les décisions, les débats ou rendez-vous.",
+        "3. Ne mets AUCUN titre, AUCUN préambule (ex: 'Voici un résumé'), AUCUNE conclusion.",
+        "4. N'inclus AUCUNE métadonnée en anglais (pas de 'Source:', 'Goal:', 'Participants:', 'Constraint:', etc.).",
+        "5. Reste neutre, synthétique et réponds exclusivement en français."
+      ].join('\n');
 
-Résume en français cette discussion en 3 à 5 puces courtes et directes. Mets en valeur uniquement les informations clés, les rendez-vous, les décisions ou le sujet principal. Sois très concis.`;
+      const prompt = `Voici les messages récents d'une discussion WhatsApp :\n"""\n${compactDialog.join('\n')}\n"""\n\nRédige le résumé direct en français (3 à 5 puces courtes) :`;
 
-      const { text: summaryText, model } = await generateWithGemini({
+      const { text: rawSummary, model } = await generateWithGemini({
         prompt,
-        maxTokens: 380,
-        temperature: 0.3,
+        systemInstruction,
+        maxTokens: 350,
+        temperature: 0.2,
         geminiKey
       });
+
+      // Nettoyage et formatage soigné des puces en français
+      const cleanLines = rawSummary
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => {
+          if (!l) return false;
+          const lower = l.toLowerCase();
+          if (
+            lower.startsWith('source:') ||
+            lower.startsWith('participants:') ||
+            lower.startsWith('goal:') ||
+            lower.startsWith('format:') ||
+            lower.startsWith('constraint:') ||
+            lower.startsWith('content focus:') ||
+            lower.startsWith('segment ')
+          ) {
+            return false;
+          }
+          if (lower.startsWith('voici ') || lower.startsWith('voici un résumé') || lower.startsWith('résumé :')) {
+            return false;
+          }
+          return true;
+        })
+        .map((l) => {
+          if (/^[-*•]\s*/.test(l)) {
+            return l.replace(/^[-*•]\s*/, '• ');
+          }
+          if (/^\d+\.\s*/.test(l)) {
+            return l.replace(/^\d+\.\s*/, '• ');
+          }
+          return `• ${l}`;
+        });
+
+      const summaryText = cleanLines.slice(0, 5).join('\n') || rawSummary;
 
       const resultLines = [
         `🧠 *RÉSUMÉ IA DE LA CONVERSATION*`,

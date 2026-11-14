@@ -36,37 +36,62 @@ export async function getSupportedGeminiModels(apiKey) {
   }
 
   // Modèles par défaut en cas d'impossibilité de lister
-  return ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-2.0-flash-exp'];
+  return ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen', 'gemini-flash-latest'];
 }
 
 /**
- * Sélectionne les meilleurs modèles à tenter dans l'ordre de priorité
+ * Filtre et sélectionne les meilleurs modèles Gemini conversationnels dans l'ordre de priorité
  */
 export async function getCandidateModels(apiKey) {
   const dynamic = await getSupportedGeminiModels(apiKey);
 
-  // Ordre de préférence souhaité
+  // Exclure formellement les modèles Gemma, TTS, Image, Lyria, Robotics, etc.
+  const isEligible = (m) => {
+    const lower = m.toLowerCase();
+    if (lower.startsWith('gemma') || lower.includes('gemma')) return false;
+    if (
+      lower.includes('tts') ||
+      lower.includes('image') ||
+      lower.includes('video') ||
+      lower.includes('clip') ||
+      lower.includes('lyria') ||
+      lower.includes('transcribe') ||
+      lower.includes('robotics') ||
+      lower.includes('deep-research') ||
+      lower.includes('computer-use')
+    ) {
+      return false;
+    }
+    return lower.startsWith('gemini-');
+  };
+
+  const filteredDynamic = dynamic.filter(isEligible);
+
+  // Ordre de préférence strict pour le texte rapide et de haute qualité
   const preferences = [
-    'gemini-2.0-flash',
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-flash',
-    'gemini-2.0-flash-exp',
-    'gemini-1.5-pro-latest',
-    'gemini-1.5-pro'
+    'gemini-3.5-flash',
+    'gemini-3.1-flash-lite',
+    'gemini-4-hydrogen',
+    'gemini-flash-latest',
+    'gemini-flash-lite-latest',
+    'gemini-3.8-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-4-argon',
+    'gemini-pro-latest'
   ];
 
   const candidates = [];
 
-  // 1. Ajouter les modèles dynamiques selon nos préférences
+  // 1. Ajouter d'abord les modèles préférés
   for (const pref of preferences) {
-    const match = dynamic.find((m) => m === pref || m.includes(pref));
+    const match = filteredDynamic.find((m) => m === pref);
     if (match && !candidates.includes(match)) {
       candidates.push(match);
     }
   }
 
-  // 2. Ajouter les autres modèles supportés non encore ajoutés
-  for (const m of dynamic) {
+  // 2. Ajouter les autres modèles éligibles (sans Gemma ni TTS)
+  for (const m of filteredDynamic) {
     if (!candidates.includes(m)) {
       candidates.push(m);
     }
@@ -74,20 +99,20 @@ export async function getCandidateModels(apiKey) {
 
   // 3. Fallback dur si aucun modèle détecté
   if (candidates.length === 0) {
-    candidates.push('gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash');
+    candidates.push('gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen', 'gemini-flash-latest');
   }
 
   return candidates;
 }
 
 /**
- * Génère du texte avec Gemini en gérant automatiquement le fallback de modèles et de versions d'API
+ * Génère du texte avec Gemini en gérant nativement le systemInstruction et le fallback multi-modèles
  */
 export async function generateWithGemini({
   prompt,
   systemInstruction = null,
   maxTokens = 450,
-  temperature = 0.3,
+  temperature = 0.2,
   geminiKey = null
 }) {
   const config = getConfig();
@@ -107,28 +132,30 @@ export async function generateWithGemini({
       try {
         const url = `https://generativelanguage.googleapis.com/${ver}/models/${model}:generateContent?key=${key}`;
         
-        const contents = [];
+        const requestBody = {
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: prompt }]
+            }
+          ],
+          generationConfig: {
+            maxOutputTokens: maxTokens,
+            temperature
+          }
+        };
+
+        // Si une instruction système est spécifiée, la passer au format natif Gemini
         if (systemInstruction) {
-          contents.push({
-            role: 'user',
-            parts: [{ text: `${systemInstruction}\n\n${prompt}` }]
-          });
-        } else {
-          contents.push({
-            parts: [{ text: prompt }]
-          });
+          requestBody.systemInstruction = {
+            parts: [{ text: systemInstruction }]
+          };
         }
 
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents,
-            generationConfig: {
-              maxOutputTokens: maxTokens,
-              temperature
-            }
-          })
+          body: JSON.stringify(requestBody)
         });
 
         if (res.ok) {
@@ -143,10 +170,11 @@ export async function generateWithGemini({
           }
         } else {
           const errData = await res.json().catch(() => ({}));
-          lastError = new Error(`HTTP ${res.status} [${model} / ${ver}]: ${errData.error?.message || res.statusText}`);
+          const errMsg = errData.error?.message || res.statusText;
+          lastError = new Error(`HTTP ${res.status} [${model} / ${ver}]: ${errMsg}`);
           
-          // Si l'erreur est un 404 de modèle, tenter le suivant immédiatement
-          if (res.status === 404) {
+          // Si le modèle est indisponible ou surchargé (404, 429, 503), essayer immédiatement le modèle suivant
+          if (res.status === 404 || res.status === 503 || res.status === 429) {
             continue;
           }
         }
@@ -184,22 +212,24 @@ export async function generateMultimodalWithGemini({
       try {
         const url = `https://generativelanguage.googleapis.com/${ver}/models/${model}:generateContent?key=${key}`;
         
-        const fullParts = [];
+        const requestBody = {
+          contents: [{ parts }],
+          generationConfig: {
+            maxOutputTokens: maxTokens,
+            temperature
+          }
+        };
+
         if (systemInstruction) {
-          fullParts.push({ text: systemInstruction });
+          requestBody.systemInstruction = {
+            parts: [{ text: systemInstruction }]
+          };
         }
-        fullParts.push(...parts);
 
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: fullParts }],
-            generationConfig: {
-              maxOutputTokens: maxTokens,
-              temperature
-            }
-          })
+          body: JSON.stringify(requestBody)
         });
 
         if (res.ok) {
@@ -211,7 +241,7 @@ export async function generateMultimodalWithGemini({
         } else {
           const errData = await res.json().catch(() => ({}));
           lastError = new Error(`HTTP ${res.status} [${model}]: ${errData.error?.message || res.statusText}`);
-          if (res.status === 404) continue;
+          if (res.status === 404 || res.status === 503 || res.status === 429) continue;
         }
       } catch (err) {
         lastError = err;

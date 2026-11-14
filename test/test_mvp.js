@@ -629,7 +629,8 @@ console.log('✅ Test 21 réussi : AntiDeleteStore, AuditLogStore, Heatmap Heure
 import { getCandidateModels } from '../src/services/geminiService.js';
 const candidates = await getCandidateModels(null);
 assert.ok(Array.isArray(candidates) && candidates.length >= 3, 'getCandidateModels doit retourner les modèles de fallback');
-assert.ok(candidates.includes('gemini-2.0-flash'), 'gemini-2.0-flash doit être dans les modèles candidats');
+assert.ok(candidates.includes('gemini-3.5-flash'), 'gemini-3.5-flash doit être dans les modèles candidats');
+assert.ok(candidates.includes('gemini-3.1-flash-lite'), 'gemini-3.1-flash-lite doit être dans les modèles candidats');
 console.log('✅ Test 22 réussi : Service Gemini et fallback multi-modèles validés.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
