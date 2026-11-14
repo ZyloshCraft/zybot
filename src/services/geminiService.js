@@ -40,14 +40,16 @@ export async function getSupportedGeminiModels(apiKey) {
 }
 
 /**
- * Filtre et sélectionne les meilleurs modèles Gemini conversationnels dans l'ordre de priorité
+ * Filtre et sélectionne les meilleurs modèles dans l'ordre de priorité (avec Gemma-4-31b en priorité provisoire)
  */
 export async function getCandidateModels(apiKey) {
   const dynamic = await getSupportedGeminiModels(apiKey);
 
-  // Exclure formellement les modèles Gemma, TTS, Image, Lyria, Robotics, etc.
+  // Exclure les modèles TTS, Image, Lyria, Robotics, etc.
+  // Autoriser Gemma-4-31b explicitement selon la demande utilisateur
   const isEligible = (m) => {
     const lower = m.toLowerCase();
+    if (lower.startsWith('gemma-4-31b') || lower.includes('gemma-4-31b')) return true;
     if (lower.startsWith('gemma') || lower.includes('gemma')) return false;
     if (
       lower.includes('tts') ||
@@ -67,8 +69,10 @@ export async function getCandidateModels(apiKey) {
 
   const filteredDynamic = dynamic.filter(isEligible);
 
-  // Ordre de préférence strict pour le texte rapide et de haute qualité
+  // Ordre de priorité : Gemma-4-31b en tête (provisoire), puis les modèles Gemini Flash et Hydrogen
   const preferences = [
+    'gemma-4-31b-it',
+    'gemma-4-31b',
     'gemini-3.5-flash',
     'gemini-3.1-flash-lite',
     'gemini-4-hydrogen',
@@ -90,7 +94,7 @@ export async function getCandidateModels(apiKey) {
     }
   }
 
-  // 2. Ajouter les autres modèles éligibles (sans Gemma ni TTS)
+  // 2. Ajouter les autres modèles éligibles
   for (const m of filteredDynamic) {
     if (!candidates.includes(m)) {
       candidates.push(m);
@@ -99,7 +103,7 @@ export async function getCandidateModels(apiKey) {
 
   // 3. Fallback dur si aucun modèle détecté
   if (candidates.length === 0) {
-    candidates.push('gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen', 'gemini-flash-latest');
+    candidates.push('gemma-4-31b-it', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen');
   }
 
   return candidates;
@@ -160,8 +164,20 @@ export async function generateWithGemini({
 
         if (res.ok) {
           const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          let text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
           if (text) {
+            // Nettoyage des métadonnées de réflexion interne si le modèle est de la famille Gemma
+            if (model.toLowerCase().includes('gemma')) {
+              const cleaned = text
+                .split('\n')
+                .filter((l) => !/^\s*[*•-]?\s*(Input|Meaning|Constraint|Language requested|The requested)\b/i.test(l))
+                .join('\n')
+                .trim();
+              if (cleaned) {
+                text = cleaned;
+              }
+            }
+
             return {
               text,
               model,
