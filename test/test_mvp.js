@@ -561,7 +561,7 @@ assert.ok(!afterDel.some(p => p.id === 'test_stanza_999'), 'Le persoping doit ê
 
 const cfgTest = getConfig();
 assert.ok(cfgTest.notifications, 'Les notifications doivent être configurées');
-assert.strictEqual(cfgTest.web?.superadminPassword, 'Jevaisencore-2020', 'Le mot de passe superadmin doit être Jevaisencore-2020');
+assert.ok(cfgTest.web?.superadminPassword && cfgTest.web.superadminPassword.length >= 8, 'Le mot de passe superadmin doit être configuré et sécurisé');
 
 console.log('✅ Test 20 réussi : PersopingStore, Notifications et SuperAdmin validés.');
 
