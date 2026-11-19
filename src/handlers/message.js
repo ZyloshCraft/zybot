@@ -16,6 +16,7 @@ import { canUserExecuteCommand } from '../services/permissionStore.js';
 import { handleGiveawayReaction } from '../services/giveawayStore.js';
 import { handleGroupAntiLink } from '../services/antiLinkProtection.js';
 import { recordAuditLog } from '../services/auditLogStore.js';
+import { checkGroupMessageSpam, handleSpamAlert } from '../services/spamDetector.js';
 
 /**
  * Extrait le contenu textuel d'un message WhatsApp (en déballant les messages éphémères / vue unique / modifiés)
@@ -170,14 +171,50 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
         rawMessage: msg.message
       });
 
-      // Traquer l'activité des membres dans les groupes
+      // Traquer l'activité des membres dans les groupes avec détection Anti-Spam
       if (jid.endsWith('@g.us')) {
-        recordGroupMessage({
-          groupJid: jid,
-          senderJid,
-          pushName: msg.pushName,
-          timestamp: msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now()
-        });
+        let groupSubject = jid;
+        try {
+          const meta = await getCachedGroupMetadata(sock, jid);
+          if (meta?.subject) groupSubject = meta.subject;
+        } catch {}
+
+        const msgTimestamp = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now();
+
+        // Vérification Anti-Spam pour le classement
+        const spamCheck = !msg.key.fromMe
+          ? checkGroupMessageSpam({
+              groupJid: jid,
+              groupName: groupSubject,
+              senderJid,
+              pushName: msg.pushName,
+              text,
+              timestamp: msgTimestamp
+            })
+          : { isSpam: false };
+
+        if (spamCheck.isSpam) {
+          // Message détecté comme spam : NE PAS comptabiliser dans le classement
+          // Alerter le groupe admin taverne avec la raison détaillée
+          handleSpamAlert({
+            sock,
+            groupJid: jid,
+            groupName: groupSubject,
+            senderJid,
+            pushName: msg.pushName,
+            text,
+            reason: spamCheck.reason
+          }).catch((err) => console.error('[AntiSpam] Erreur alerte admintaverne:', err.message));
+        } else {
+          // Message légitime : comptabiliser l'activité pour le /top et le site web
+          recordGroupMessage({
+            groupJid: jid,
+            groupName: groupSubject,
+            senderJid,
+            pushName: msg.pushName,
+            timestamp: msgTimestamp
+          });
+        }
 
         // Protection Anti-Raid / Anti-Lien pour les nouveaux arrivants (< 10 min)
         if (!msg.key.fromMe) {

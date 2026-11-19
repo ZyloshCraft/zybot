@@ -674,4 +674,98 @@ try {
 }
 console.log('✅ Test 23 réussi : Endpoint public Top 50 Taverne d\'Ionia et Heatmap 24h validés.');
 
+// Test 24: Détecteur Anti-Spam (exclusion du classement et alerte admintaverne avec motif)
+import { checkGroupMessageSpam, handleSpamAlert, resetSpamDetector } from '../src/services/spamDetector.js';
+resetSpamDetector();
+
+const spammerJid = '33699887766@s.whatsapp.net';
+const spamGroup = '120363421814868699@g.us';
+
+// 1. Message normal
+const norm1 = checkGroupMessageSpam({
+  groupJid: spamGroup,
+  groupName: "Taverne d'Ionia",
+  senderJid: spammerJid,
+  pushName: 'SpamUser',
+  text: 'Salut tout le monde, comment ça va aujourd\'hui ?',
+  timestamp: Date.now()
+});
+assert.strictEqual(norm1.isSpam, false, 'Un message normal ne doit pas être considéré comme spam');
+
+// 2. Détection par répétition consécutive (3 fois le même message)
+resetSpamDetector();
+const rep1 = checkGroupMessageSpam({ groupJid: spamGroup, senderJid: spammerJid, text: 'spam', timestamp: Date.now() });
+assert.strictEqual(rep1.isSpam, false);
+const rep2 = checkGroupMessageSpam({ groupJid: spamGroup, senderJid: spammerJid, text: 'spam', timestamp: Date.now() + 100 });
+assert.strictEqual(rep2.isSpam, false);
+const rep3 = checkGroupMessageSpam({ groupJid: spamGroup, senderJid: spammerJid, text: 'spam', timestamp: Date.now() + 200 });
+assert.strictEqual(rep3.isSpam, true, 'Le 3ème message consécutif identique doit être détecté comme spam');
+assert.ok(rep3.reason.includes('Répétition'), 'La raison doit mentionner la répétition');
+
+// 3. Détection par rafale rapide (burst flood >= 5 messages en 4s)
+resetSpamDetector();
+const baseT = Date.now();
+for (let i = 0; i < 4; i++) {
+  const r = checkGroupMessageSpam({ groupJid: spamGroup, senderJid: spammerJid, text: `message différent ${i}`, timestamp: baseT + i * 400 });
+  assert.strictEqual(r.isSpam, false);
+}
+const burst5 = checkGroupMessageSpam({ groupJid: spamGroup, senderJid: spammerJid, text: 'cinquième message en 2s', timestamp: baseT + 1800 });
+assert.strictEqual(burst5.isSpam, true, '5 messages en moins de 4s doivent déclencher l\'Anti-Spam');
+assert.ok(burst5.reason.includes('Cadence'), 'La raison doit mentionner la cadence');
+
+// 4. Détection flood de caractères (50+ répétitions d\'un caractère)
+resetSpamDetector();
+const floodChar = checkGroupMessageSpam({
+  groupJid: spamGroup,
+  senderJid: spammerJid,
+  text: 'Salut ' + 'a'.repeat(60) + ' test',
+  timestamp: Date.now()
+});
+assert.strictEqual(floodChar.isSpam, true, 'Caractère répété 60 fois doit être détecté');
+
+// 5. Test envoi d\'alerte explicative dans admintaverne avec cooldown
+let sentAlertTarget = null;
+let sentAlertText = null;
+let sentAlertMentions = null;
+
+const spamMockSock = {
+  async sendMessage(target, content) {
+    sentAlertTarget = target;
+    sentAlertText = content.text;
+    sentAlertMentions = content.mentions;
+    return { key: { id: 'alert_msg_1' } };
+  }
+};
+
+await handleSpamAlert({
+  sock: spamMockSock,
+  groupJid: spamGroup,
+  groupName: "Taverne d'Ionia",
+  senderJid: spammerJid,
+  pushName: 'SpamUser',
+  text: 'spam',
+  reason: 'Répétition du même message 3 fois consécutives (spam de doublons)'
+});
+
+assert.strictEqual(sentAlertTarget, '120363424594930135@g.us', 'L\'alerte doit cibler admintaverne');
+assert.ok(sentAlertText.includes('[Anti-Spam Taverne]'), 'Le titre d\'alerte doit être présent');
+assert.ok(sentAlertText.includes('Répétition du même message'), 'La raison explicite doit figurer dans le message');
+assert.ok(sentAlertText.includes('comptabilisé'), 'L\'avertissement de non-comptabilisation doit figurer');
+assert.ok(Array.isArray(sentAlertMentions) && sentAlertMentions.includes(spammerJid), 'L\'expéditeur doit être mentionné');
+
+// Test cooldown : un 2e spam dans la minute ne ré-envoie pas de message dans admintaverne
+sentAlertText = null;
+await handleSpamAlert({
+  sock: spamMockSock,
+  groupJid: spamGroup,
+  groupName: "Taverne d'Ionia",
+  senderJid: spammerJid,
+  pushName: 'SpamUser',
+  text: 'spam2',
+  reason: 'Répétition'
+});
+assert.strictEqual(sentAlertText, null, 'Le cooldown doit empêcher de spammer le salon admintaverne');
+
+console.log('✅ Test 24 réussi : Anti-Spam d\'activité (rejet du classement et alerte admintaverne) validé.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
