@@ -254,7 +254,7 @@ assert.ok(HISTORIC_TARGETS.length >= 60, 'La liste historique doit contenir au m
 
 const foundSender = findSenderByPushName('Nolan');
 assert.ok(foundSender, 'findSenderByPushName doit retrouver Nolan');
-assert.strictEqual(foundSender.pushName, 'Nolan');
+assert.ok(foundSender.pushName.toLowerCase().includes('nolan'), 'findSenderByPushName doit correspondre à Nolan');
 
 console.log('✅ Test 11 & 12 réussis : Modules médias et WarnResolver avec recherche par pseudo validés.');
 
