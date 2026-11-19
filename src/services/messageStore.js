@@ -211,7 +211,7 @@ export function findSenderByPushName(query, specificChatJid = null) {
       const item = list[i];
       if (item.pushName && item.sender) {
         const normPn = item.pushName.toLowerCase().replace(/[@~*]/g, '').trim();
-        if (normPn === cleanQ || normPn.includes(cleanQ) || cleanQ.includes(normPn)) {
+        if (normPn && (normPn === cleanQ || normPn.includes(cleanQ) || (normPn.length >= 3 && cleanQ.includes(normPn)))) {
           return { sender: item.sender, pushName: item.pushName };
         }
       }
@@ -224,7 +224,7 @@ export function findSenderByPushName(query, specificChatJid = null) {
       const item = list[i];
       if (item.pushName && item.sender) {
         const normPn = item.pushName.toLowerCase().replace(/[@~*]/g, '').trim();
-        if (normPn === cleanQ || normPn.includes(cleanQ) || cleanQ.includes(normPn)) {
+        if (normPn && (normPn === cleanQ || normPn.includes(cleanQ) || (normPn.length >= 3 && cleanQ.includes(normPn)))) {
           return { sender: item.sender, pushName: item.pushName };
         }
       }
