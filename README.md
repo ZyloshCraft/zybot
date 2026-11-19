@@ -1,29 +1,70 @@
 # 🤖 ZyBot — Selfbot WhatsApp Furtif & Intelligent
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Version-v1.28.0-orange?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/Node.js-v20+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/Baileys-v7.0-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="Baileys" />
-  <img src="https://img.shields.io/badge/Mode-Zero--Trace%20Stealth-blueviolet?style=for-the-badge&logo=security&logoColor=white" alt="Stealth" />
+  <img src="https://img.shields.io/badge/Commandes-38%20actives-blueviolet?style=for-the-badge" alt="Commandes" />
+  <img src="https://img.shields.io/badge/Mode-Zero--Trace%20Stealth-emerald?style=for-the-badge&logo=security&logoColor=white" alt="Stealth" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
-> 📖 **[Guide Complet du Bot (Wiki)](WIKI.md)** — Découvrez la documentation exhaustive de toutes les 36 commandes, de l'architecture furtive, du système Anti-Raid et du tableau de bord WebGUI (Playit.gg).
+> 📖 **[Guide Complet du Bot (Wiki)](WIKI.md)** — Documentation exhaustive des 38 commandes, de l'architecture furtive, du système Anti-Raid, du moteur Anti-Spam et du tableau de bord WebGUI (Playit.gg).
 
-**ZyBot** est un selfbot WhatsApp modulaire, discret et ultra-épuré pour compte personnel, conçu sur l'architecture **Baileys** (`@whiskeysockets/baileys`). Doté d'un **moteur anti-détection avancé (Stealth Engine)**, d'un **système Anti-Delete & Anti-Edit**, d'un **mode éphémère sélectif (`/temp`)** et d'un **Hub Communautaire privé**, il s'exécute directement sur votre session sans laisser de traces suspectes.
+**ZyBot** est un selfbot WhatsApp modulaire, discret et ultra-épuré pour compte personnel, conçu sur l'architecture **Baileys** (`@whiskeysockets/baileys`). Doté d'un **moteur anti-détection avancé (Stealth Engine)**, d'un **système Anti-Delete & Anti-Edit**, d'un **tableau de bord WebGUI public et SuperAdmin**, d'un **moteur IA multi-modèles (Gemini / Gemma)** et d'un **système Anti-Spam d'activité**, il s'exécute directement sur votre session sans laisser de traces suspectes.
 
 ---
 
-## 🛡️ Architecture Furtive & Fonctionnalités Clés
+## 🌐 Tableau de Bord WebGUI & Observabilité (Playit.gg)
 
-### 1. 🗑️ Moteur Anti-Delete & ✏️ Anti-Edit (Zéro Message Perdu)
-- **Anti-Delete** : Intercepte automatiquement **tous les messages supprimés pour tous** par d'autres utilisateurs (textes, photos, vidéos, vocaux, stickers, documents) et les retransmet instantanément dans le groupe dédié **`antidelete`** (`120363430044075107@g.us`).
-- **Anti-Edit** : Intercepte en temps réel les **messages modifiés** par vos interlocuteurs et affiche dans `antidelete` le comparatif exact :
-  - ❌ *Avant :* [ancien texte]
-  - ✅ *Après :* [nouveau texte]
-- Filtre intelligemment vos propres actions (pas de faux positifs lors d'un `/clear` ou d'un `/edit`).
+ZyBot intègre une interface web complète conçue selon le design system sombre épuré **Playit.gg** (`#091322`, `#0e1b2e`, `#1d314c`, `#f97316`) :
 
-### 2. 🏛️ Hub Communautaire de Gestion Dédié
-Au lieu d'encombrer votre chat personnel, ZyBot achemine chaque catégorie d'événement vers vos groupes de gestion privés :
+- **🏆 Top 50 Activité (Taverne d'Ionia)** :
+  - Classement en temps réel des 50 membres les plus actifs avec podium en surbrillance.
+  - Statistiques complètes : volumes de messages, part de l'activité du groupe et date du dernier message.
+  - **Graphique interactif 24h (Courbe Spline SVG)** : Courbe d'activité dynamique animée avec gradient, détection de l'heure de pointe et infobulles précises au survol.
+  - Recherche instantanée par pseudo, numéro ou identifiant.
+- **⚖️ Casier Communautaire de Modération** :
+  - Consultation publique des avertissements attribués par la modération.
+  - Modal interactive dévoilant la date, le groupe et le motif précis de chaque infraction.
+- **🛡️ Panel SuperAdmin & Sécurité (`/superadmin`)** :
+  - Observabilité système en direct (RAM, CPU, uptime, latence, statut WhatsApp).
+  - Gestion des mots de passe admin et superadmin avec hash SHA-256 et sessions JWT.
+  - Sélecteur dynamique de modèles IA (Gemma 4 31B, Gemini 3.5 Flash, Gemini 3.1 Flash-Lite, etc.).
+  - Journal d'audit complet (`AuditLogStore`), explorateur Anti-Delete et gestion des Giveaways.
+
+---
+
+## 🛡️ Fonctionnalités Majeures & Sécurité
+
+### 1. 🚫 Système Anti-Spam & Protection du Classement
+- **Détection intelligente du spam d'activité** :
+  - **Flood rapide** : $\ge 5$ messages en moins de 4 secondes ou $\ge 8$ messages en moins de 10 secondes.
+  - **Spam de doublons** : Le même message répété 3 fois consécutivement.
+  - **Farming de caractères courts** : Messages de $\le 2$ caractères envoyés en boucle pour gonfler les stats.
+  - **Flood de caractères/mots** : Répétitions excessives (50+ caractères identiques ou 12+ mots répétés).
+- **Exclusion automatique** : Les messages détectés comme spam ne sont **jamais comptabilisés** dans le `/top` ni sur le site web.
+- **Alerte explicative dans `admintaverne`** : Le bot envoie une notification détaillant l'auteur, le groupe, l'extrait et la **raison exacte** de l'exclusion (protégé par un cooldown intelligent de 60s pour éviter de flooder les admins).
+
+### 2. 🗑️ Moteur Anti-Delete & ✏️ Anti-Edit (Zéro Perte)
+- **Anti-Delete** : Intercepte automatiquement **tous les messages supprimés pour tous** (textes, photos, vidéos, vocaux, stickers, documents) et les retransmet instantanément dans le groupe dédié **`antidelete`** (`120363430044075107@g.us`).
+- **Anti-Edit** : Capture en temps réel les **messages modifiés** et affiche le comparatif clair *Avant / Après*.
+
+### 3. 🧠 Intelligence Artificielle Multi-Modèles (Gemini & Gemma)
+- Commandes `/ask` (conversationnel), `/bref` (résumé concis de groupe en points clés français) et `/resume`.
+- **Résilience multi-tier** : Découverte dynamique des modèles disponibles sur la clé API avec bascule automatique en cascade (`gemma-4-31b-it`, `gemini-3.5-flash`, `gemini-3.1-flash-lite`).
+- Choix du modèle actif en direct depuis le panneau SuperAdmin.
+
+### 4. 🎉 Moteur de Giveaways Automatisé (`/gw`)
+- Créez des concours interactifs avec décompte en temps réel (ex: `/gw "Discord Nitro 1 mois" | 2h | 1`).
+- **Participation par réaction** (emoji 🎁) sans polluer le chat de messages.
+- Tirage au sort cryptographique automatique à la fin du compte à rebours, avec commandes `/gw end` et `/gw reroll`.
+
+### 5. 🔒 Verrouillage Express de Groupe (`/lock`)
+- Basculez un groupe en mode *Admins seuls* ou *Ouvert à tous* en un clin d'œil avec `/lock` ou `/unlock`.
+
+### 6. 🏛️ Hub Communautaire de Gestion Dédié
+Les événements sont acheminés sans encombrer votre messagerie personnelle vers vos salons réservés :
 - 🧪 **Groupe Test (`testbot`)** : `120363412992633770@g.us`
 - 🚨 **Groupe Alertes Mots-Clés (`importantmsg`)** : `120363432686901629@g.us`
 - 🔒 **Groupe Vue-Unique & Persoping (`persopingunevue`)** : `120363430665427462@g.us`
@@ -31,121 +72,75 @@ Au lieu d'encombrer votre chat personnel, ZyBot achemine chaque catégorie d'év
 - 🗑️ **Groupe Anti-Delete & Anti-Edit (`antidelete`)** : `120363430044075107@g.us`
 - 🛡️ **Groupe Administration & Modération (`admintaverne`)** : `120363424594930135@g.us`
 
-> **Règle d'or : Dans tous ces groupes du Hub ainsi qu'en message privé, les messages ne s'effacent JAMAIS.**
-
-### 3. ⏱️ Auto-Destruction Sélective (`/temp`)
-- Activez l'auto-destruction automatique de **tous vos prochains messages** dans une discussion spécifique :
-  - `/temp 30s`, `/temp 5m`, `/temp 1h`, etc.
-  - Vos messages envoyés dans cette discussion s'effacent automatiquement pour tous après le délai configuré.
-  - Désactivation en un clin d'œil avec `/temp off`.
-
-### 4. 📊 Statistiques Journalières & Rapport Automatique (`/recap`)
-- Suivi automatique de votre activité quotidienne :
-  - Messages envoyés par vous.
-  - Messages reçus en privé (hors groupes).
-  - Messages supprimés interceptés par l'Anti-Delete.
-  - Messages modifiés interceptés par l'Anti-Edit.
-  - Alertes mots-clés déclenchées.
-  - Vues uniques capturées.
-- **Rapport automatique tous les soirs à 23h00** envoyé discrètement dans votre groupe `notifds`.
-- Consultation instantanée à tout moment avec `/recap`.
-
-### 5. 🔔 Notifications Mémoire Long Terme (`notifds`)
-Dès qu'un élément persistant est ajouté ou supprimé de la configuration, une notification est automatiquement envoyée dans votre groupe `notifds` avec les émojis dédiés :
-- `✅ Alias : <nom> <id_groupe>` / `🗑️ Alias : <nom> supprimé`
-- `✅ Mot-clé : <mot>` / `🗑️ Mot-clé : <mot> supprimé`
-- `✅ Mode temporaire : activé (<temps>) pour <jid>` / `🗑️ Mode temporaire : désactivé`
-- Récapitulatif complet de chaque message programmé avec `/program` ou `/rappel`.
-
-### 6. 🚨 Détection Intelligente, Mode Strict & Blacklist Anti-Troll
-Le système `/alert` surveille tous les groupes et discussions avec une protection anti-spam avancée :
-- **Mode Strict Anti-Faux Positifs (Activé par défaut)** : Les mots courts comme `val` ne se déclenchent **QUE** s'ils sont isolés (ex: `salut val`, `hey @val`, `*Val*`). Les mots rattachés comme `valise`, `vallée`, `cheval` ou `valllllll` sont automatiquement ignorés !
-- **🚫 Blacklist Anti-Troll (`/alert ignore <numéro>`)** : Si un plaisantin s'amuse à spammer votre mot-clé, ignorez-le définitivement d'une seule commande. Vous pouvez aussi répondre à son message avec `/alert ignore`. Ses messages ne déclencheront plus jamais d'alerte. Retrait facile avec `/alert unignore <numéro>`.
-- **Insensible à la casse** : `val`, `Val`, `VAL`.
-- **Insensible au formatage** : `*val*` (gras), `_val_` (italique), `~val~` (barré).
-- **Insensible aux accents** : `héros` / `heros`, `Valèntin` / `valentin`.
-- **Contrôle rapide** : Activez ou désactivez le mode strict avec `/alert strict on` ou `/alert strict off`.
-
-### 7. 🌙 Mode Ne Pas Déranger (DND) pour Alertes Push (`/dnd`)
-- **Silence Nocturne Automatique (23h00 - 06h00 par défaut)** : Les notifications push `ntfy` sur smartphone sont automatiquement mises en sourdine chaque nuit pour préserver votre sommeil.
-- **DND Temporaire** : Coupez les notifications pour une durée déterminée avec `/dnd 2h`, `/dnd 30m`, etc.
-- **Personnalisation des Horaires** : Réglez votre propre créneau en tapant simplement `/dnd 22:30 07:00` ou `/dnd 23h 06h`.
-
-### 8. 🕵️‍♂️ Dossier Profil Complet & OSINT WhatsApp (`/whois`)
-Générez instantanément une fiche d'information approfondie sur n'importe quel contact :
-- **Photo de profil en Haute Définition (HD)** récupérée et envoyée dans votre hub `notifds`.
-- **Bio / Statut WhatsApp** et historique.
-- **Groupes en commun avec vous** (nombre total et liste des groupes partagés).
-- **Type de compte** (Personnel ou WhatsApp Business avec description, email pro, site web et catégorie).
-- **Pays estimé** et indicatif téléphonique.
-- **Rôle dans le groupe courant** (SuperAdmin, Admin, Membre).
-
-### 9. 📸 Archivage & Téléchargement des Statuts / Stories (`/statut`)
-- **Archivage Furtif Continu** : Le bot intercepte et met en mémoire les statuts (photos, vidéos, textes) publiés par vos contacts sans envoyer d'accusé de lecture.
-- **Inspection Rapide** : Tapez `/statut` pour voir qui a publié des statuts récemment.
-- **Extraction & Téléchargement** : Tapez `/statut <numéro_ou_mention>` (ou répondez au message de quelqu'un avec `/statut`) pour recevoir toutes ses stories en haute qualité directement dans votre hub `notifds` !
-
-### 10. 📲 Notifications Push Smartphone Instantanées (`/ntfy`)
-- **Sonnerie & Vibration en temps réel** : Même avec WhatsApp fermé ou téléphone verrouillé, recevez des notifications push instantanées via l'application gratuite et open-source **ntfy** (iOS/Android).
-- Relié en direct à vos alertes :
-  - 🚨 Alertes mots-clés (`importantmsg`).
-  - 🗑️ Messages supprimés et ✏️ modifiés (`antidelete`).
-  - 👁️ Vues uniques capturées (`persopingunevue`).
-- Configuration ultra-rapide avec `/ntfy <nom_du_canal>`.
-
-### 8. 🥷 Furtivité Zéro-Trace & Browser Spoofing
-- **Empreinte Officielle** : Le bot s'identifie auprès des serveurs WhatsApp comme un navigateur légitime `Google Chrome` sur `macOS` (`Mac OS / Chrome`).
-- **Comportement Humain** : Simulation d'écriture (`composing`) pendant un intervalle aléatoire (**1,5s à 3,5s**).
-- **Suppression Invisible `/program`** : À la fin de la programmation, les messages du guide pas-à-pas sont supprimés pour tous puis pour vous-même, évitant l'encart *"Ce message a été supprimé"*.
-- **Suppression Échelonnée Rapide `/clear`** : Délai optimisé de 60ms à 130ms (mode `all`) et 40ms à 80ms (mode `me`) pour supprimer 10 messages en ~1 seconde sans blocage ni risque de détection.
-
 ---
 
-## ⚡ Liste Complète des Commandes
+## ⚡ Répertoire des 38 Commandes Actives
 
-Toutes les commandes se déclenchent avec le préfixe `/` (exécutables uniquement par vous-même).
+Toutes les commandes se déclenchent avec le préfixe `/` (exécutables par vous-même ou les membres de confiance autorisés via `/trust`).
 
-### ✨ Outils & Médias du Quotidien
+### 🛡️ Modération & Sécurité
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
-| **`/s`** | *(En réponse ou légende)* `/s` | Convertit instantanément n'importe quelle photo ou courte vidéo en **vrai sticker WhatsApp officiel**. |
-| **`/toimg`** | *(En réponse à un sticker)* `/toimg` | *(Alias: `/img`, `/toimage`)* Convertit un sticker en photo standard (PNG) ou en vidéo animée (MP4). |
-| **`/music`** | `/music <titre ou lien>` | *(Alias: `/mp3`, `/song`, `/musique`)* Recherche et télécharge une musique en MP3 haute qualité via yt-dlp. |
-| **`/dl`** | `/dl <lien>` | *(Alias: `/telecharger`)* Télécharge et envoie directement une vidéo TikTok (sans filigrane), Twitter/X, Instagram ou YouTube. |
-| **`/pfp`** | `/pfp [@membre\|groupe]` | *(Alias: `/pp`, `/profilepic`)* Télécharge la photo de profil en pleine résolution d'un membre ou du groupe. |
-| **`/texte`** | *(En réponse)* `/texte` | *(Alias: `/transcrire`, `/transcribe`)* Transcrit une note vocale audio reçue en texte écrit clair. |
-| **`/resume`** | `/resume [nb]` | *(Alias: `/summary`)* Génère un résumé synthétique par IA (défaut: 50 messages, max: 200) économe en tokens. |
-| **`/export`** | `/export [nb]` | Exporte les N derniers messages du chat sous forme d'archive texte propre transmise dans `notifds`. |
-| **`/persoping`** | *(En réponse)* `/persoping` | *(Alias: `/save`)* Transfère le message ciblé dans `persopingunevue` avec sa **date/heure d'envoi originale**, son auteur et son ID. |
-| **`/vv`** | *(En réponse)* `/vv` | Capture discrètement une photo ou vidéo à vue unique (View Once 1️⃣) et la transmet en clair dans le groupe `persopingunevue`. |
-| **`/statut`** | `/statut [cible\|id@lid]` | Archive et télécharge les stories/statuts WhatsApp récents d'un contact ou identifiant LID directement dans `notifds`. |
-| **`/whois`** | `/whois [@contact\|numéro]` | Fiche profil complète dans `notifds` (Photo HD, bio, type de compte personnel/business, groupes en commun, pays). |
-| **`/temp`** | `/temp <temps\|off>` | Active l'auto-destruction de tous vos futurs messages dans cette discussion (ex: `/temp 30s`, `/temp 5m`, `/temp 1h`, `/temp off`). |
-| **`/clear`** | `/clear <nb> [all\|me]` | Supprime vos derniers messages instantanément (~1s pour 10 messages). `all` = pour tous (revoke), `me` = pour vous seul. |
-| **`/edit`** | *(En réponse)* `/edit <texte>` | Modifie directement l'un de vos messages récents sans passer par les menus de l'application. |
-| **`/translate`** | `/translate [lang] [texte]` | Traduit le texte ou le message cité directement à la place de la commande (ex: `/translate en Bonjour`, `/translate es`). |
-| **`/calc`** | `/calc <calcul>` | Calcule instantanément une expression mathématique (ex: `/calc 15 * 84 + 12.5`) et remplace la commande sur place. |
-| **`/meteo`** | `/meteo [ville]` | Affiche la météo en direct d'une ville directement à la place de la commande. |
+| **`/warn`** | `/warn <membre> [raison]` | *(Alias: `/av`)* Attribue un avertissement, enregistre l'infraction et notifie le salon `admintaverne`. |
+| **`/warn list`** | `/warn list [membre]` | *(Alias: `/av list`)* Consulte le casier complet d'un membre ou de la communauté. |
+| **`/warn del`** | `/warn del <membre> [index]` | *(Alias: `/av del`)* Supprime les avertissements d'un membre. |
+| **`/lock`** | `/lock [on\|off]` | *(Alias: `/verrouiller`, `/unlock`)* Verrouille le groupe aux admins seuls ou le réouvre à tous. |
+| **`/antiraid`** | `/antiraid [on\|off]` | Protection anti-liens automatique pour les nouveaux arrivants (< 10 min). |
+| **`/antinsfw`** | `/antinsfw [check\|on\|off]` | Filtre et analyse les images par IA dans les groupes administrés. |
+| **`/trust`** | `/trust <numéro>` | Autorise un membre de confiance à exécuter des commandes restreintes. |
+| **`/untrust`** | `/untrust <numéro>` | Retire les privilèges d'un membre de confiance. |
 
-### ⚙️ Administration, Modération & Gestion du Bot
+### 📊 Activité, Statistiques & Intelligence Artificielle
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
-| **`/warn`** | `/warn <membre> [raison]` | *(Alias: `/av`)* Avertit un membre, mémorise la sanction à long terme, et transmet le dossier complet dans le groupe `admintaverne`. |
-| **`/warn list`** | `/warn list [membre]` | *(Alias: `/av list`)* Liste tous les membres ayant des avertissements ou affiche l'historique complet d'une personne avec raisons et dates. |
-| **`/warn del`** | `/warn del <membre>` | *(Alias: `/av del`)* Efface tous les avertissements d'un membre et notifie les salons d'administration. |
-| **`/antinsfw`** | `/antinsfw [check\|on\|off]` | Filtre et scanne les images par IA (Freepik) dans vos groupes administrés. `/nsfw check` teste une photo sans risque. |
-| **`/alias`** | `/alias [list\|add\|del]` | *(Alias: `/aliases`)* Liste, ajoute ou supprime vos alias courts de groupes WhatsApp. |
-| **`/groupe`** | `/groupe` ou `/groupe alias <nom> [id]` | Liste tous vos groupes ou attribue un alias court (ex: `testbot`, `travail`) utilisable dans `/program`. |
-| **`/id`** | `/id` | Affiche l'ID unique WhatsApp (`@g.us`) du groupe ou de la discussion, ainsi que son alias si configuré. |
-| **`/program`** | `/program` ou direct : `<msg> \| <date> [\| dest]` | **Mode Guidé Interactif** : programmation de message différé sans trace ! |
-| **`/alert`** | `/alert [list\|add\|del\|ignore\|on\|off]` | Surveille des mots-clés dans vos discussions et permet d'ignorer des trolls avec `/alert ignore <numéro>`. Alerte dans `importantmsg`. |
-| **`/dnd`** | `/dnd [on\|off\|2h\|23h 06h]` | Mode Ne Pas Déranger : coupe le son des notifications push ntfy la nuit (défaut 23h-06h) ou temporairement. |
-| **`/recap`** | `/recap` | Affiche en direct le tableau de bord des statistiques d'activité et d'interception du jour. |
-| **`/ntfy`** | `/ntfy <canal\|off>` | Active les notifications push avec sonnerie et vibration sur votre smartphone via l'application ntfy. |
-| **`/update`** | `/update [force\|on\|off]` | Vérifie les commits GitHub, effectue le `git pull` résilient et redémarre instantanément. `/update force` réaligne le Pi. |
-| **`/reboot`** | `/reboot` | Relance le processus du bot en arrière-plan pour appliquer immédiatement les modifications du code sans toucher au terminal. |
-| **`/bot`** | `/bot` | Affiche la version du bot (ex: v1.25), l'uptime, l'utilisation RAM, la latence et Node.js. |
-| **`/help`** | `/help` | Affiche le menu d'aide organisé (32 commandes). |
+| **`/top`** | `/top [nb\|groupe]` | *(Alias: `/classement`, `/leaderboard`, `/activite`)* Affiche le classement des membres les plus actifs et l'heure de pointe. |
+| **`/ask`** | `/ask <question>` | *(Alias: `/ai`, `/gemini`)* Pose une question à l'assistant IA (Gemini / Gemma). |
+| **`/bref`** | `/bref [nb]` | *(Alias: `/tldr`)* Résumé clair et concis des derniers messages du groupe par IA. |
+| **`/resume`** | `/resume [nb]` | *(Alias: `/summary`)* Analyse synthétique d'une conversation par IA. |
+| **`/recap`** | `/recap` | Tableau de bord direct des statistiques et interceptions de la journée. |
+| **`/texte`** | *(En réponse)* `/texte` | *(Alias: `/transcrire`)* Transcrit un message vocal audio en texte clair. |
+
+### 🎉 Giveaways & Animations
+| Commande | Syntaxe | Description |
+| :--- | :--- | :--- |
+| **`/gw`** | `/gw "<lot>" \| <durée> \| [gagnants]` | *(Alias: `/giveaway`)* Lance un concours interactif avec participation par réaction 🎁. |
+| **`/gw end`** | `/gw end <id\|nom>` | Termine immédiatement un giveaway et tire au sort les gagnants. |
+| **`/gw reroll`** | `/gw reroll <id\|nom>` | Sélectionne un nouveau gagnant pour un concours terminé. |
+
+### ✨ Médias, Vie Privée & Téléchargements
+| Commande | Syntaxe | Description |
+| :--- | :--- | :--- |
+| **`/s`** | *(En réponse/légende)* `/s` | Convertit une photo ou courte vidéo en sticker WhatsApp officiel. |
+| **`/toimg`** | *(En réponse à un sticker)* `/toimg` | *(Alias: `/img`)* Convertit un sticker en image PNG ou vidéo MP4. |
+| **`/music`** | `/music <titre ou lien>` | *(Alias: `/mp3`, `/song`)* Télécharge un audio en MP3 haute qualité. |
+| **`/dl`** | `/dl <lien>` | *(Alias: `/telecharger`)* Télécharge une vidéo TikTok, Twitter/X, Instagram ou YouTube. |
+| **`/pfp`** | `/pfp [@membre\|groupe]` | *(Alias: `/pp`)* Télécharge la photo de profil en pleine résolution HD. |
+| **`/whois`** | `/whois [@membre\|numéro]` | Fiche profil approfondie (Photo HD, bio, groupes communs, pays, type de compte). |
+| **`/statut`** | `/statut [cible\|id@lid]` | Archive et télécharge les stories/statuts WhatsApp récents d'un contact dans `notifds`. |
+| **`/vv`** | *(En réponse)* `/vv` | Capture discrètement une vue unique (View Once 1️⃣) et la transmet dans `persopingunevue`. |
+| **`/persoping`** | *(En réponse)* `/persoping` | *(Alias: `/save`)* Sauvegarde un message avec sa date et son auteur dans `persopingunevue`. |
+| **`/temp`** | `/temp <durée\|off>` | Active l'auto-destruction programmée de tous vos prochains messages dans ce chat. |
+| **`/clear`** | `/clear <nb> [all\|me]` | Supprime vos derniers messages instantanément (~1s pour 10 messages). |
+| **`/edit`** | *(En réponse)* `/edit <texte>` | Modifie l'un de vos messages récents sur place. |
+| **`/translate`** | `/translate [lang] [texte]` | Traduit un texte avec bascule multi-fournisseurs (MyMemory / Google). |
+| **`/calc`** | `/calc <calcul>` | Calcule instantanément une expression mathématique. |
+| **`/meteo`** | `/meteo [ville]` | Affiche la météo en direct d'une ville. |
+
+### ⚙️ Administration du Bot & Système
+| Commande | Syntaxe | Description |
+| :--- | :--- | :--- |
+| **`/alert`** | `/alert [list\|add\|del\|ignore]` | Surveille des mots-clés avec mode strict anti-spam et blacklist troll. |
+| **`/dnd`** | `/dnd [on\|off\|durée]` | Mode Ne Pas Déranger : coupe le son des notifications push ntfy la nuit ou temporairement. |
+| **`/ntfy`** | `/ntfy <canal\|off>` | Active les notifications push prioritaires sur smartphone (iOS/Android). |
+| **`/program`** | `/program` | Mode guidé interactif pour programmer l'envoi de messages différés sans traces. |
+| **`/export`** | `/export [nb]` | Exporte les N derniers messages du chat sous forme d'archive texte propre dans `notifds`. |
+| **`/alias`** | `/alias [list\|add\|del]` | Gère les alias courts pour les groupes WhatsApp. |
+| **`/groupe`** | `/groupe [alias <nom>]` | Liste vos groupes ou associe un identifiant à un nom court. |
+| **`/id`** | `/id` | Affiche l'ID WhatsApp unique (`@g.us`) et les alias du groupe courant. |
+| **`/update`** | `/update [force]` | Met à jour le bot depuis GitHub (`git pull`) et redémarre le processus. |
+| **`/reboot`** | `/reboot` | Redémarre proprement le bot pour recharger le code sans toucher au terminal. |
+| **`/bot`** | `/bot` | Affiche l'uptime, l'état de la mémoire RAM, la version et l'environnement Node.js. |
+| **`/help`** | `/help [commande]` | Affiche la liste organisée des commandes et le guide de modération. |
 
 ---
 
@@ -167,37 +162,31 @@ cd zybot
 npm install
 ```
 
-### 3. Lancer ZyBot
+### 3. Exécuter la suite de tests unitaires
+```bash
+npm test
+```
+*Valide automatiquement les 24 tests unitaires de régression, de sécurité et d'API.*
+
+### 4. Lancer ZyBot
 ```bash
 npm start
 ```
-*Pour le rechargement automatique en développement :*
+*Pour la production avec PM2 :*
 ```bash
-npm run dev
+pm2 start src/index.js --name "zybot"
+pm2 save
 ```
 
-### 4. Associer votre compte WhatsApp
+### 5. Associer votre compte WhatsApp
 1. Un **QR Code** s'affiche directement dans votre console.
-2. Ouvrez **WhatsApp** sur votre téléphone.
-3. Allez dans **Réglages** (iOS) ou **Options `⋮`** (Android) > **Appareils connectés**.
-4. Touchez **Connecter un appareil** et scannez le QR Code du terminal.
-5. Une fois connecté, le message de confirmation s'affiche :
-   ```text
-   ✅ CONNECTÉ AVEC SUCCÈS À WHATSAPP !
-   ```
-
----
-
-## 💡 Astuces d'Utilisation
-
-- **Mode Furtif Absolu** : Vous pouvez exécuter vos commandes directement dans votre propre chat personnel (**"Message à vous-même"**). Personne ne saura jamais que vous utilisez un bot.
-- **Rappels Faciles** : Utilisez `/rappel <tâche> | +Xm` pour recevoir des notifications automatisées dans `notifds`.
-- **Rechargement Facile** : Après avoir modifié un fichier, tapez simplement `/reboot` dans WhatsApp pour appliquer les changements instantanément !
+2. Ouvrez **WhatsApp** sur votre téléphone > **Appareils connectés** > **Connecter un appareil**.
+3. Scannez le QR Code pour démarrer votre session furtive.
 
 ---
 
 ## 🔒 Sécurité & Confidentialité
 
 - Vos identifiants de session WhatsApp sont stockés localement dans le dossier `auth_info/`. Ce dossier est strictement **exclu de Git** via `.gitignore`.
-- **Ne partagez jamais** le contenu de votre dossier `auth_info/`.
+- **Ne partagez jamais** le contenu de votre dossier `auth_info/` ni vos mots de passe configurés dans `config.json`.
 - ZyBot est conçu exclusivement pour un usage personnel respectueux des conditions d'utilisation de WhatsApp.
