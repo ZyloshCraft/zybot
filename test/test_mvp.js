@@ -270,7 +270,7 @@ console.log('✅ Test 13 réussi : Guide de modération /help warn validé.');
 
 // Test 14: WebGUI Server & Sécurité
 const { startWebServer, stopWebServer } = await import('../src/web/server.js');
-const server = startWebServer();
+const server = startWebServer(3059);
 assert.ok(server, 'Le serveur WebGUI doit démarrer avec succès');
 stopWebServer();
 console.log('✅ Test 14 réussi : Initialisation et cycle de vie WebGUI validés.');
@@ -661,9 +661,9 @@ recordGroupMessage({
   timestamp: Date.now()
 });
 
-const srv = startWebServer();
+const srv = startWebServer(3059);
 try {
-  const topRes = await fetch('http://127.0.0.1:3050/api/public/top-taverne');
+  const topRes = await fetch('http://127.0.0.1:3059/api/public/top-taverne');
   assert.strictEqual(topRes.status, 200, 'L\'endpoint /api/public/top-taverne doit répondre 200');
   const topData = await topRes.json();
   assert.strictEqual(topData.success, true);

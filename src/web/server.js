@@ -245,7 +245,7 @@ function getPm2Logs(maxLines = 100) {
 
 let serverInstance = null;
 
-export function startWebServer() {
+export function startWebServer(customPort = null) {
   const config = getConfig();
   const webConfig = config.web || {};
 
@@ -254,7 +254,7 @@ export function startWebServer() {
     return null;
   }
 
-  const port = webConfig.port || 3050;
+  const port = customPort || webConfig.port || 3050;
   const host = '0.0.0.0';
 
   if (serverInstance) {
