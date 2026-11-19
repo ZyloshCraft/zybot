@@ -768,4 +768,32 @@ assert.strictEqual(sentAlertText, null, 'Le cooldown doit empêcher de spammer l
 
 console.log('✅ Test 24 réussi : Anti-Spam d\'activité (rejet du classement et alerte admintaverne) validé.');
 
+// Test 25: Commande /translate et résilience multi-niveaux (pas d'erreur 'AUTO' MyMemory)
+const { default: translateCmd, performTranslation, detectLikelySourceLang } = await import('../src/commands/translate.js');
+assert.ok(translateCmd, 'La commande /translate doit être définie');
+assert.strictEqual(detectLikelySourceLang('Hello world', 'fr'), 'en', 'Doit détecter l\'anglais');
+assert.strictEqual(detectLikelySourceLang('Hola amigo', 'fr'), 'es', 'Doit détecter l\'espagnol');
+assert.strictEqual(detectLikelySourceLang('Привет мир', 'fr'), 'ru', 'Doit détecter le russe');
+
+// Test de traduction réelle
+const transResult = await performTranslation('Hello world', 'fr');
+assert.ok(transResult.translatedText, 'Un texte traduit doit être retourné');
+assert.ok(transResult.translatedText.toLowerCase().includes('bonjour'), 'Doit contenir la traduction française');
+
+// Test résilience MyMemory : simulation Google 429
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async (url, opts) => {
+  if (url.includes('google')) {
+    return { ok: false, status: 429, json: async () => ({}) };
+  }
+  return originalFetch(url, opts);
+};
+
+const fallbackResult = await performTranslation('Hello friend', 'fr');
+assert.ok(fallbackResult.translatedText, 'Le fallback MyMemory doit renvoyer une traduction');
+assert.ok(!fallbackResult.translatedText.includes('INVALID'), 'Le texte ne doit jamais contenir d\'erreur MyMemory AUTO');
+globalThis.fetch = originalFetch;
+
+console.log('✅ Test 25 réussi : Traduction multi-niveaux et fallback anti-erreur MyMemory validés.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');
