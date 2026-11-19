@@ -627,9 +627,14 @@ console.log('✅ Test 21 réussi : AntiDeleteStore, AuditLogStore, Heatmap Heure
 
 // Test 22: Gemini Service candidates, sélection SuperAdmin et résilience
 import { getCandidateModels } from '../src/services/geminiService.js';
+const origAiModel = getConfig().speech?.aiModel || 'auto';
 const defaultCandidates = await getCandidateModels(null);
 assert.ok(Array.isArray(defaultCandidates) && defaultCandidates.length >= 3, 'getCandidateModels doit retourner les modèles de fallback');
-assert.strictEqual(defaultCandidates[0], 'gemma-4-31b-it', 'gemma-4-31b-it doit être en tête par défaut');
+if (origAiModel && origAiModel !== 'auto') {
+  assert.strictEqual(defaultCandidates[0], origAiModel, 'Le modèle choisi par l\'utilisateur doit être en tête');
+} else {
+  assert.strictEqual(defaultCandidates[0], 'gemma-4-31b-it', 'gemma-4-31b-it doit être en tête par défaut');
+}
 
 // Test sélection personnalisée depuis SuperAdmin
 updateConfig((cur) => ({ ...cur, speech: { ...(cur.speech || {}), aiModel: 'gemini-4-hydrogen' } }));
@@ -637,7 +642,7 @@ const customCandidates = await getCandidateModels(null);
 assert.strictEqual(customCandidates[0], 'gemini-4-hydrogen', 'Le modèle choisi dans SuperAdmin doit être placé en index 0');
 
 // Rétablir
-updateConfig((cur) => ({ ...cur, speech: { ...(cur.speech || {}), aiModel: 'gemma-4-31b-it' } }));
+updateConfig((cur) => ({ ...cur, speech: { ...(cur.speech || {}), aiModel: origAiModel } }));
 console.log('✅ Test 22 réussi : Service Gemini et sélection de modèle SuperAdmin validés.');
 
 // Test 23: Endpoint public Top 50 Taverne d'Ionia et Heatmap 24h
