@@ -640,4 +640,38 @@ assert.strictEqual(customCandidates[0], 'gemini-4-hydrogen', 'Le modèle choisi 
 updateConfig((cur) => ({ ...cur, speech: { ...(cur.speech || {}), aiModel: 'gemma-4-31b-it' } }));
 console.log('✅ Test 22 réussi : Service Gemini et sélection de modèle SuperAdmin validés.');
 
+// Test 23: Endpoint public Top 50 Taverne d'Ionia et Heatmap 24h
+recordGroupMessage({
+  groupJid: '120363421814868699@g.us',
+  groupName: "Taverne d'Ionia",
+  senderJid: '33766337937@s.whatsapp.net',
+  pushName: 'Valentin',
+  timestamp: Date.now()
+});
+recordGroupMessage({
+  groupJid: '120363421814868699@g.us',
+  groupName: "Taverne d'Ionia",
+  senderJid: '18081946574907@lid',
+  pushName: 'Val',
+  timestamp: Date.now()
+});
+
+const srv = startWebServer();
+try {
+  const topRes = await fetch('http://127.0.0.1:3050/api/public/top-taverne');
+  assert.strictEqual(topRes.status, 200, 'L\'endpoint /api/public/top-taverne doit répondre 200');
+  const topData = await topRes.json();
+  assert.strictEqual(topData.success, true);
+  assert.strictEqual(topData.groupJid, '120363421814868699@g.us');
+  assert.strictEqual(topData.groupName, "Taverne d'Ionia");
+  assert.ok(topData.totalMessages >= 2, 'Doit avoir comptabilisé les messages de test');
+  assert.strictEqual(topData.hourlyActivity.length, 24, 'Doit contenir 24 tranches horaires');
+  assert.ok(Array.isArray(topData.top) && topData.top.length >= 2, 'Doit lister les membres dans le Top');
+  assert.strictEqual(topData.top[0].rank, 1);
+  assert.ok(topData.top[0].percentage.includes('%'));
+} finally {
+  stopWebServer();
+}
+console.log('✅ Test 23 réussi : Endpoint public Top 50 Taverne d\'Ionia et Heatmap 24h validés.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

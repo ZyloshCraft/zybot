@@ -121,60 +121,328 @@
     </header>
 
     <!-- Contenu Public -->
-    <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 space-y-6">
+    <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex-1 space-y-6">
       
-      <!-- Carte Recherche Playit -->
-      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-6 shadow-sm space-y-4">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#1d314c] pb-4">
-          <div>
-            <h1 class="text-base font-bold text-white tracking-tight">Casier Communautaire de Modération</h1>
-            <p class="text-xs text-[#8b9bb4] mt-0.5">
-              Consultation libre du nombre d'avertissements attribués par la modération.
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">MEMBRES RÉPERTORIÉS :</span>
-            <span class="px-2.5 py-1 rounded bg-[#091322] border border-[#1d314c] font-bold text-[#f97316] text-sm font-mono" id="publicTotalUsers">0</span>
-          </div>
-        </div>
-
-        <!-- Recherche par pseudo ou numéro -->
-        <div class="relative">
-          <input 
-            type="text" 
-            id="publicSearchInput" 
-            placeholder="Rechercher par pseudo ou numéro (ex: Axel, +33 7, 07 66)..." 
-            class="w-full px-4 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-xs sm:text-sm font-sans outline-none transition-colors"
-          >
-        </div>
+      <!-- Barre de navigation par Onglets (Top 50 Activité vs Casier de modération) -->
+      <div class="flex items-center gap-2 sm:gap-4 border-b border-[#1d314c] overflow-x-auto custom-scroll">
+        <button 
+          id="publicTabBtnTop" 
+          onclick="switchPublicTab('top')" 
+          class="playit-tab active flex items-center gap-2 cursor-pointer shrink-0"
+        >
+          <span>🏆</span>
+          <span>Top 50 Activité (Taverne d'Ionia)</span>
+          <span id="publicTopTabBadge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30 font-bold">50</span>
+        </button>
+        <button 
+          id="publicTabBtnWarns" 
+          onclick="switchPublicTab('warns')" 
+          class="playit-tab flex items-center gap-2 cursor-pointer shrink-0"
+        >
+          <span>⚖️</span>
+          <span>Casier de Modération (Warns)</span>
+          <span id="publicWarnsTabBadge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#091322] text-[#8b9bb4] border border-[#1d314c] font-bold">0</span>
+        </button>
       </div>
 
-      <!-- Tableau public Playit -->
-      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
-            <thead class="bg-[#091322] text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
-              <tr>
-                <th class="py-3 px-4 w-12 font-mono">#</th>
-                <th class="py-3 px-4 font-semibold">Membre (Pseudo)</th>
-                <th class="py-3 px-4 font-mono font-semibold">Numéro WhatsApp</th>
-                <th class="py-3 px-4 font-semibold">Statut Modération</th>
-                <th class="py-3 px-4 text-right font-semibold">Détails</th>
-              </tr>
-            </thead>
-            <tbody id="publicWarnsTableBody" class="divide-y divide-[#1d314c]/70">
-              <tr>
-                <td colspan="5" class="py-8 text-center text-[#8b9bb4]">Chargement du casier...</td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- ======================================================== -->
+      <!-- ONGLET 1 : TOP 50 ACTIVITÉ (TAVERNE D'IONIA STRICTEMENT) -->
+      <!-- ======================================================== -->
+      <div id="publicTabPaneTop" class="space-y-6">
+        
+        <!-- En-tête contextuel Taverne d'Ionia -->
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 sm:p-6 shadow-sm">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h1 class="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                  <span>🏆</span>
+                  <span>Taverne d'Ionia • Classement & Activité</span>
+                </h1>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-mono bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30 font-semibold">
+                  Général non-RP
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#091322] text-[#8b9bb4] border border-[#1d314c]">
+                  120363421814868699@g.us
+                </span>
+              </div>
+              <p class="text-xs text-[#8b9bb4]">
+                Classement officiel des 50 membres les plus actifs, volumes de messages et analyse temporelle 24h.
+              </p>
+            </div>
+            <div class="flex items-center gap-2.5 self-start md:self-auto shrink-0">
+              <span id="publicTopLastUpdate" class="text-[11px] font-mono text-[#8b9bb4]">Synchro : En direct</span>
+              <button 
+                onclick="loadPublicTop()" 
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#091322] hover:bg-[#14253f] border border-[#1d314c] hover:border-[#f97316]/50 text-white text-xs font-medium transition-colors cursor-pointer"
+                title="Actualiser les statistiques"
+              >
+                <span id="publicTopRefreshIcon">🔄</span>
+                <span>Actualiser</span>
+              </button>
+            </div>
+          </div>
         </div>
+
+        <!-- 4 KPI Cards Statistiques -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- KPI 1 : Total Messages -->
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 shadow-sm space-y-1">
+            <div class="flex items-center justify-between text-xs text-[#8b9bb4]">
+              <span class="font-semibold uppercase tracking-wider text-[11px]">Messages Enregistrés</span>
+              <span class="text-base">💬</span>
+            </div>
+            <div class="text-2xl font-bold font-mono text-white tracking-tight" id="kpiTotalMessages">0</div>
+            <p class="text-[11px] text-[#8b9bb4]">Volume global dans la Taverne</p>
+          </div>
+
+          <!-- KPI 2 : Membres répertoriés -->
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 shadow-sm space-y-1">
+            <div class="flex items-center justify-between text-xs text-[#8b9bb4]">
+              <span class="font-semibold uppercase tracking-wider text-[11px]">Membres Actifs</span>
+              <span class="text-base">👥</span>
+            </div>
+            <div class="text-2xl font-bold font-mono text-[#f97316] tracking-tight" id="kpiTotalUsers">0</div>
+            <p class="text-[11px] text-[#8b9bb4]">Top 50 répertorié ci-dessous</p>
+          </div>
+
+          <!-- KPI 3 : Heure de pointe -->
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 shadow-sm space-y-1">
+            <div class="flex items-center justify-between text-xs text-[#8b9bb4]">
+              <span class="font-semibold uppercase tracking-wider text-[11px]">Heure de Pointe (24h)</span>
+              <span class="text-base">🔥</span>
+            </div>
+            <div class="text-base sm:text-lg font-bold font-mono text-amber-400 truncate" id="kpiPeakHour">Calme</div>
+            <p class="text-[11px] text-[#8b9bb4]" id="kpiPeakDetails">Tranche horaire record</p>
+          </div>
+
+          <!-- KPI 4 : Part du Podium -->
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 shadow-sm space-y-1">
+            <div class="flex items-center justify-between text-xs text-[#8b9bb4]">
+              <span class="font-semibold uppercase tracking-wider text-[11px]">Part du Podium (Top 3)</span>
+              <span class="text-base">👑</span>
+            </div>
+            <div class="text-2xl font-bold font-mono text-emerald-400 tracking-tight" id="kpiPodiumShare">0%</div>
+            <p class="text-[11px] text-[#8b9bb4]">Cumul des 3 plus gros contributeurs</p>
+          </div>
+        </div>
+
+        <!-- Graphique d'Activité Temporelle 24h (Heatmap / Bar chart) -->
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 sm:p-6 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1d314c] pb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                <span>📊</span>
+                <span>Distribution Temporelle sur 24 Heures (Heatmap)</span>
+              </h2>
+              <p class="text-xs text-[#8b9bb4]">
+                Volume cumulé de messages envoyés selon l'heure de la journée (00h00 à 23h59).
+              </p>
+            </div>
+            <div id="publicTopPeakBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#091322] border border-[#1d314c] text-xs font-mono text-[#f97316] font-semibold self-start sm:self-auto">
+              🔥 Pic : Calme
+            </div>
+          </div>
+
+          <!-- Barres d'activité horaire -->
+          <div class="h-32 pt-6 pb-2 px-1 flex items-end gap-1 sm:gap-2 border-b border-[#1d314c]/60" id="publicTopHourlyBars">
+            <!-- 24 barres générées dynamiquement par JS -->
+          </div>
+
+          <!-- Repères d'heures sous le graphique -->
+          <div class="flex justify-between text-[10px] font-mono text-[#8b9bb4] px-1">
+            <span>00h</span>
+            <span>03h</span>
+            <span>06h</span>
+            <span>09h</span>
+            <span>12h</span>
+            <span>15h</span>
+            <span>18h</span>
+            <span>21h</span>
+            <span>23h</span>
+          </div>
+        </div>
+
+        <!-- Podium Visuel Top 3 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="publicTopPodiumContainer">
+          <!-- 3 cartes injectées par JS -->
+        </div>
+
+        <!-- Tableau Intégral du Top 50 -->
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 sm:p-6 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1d314c] pb-4">
+            <div>
+              <h2 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                <span>📜</span>
+                <span>Classement Intégral du Top 50</span>
+              </h2>
+              <p class="text-xs text-[#8b9bb4]">
+                Classement par nombre de messages envoyés. Cliquez sur une ligne pour afficher les détails du membre.
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Affichés :</span>
+              <span class="px-2.5 py-0.5 rounded bg-[#091322] border border-[#1d314c] font-mono font-bold text-[#f97316] text-xs" id="publicTopFilteredCount">0 / 50</span>
+            </div>
+          </div>
+
+          <!-- Barre de Recherche dans le Top 50 -->
+          <div class="relative">
+            <input 
+              type="text" 
+              id="publicTopSearchInput" 
+              placeholder="Rechercher dans le Top 50 par pseudo, numéro (+33 7...) ou LID..." 
+              class="w-full px-4 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-xs sm:text-sm font-sans outline-none transition-colors"
+            >
+          </div>
+
+          <!-- Tableau du Top 50 -->
+          <div class="border border-[#1d314c] rounded-md overflow-hidden bg-[#091322]">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-[#0e1b2e] text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
+                  <tr>
+                    <th class="py-3 px-4 w-16 font-mono text-center">Rang</th>
+                    <th class="py-3 px-4 font-semibold">Membre (Pseudo & Contact)</th>
+                    <th class="py-3 px-4 font-semibold text-center w-28">Messages</th>
+                    <th class="py-3 px-4 font-semibold w-2/5">Part de la Taverne</th>
+                    <th class="py-3 px-4 font-semibold text-right w-36">Dernière Activité</th>
+                  </tr>
+                </thead>
+                <tbody id="publicTopTableBody" class="divide-y divide-[#1d314c]/70">
+                  <tr>
+                    <td colspan="5" class="py-8 text-center text-[#8b9bb4]">Chargement du classement de la Taverne d'Ionia...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- ONGLET 2 : CASIER DE MODÉRATION (WARNS)                  -->
+      <!-- ======================================================== -->
+      <div id="publicTabPaneWarns" class="space-y-6 hidden">
+        
+        <!-- Carte Recherche Playit -->
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-6 shadow-sm space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#1d314c] pb-4">
+            <div>
+              <h1 class="text-base font-bold text-white tracking-tight">Casier Communautaire de Modération</h1>
+              <p class="text-xs text-[#8b9bb4] mt-0.5">
+                Consultation libre du nombre d'avertissements attribués par la modération.
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">MEMBRES RÉPERTORIÉS :</span>
+              <span class="px-2.5 py-1 rounded bg-[#091322] border border-[#1d314c] font-bold text-[#f97316] text-sm font-mono" id="publicTotalUsers">0</span>
+            </div>
+          </div>
+
+          <!-- Recherche par pseudo ou numéro -->
+          <div class="relative">
+            <input 
+              type="text" 
+              id="publicSearchInput" 
+              placeholder="Rechercher par pseudo ou numéro (ex: Axel, +33 7, 07 66)..." 
+              class="w-full px-4 py-2.5 rounded-md bg-[#091322] border border-[#1d314c] focus:border-[#f97316] text-white placeholder-[#8b9bb4]/60 text-xs sm:text-sm font-sans outline-none transition-colors"
+            >
+          </div>
+        </div>
+
+        <!-- Tableau public Playit -->
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead class="bg-[#091322] text-[#8b9bb4] border-b border-[#1d314c] text-xs font-semibold uppercase tracking-wider">
+                <tr>
+                  <th class="py-3 px-4 w-12 font-mono">#</th>
+                  <th class="py-3 px-4 font-semibold">Membre (Pseudo)</th>
+                  <th class="py-3 px-4 font-mono font-semibold">Numéro WhatsApp</th>
+                  <th class="py-3 px-4 font-semibold">Statut Modération</th>
+                  <th class="py-3 px-4 text-right font-semibold">Détails</th>
+                </tr>
+              </thead>
+              <tbody id="publicWarnsTableBody" class="divide-y divide-[#1d314c]/70">
+                <tr>
+                  <td colspan="5" class="py-8 text-center text-[#8b9bb4]">Chargement du casier...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
       <div class="text-[11px] text-[#8b9bb4] text-center tracking-wide font-sans">
-        ZyBot • Modération Discrète & Stricte pour WhatsApp • Cliquez sur une ligne pour afficher les motifs des avertissements
+        ZyBot • Taverne d'Ionia & Modération Discrète pour WhatsApp • Données synchronisées en direct
       </div>
     </main>
+
+    <!-- MODALE PUBLIQUE : DÉTAIL D'UN MEMBRE DU TOP 50 -->
+    <div id="publicTopModalBackdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <!-- En-tête -->
+        <div class="p-4 border-b border-[#1d314c] flex items-center justify-between bg-[#091322]">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-full bg-[#f97316]/10 border border-[#f97316]/30 flex items-center justify-center font-bold text-[#f97316] text-base shrink-0" id="ptmAvatar">
+              Z
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-white tracking-tight truncate" id="ptmName">Membre</h3>
+              <p id="ptmNumber" class="text-xs font-mono text-[#8b9bb4] truncate">+33 7 XX XX XX XX</p>
+            </div>
+          </div>
+          <button onclick="closePublicTopModal()" class="w-7 h-7 rounded bg-[#0e1b2e] border border-[#1d314c] text-[#8b9bb4] hover:text-white flex items-center justify-center text-xs font-bold transition-colors cursor-pointer">
+            ✕
+          </button>
+        </div>
+
+        <!-- Corps -->
+        <div class="p-5 space-y-4">
+          <!-- Badge de rang & Titre de profil -->
+          <div class="p-3.5 rounded-md bg-[#091322] border border-[#1d314c] flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b9bb4] block">Rang dans la Taverne</span>
+              <span class="text-lg font-bold font-mono text-white" id="ptmRank">#1</span>
+            </div>
+            <span id="ptmBadge" class="px-2.5 py-1 rounded text-xs font-semibold font-mono bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">
+              Pilier de Taverne
+            </span>
+          </div>
+
+          <!-- Statistiques -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="p-3 rounded-md bg-[#091322] border border-[#1d314c] space-y-0.5">
+              <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b9bb4] block">Messages Envoyés</span>
+              <span class="text-lg font-bold font-mono text-[#f97316]" id="ptmCount">0</span>
+            </div>
+            <div class="p-3 rounded-md bg-[#091322] border border-[#1d314c] space-y-0.5">
+              <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b9bb4] block">Part Globale</span>
+              <span class="text-lg font-bold font-mono text-emerald-400" id="ptmShare">0%</span>
+            </div>
+          </div>
+
+          <!-- Dernière activité -->
+          <div class="p-3 rounded-md bg-[#091322] border border-[#1d314c] space-y-1">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b9bb4] block">Dernier Message Enregistré</span>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-white font-medium" id="ptmLastSeenRelative">À l'instant</span>
+              <span class="text-[#8b9bb4] font-mono text-[11px]" id="ptmLastSeenExact">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pied -->
+        <div class="p-3 border-t border-[#1d314c] bg-[#091322] flex justify-end">
+          <button onclick="closePublicTopModal()" class="px-3.5 py-1.5 rounded bg-[#0e1b2e] border border-[#1d314c] hover:border-[#f97316]/50 text-white text-xs font-medium transition-colors cursor-pointer">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- MODALE PUBLIQUE : DÉTAIL DES RAISONS DES WARNS -->
     <div id="publicWarnModalBackdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
@@ -880,7 +1148,7 @@
       document.getElementById('publicScreen').classList.remove('hidden');
       document.getElementById('appScreen').classList.add('hidden');
       if (pollInterval) clearInterval(pollInterval);
-      loadPublicWarns();
+      initPublicTabs();
     }
 
     function showAdmin() {
@@ -935,13 +1203,379 @@
       showPublic();
     });
 
-    // 2. Vue Publique
+    // 2. Vue Publique : Gestion des onglets Top 50 Activité & Casier Warns
+    let publicTopData = null;
+    let publicWarnsData = [];
+    let currentPublicTab = 'top';
+
+    function formatTimeAgo(ts) {
+      if (!ts) return 'Inconnu';
+      const diffSec = Math.floor((Date.now() - ts) / 1000);
+      if (diffSec < 60) return "À l'instant";
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `Il y a ${diffMin} min`;
+      const diffH = Math.floor(diffMin / 60);
+      if (diffH < 24) return `Il y a ${diffH}h`;
+      const diffD = Math.floor(diffH / 24);
+      return `Il y a ${diffD}j`;
+    }
+
+    function formatFullDateTime(ts) {
+      if (!ts) return 'Date inconnue';
+      const d = new Date(ts);
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} à ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    window.switchPublicTab = function(tab) {
+      currentPublicTab = tab;
+      const btnTop = document.getElementById('publicTabBtnTop');
+      const btnWarns = document.getElementById('publicTabBtnWarns');
+      const paneTop = document.getElementById('publicTabPaneTop');
+      const paneWarns = document.getElementById('publicTabPaneWarns');
+
+      if (tab === 'top') {
+        btnTop?.classList.add('active');
+        btnWarns?.classList.remove('active');
+        paneTop?.classList.remove('hidden');
+        paneWarns?.classList.add('hidden');
+        if (history.replaceState) history.replaceState(null, null, '#top');
+        if (!publicTopData) loadPublicTop();
+      } else {
+        btnWarns?.classList.add('active');
+        btnTop?.classList.remove('active');
+        paneWarns?.classList.remove('hidden');
+        paneTop?.classList.add('hidden');
+        if (history.replaceState) history.replaceState(null, null, '#warns');
+        if (publicWarnsData.length === 0) loadPublicWarns();
+      }
+    };
+
+    function initPublicTabs() {
+      const hash = (window.location.hash || '').replace(/^#/, '');
+      if (hash === 'warns') {
+        switchPublicTab('warns');
+      } else {
+        switchPublicTab('top');
+      }
+      loadPublicTop();
+      loadPublicWarns();
+    }
+
+    // 2.1 Chargement du Top 50 Activité Taverne d'Ionia
+    async function loadPublicTop() {
+      const refreshIcon = document.getElementById('publicTopRefreshIcon');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      try {
+        const res = await fetch(`${API_BASE}/public/top-taverne`);
+        const data = await res.json();
+        if (!data || !data.success) throw new Error(data?.error || 'Erreur récupération top');
+
+        publicTopData = data;
+        renderPublicTop(data);
+      } catch (err) {
+        console.error('Erreur chargement Top Taverne:', err);
+        const tbody = document.getElementById('publicTopTableBody');
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-rose-400">Erreur lors de la synchronisation de l\'activité de la Taverne d\'Ionia.</td></tr>';
+        }
+      } finally {
+        if (refreshIcon) {
+          setTimeout(() => refreshIcon.classList.remove('animate-spin'), 400);
+        }
+      }
+    }
+
+    function renderPublicTop(data) {
+      const totalMsgs = data.totalMessages || 0;
+      const userCount = data.userCount || (data.top ? data.top.length : 0);
+      const topList = data.top || [];
+      const peak = data.peakInfo || { peakHour: null, peakCount: 0, formatted: 'Calme' };
+
+      // KPIs
+      document.getElementById('kpiTotalMessages').textContent = totalMsgs.toLocaleString('fr-FR');
+      document.getElementById('kpiTotalUsers').textContent = userCount.toLocaleString('fr-FR');
+      document.getElementById('kpiPodiumShare').textContent = data.top3Share || '0%';
+
+      if (peak.peakHour !== null && peak.peakCount > 0) {
+        const nextHour = (peak.peakHour + 1) % 24;
+        const pad = (n) => String(n).padStart(2, '0');
+        document.getElementById('kpiPeakHour').textContent = `${pad(peak.peakHour)}h00 - ${pad(nextHour)}h00`;
+        document.getElementById('kpiPeakDetails').textContent = `${peak.peakCount.toLocaleString('fr-FR')} messages enregistrés`;
+        document.getElementById('publicTopPeakBadge').textContent = `🔥 Pic : ${peak.formatted}`;
+      } else {
+        document.getElementById('kpiPeakHour').textContent = 'Calme';
+        document.getElementById('kpiPeakDetails').textContent = 'Aucun pic détecté';
+        document.getElementById('publicTopPeakBadge').textContent = '🔥 Pic : Calme';
+      }
+
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      document.getElementById('publicTopLastUpdate').textContent = `Synchro : ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+      // Badge du compteur Top
+      const topBadge = document.getElementById('publicTopTabBadge');
+      if (topBadge) topBadge.textContent = topList.length;
+
+      // Graphique 24h Heatmap / Bar chart
+      const hourly = (data.hourlyActivity && data.hourlyActivity.length === 24)
+        ? data.hourlyActivity
+        : Array(24).fill(0);
+      const maxHourly = Math.max(...hourly, 1);
+      const barsContainer = document.getElementById('publicTopHourlyBars');
+
+      if (barsContainer) {
+        barsContainer.innerHTML = hourly.map((count, hour) => {
+          const heightPct = count > 0 ? Math.max(8, Math.round((count / maxHourly) * 100)) : 4;
+          const padHour = String(hour).padStart(2, '0');
+          const isPeak = (count === maxHourly && count > 0);
+          const share = totalMsgs > 0 ? ((count / totalMsgs) * 100).toFixed(1) : '0';
+
+          return `
+            <div class="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer">
+              <!-- Tooltip au survol -->
+              <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-[#091322] border border-[#1d314c] text-[10px] font-mono text-white px-2 py-0.5 rounded shadow-lg whitespace-nowrap z-30">
+                ${padHour}h00 : ${count.toLocaleString('fr-FR')} msg${count > 1 ? 's' : ''} (${share}%)
+              </div>
+              <!-- Barre -->
+              <div 
+                class="w-full rounded-t transition-all duration-300 ${isPeak ? 'bg-gradient-to-t from-[#f97316] to-amber-400 shadow-md shadow-[#f97316]/50' : (count > 0 ? 'bg-[#f97316]/75 group-hover:bg-[#f97316]' : 'bg-[#1d314c]/40')}" 
+                style="height: ${heightPct}%;"
+              ></div>
+              <span class="text-[9px] font-mono text-[#8b9bb4] mt-1 hidden sm:block">${padHour}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Podium Top 3 Cards
+      const podiumContainer = document.getElementById('publicTopPodiumContainer');
+      if (podiumContainer) {
+        const top3 = topList.slice(0, 3);
+        const podiumConfig = [
+          {
+            title: '1ère Place • Roi de la Taverne',
+            medal: '🥇',
+            border: 'border-amber-500/40 hover:border-amber-500/70',
+            bg: 'bg-gradient-to-b from-amber-500/10 via-[#0e1b2e] to-[#0e1b2e]',
+            badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+            crown: '👑'
+          },
+          {
+            title: '2ème Place • Bras Droit',
+            medal: '🥈',
+            border: 'border-slate-400/40 hover:border-slate-400/70',
+            bg: 'bg-gradient-to-b from-slate-400/10 via-[#0e1b2e] to-[#0e1b2e]',
+            badgeColor: 'bg-slate-400/10 text-slate-300 border-slate-400/30',
+            crown: '⚔️'
+          },
+          {
+            title: '3ème Place • Pilier d\'Honneur',
+            medal: '🥉',
+            border: 'border-amber-700/40 hover:border-amber-700/70',
+            bg: 'bg-gradient-to-b from-amber-700/10 via-[#0e1b2e] to-[#0e1b2e]',
+            badgeColor: 'bg-amber-700/10 text-amber-500 border-amber-700/30',
+            crown: '🛡️'
+          }
+        ];
+
+        if (top3.length === 0) {
+          podiumContainer.innerHTML = '';
+        } else {
+          podiumContainer.innerHTML = top3.map((u, i) => {
+            const conf = podiumConfig[i];
+            const initial = (u.name || 'M').charAt(0).toUpperCase();
+            return `
+              <div 
+                onclick="openPublicTopModal(${u.rank})"
+                class="${conf.bg} border ${conf.border} rounded-md p-4 sm:p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-full bg-[#091322] border border-[#1d314c] flex items-center justify-center font-bold text-white text-base group-hover:scale-105 transition-transform shrink-0">
+                      ${escapeHtml(initial)}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-sm font-bold text-white truncate group-hover:text-[#f97316] transition-colors">${escapeHtml(u.name)}</span>
+                        <span>${conf.crown}</span>
+                      </div>
+                      <p class="text-xs font-mono text-[#8b9bb4] truncate">${escapeHtml(u.formattedNumber || u.number || '')}</p>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded font-mono font-bold text-xs border ${conf.badgeColor} shrink-0">
+                    ${conf.medal} #${u.rank}
+                  </span>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-[#1d314c]/60 flex items-center justify-between text-xs">
+                  <div>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b9bb4] block">Activité</span>
+                    <span class="text-sm font-bold font-mono text-[#f97316]">${u.count.toLocaleString('fr-FR')} msgs</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b9bb4] block">Part</span>
+                    <span class="text-sm font-bold font-mono text-emerald-400">${u.percentage}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // Rendu du tableau Top 50
+      renderPublicTopTable(topList);
+    }
+
+    function renderPublicTopTable(users) {
+      const tbody = document.getElementById('publicTopTableBody');
+      const counterEl = document.getElementById('publicTopFilteredCount');
+      if (counterEl) {
+        const totalTop = publicTopData?.top?.length || 50;
+        counterEl.textContent = `${users.length} / ${totalTop}`;
+      }
+
+      if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-[#8b9bb4]">Aucun membre trouvé pour cette recherche.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map((u) => {
+        let rankBadge = '';
+        if (u.rank === 1) {
+          rankBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">🥇 1</span>';
+        } else if (u.rank === 2) {
+          rankBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-slate-400/15 text-slate-300 border border-slate-400/30">🥈 2</span>';
+        } else if (u.rank === 3) {
+          rankBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-700/15 text-amber-500 border border-amber-700/30">🥉 3</span>';
+        } else {
+          rankBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-semibold bg-[#0e1b2e] text-[#8b9bb4] border border-[#1d314c]">#${u.rank}</span>`;
+        }
+
+        const initial = (u.name || 'M').charAt(0).toUpperCase();
+        const displayNum = u.formattedNumber || u.number || 'LID / Numéro privé';
+        const relativeTime = formatTimeAgo(u.lastSeen);
+
+        return `
+          <tr 
+            onclick="openPublicTopModal(${u.rank})" 
+            class="hover:bg-[#14253f]/50 transition-colors cursor-pointer group"
+          >
+            <td class="py-3 px-4 text-center font-mono">${rankBadge}</td>
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-full bg-[#0e1b2e] border border-[#1d314c] flex items-center justify-center font-bold text-xs text-[#8b9bb4] group-hover:text-[#f97316] shrink-0">
+                  ${escapeHtml(initial)}
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-white group-hover:text-[#f97316] transition-colors truncate">
+                    ${escapeHtml(u.name || 'Membre')}
+                  </div>
+                  <div class="text-[11px] font-mono text-[#8b9bb4] truncate">
+                    ${escapeHtml(displayNum)}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded font-mono font-bold text-xs bg-[#0e1b2e] border border-[#1d314c] text-[#f97316]">
+                ${u.count.toLocaleString('fr-FR')} msgs
+              </span>
+            </td>
+            <td class="py-3 px-4">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-xs font-mono">
+                  <span class="text-slate-300 font-semibold">${u.percentage}</span>
+                  <span class="text-[10px] text-[#8b9bb4]">du total</span>
+                </div>
+                <div class="w-full bg-[#0e1b2e] h-2 rounded-full overflow-hidden border border-[#1d314c]/70">
+                  <div class="bg-gradient-to-r from-[#f97316] to-amber-400 h-full rounded-full transition-all duration-300" style="width: ${u.barWidth || 5}%;"></div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-4 text-right font-mono text-xs text-[#8b9bb4]">
+              ${escapeHtml(relativeTime)}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal détaillée du Top 50
+    window.openPublicTopModal = (rank) => {
+      if (!publicTopData || !publicTopData.top) return;
+      const user = publicTopData.top.find(u => u.rank === rank);
+      if (!user) return;
+
+      const initial = (user.name || 'M').charAt(0).toUpperCase();
+      document.getElementById('ptmAvatar').textContent = initial;
+      document.getElementById('ptmName').textContent = user.name || 'Membre';
+      document.getElementById('ptmNumber').textContent = user.formattedNumber || user.number || '';
+      document.getElementById('ptmRank').textContent = `#${user.rank} sur ${publicTopData.userCount || 50}`;
+      document.getElementById('ptmCount').textContent = `${user.count.toLocaleString('fr-FR')} msgs`;
+      document.getElementById('ptmShare').textContent = `${user.percentage} de la Taverne`;
+
+      let badgeLabel = '💬 Membre Actif';
+      let badgeClass = 'bg-[#091322] text-[#8b9bb4] border-[#1d314c]';
+      if (user.rank === 1) {
+        badgeLabel = '👑 Roi de la Taverne';
+        badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+      } else if (user.rank === 2) {
+        badgeLabel = '🥈 Bras Droit Suprême';
+        badgeClass = 'bg-slate-400/10 text-slate-300 border-slate-400/30';
+      } else if (user.rank === 3) {
+        badgeLabel = '🥉 Pilier d\'Honneur';
+        badgeClass = 'bg-amber-700/10 text-amber-500 border-amber-700/30';
+      } else if (user.rank <= 10) {
+        badgeLabel = '🔥 Habitué d\'Élite (Top 10)';
+        badgeClass = 'bg-[#f97316]/10 text-[#f97316] border-[#f97316]/30';
+      } else if (user.rank <= 25) {
+        badgeLabel = '⚡ Client Régulier (Top 25)';
+        badgeClass = 'bg-sky-500/10 text-sky-400 border-sky-500/30';
+      }
+
+      const badgeEl = document.getElementById('ptmBadge');
+      badgeEl.textContent = badgeLabel;
+      badgeEl.className = `px-2.5 py-1 rounded text-xs font-semibold font-mono border ${badgeClass}`;
+
+      document.getElementById('ptmLastSeenRelative').textContent = formatTimeAgo(user.lastSeen);
+      document.getElementById('ptmLastSeenExact').textContent = formatFullDateTime(user.lastSeen);
+
+      document.getElementById('publicTopModalBackdrop').classList.remove('hidden');
+    };
+
+    window.closePublicTopModal = () => {
+      document.getElementById('publicTopModalBackdrop').classList.add('hidden');
+    };
+
+    document.getElementById('publicTopModalBackdrop')?.addEventListener('click', (e) => {
+      if (e.target.id === 'publicTopModalBackdrop') closePublicTopModal();
+    });
+
+    document.getElementById('publicTopSearchInput')?.addEventListener('input', (e) => {
+      if (!publicTopData || !publicTopData.top) return;
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = publicTopData.top.filter(u => {
+        const name = (u.name || '').toLowerCase();
+        const num = (u.number || '').toLowerCase();
+        const fmt = (u.formattedNumber || '').toLowerCase();
+        const id = (u.id || '').toLowerCase();
+        return name.includes(q) || num.includes(q) || fmt.includes(q) || id.includes(q);
+      });
+      renderPublicTopTable(filtered);
+    });
+
+    // 2.2 Vue Publique : Casier des Warns
     async function loadPublicWarns() {
       try {
         const res = await fetch(`${API_BASE}/public/warns`);
         const data = await res.json();
         publicWarnsData = data.users || [];
         document.getElementById('publicTotalUsers').textContent = publicWarnsData.length;
+        const warnsBadge = document.getElementById('publicWarnsTabBadge');
+        if (warnsBadge) warnsBadge.textContent = publicWarnsData.length;
         renderPublicWarns(publicWarnsData);
       } catch (err) {}
     }

@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { getConfig, updateConfig, updateWebPasswords } from '../config.js';
 import { getConnectionState, getActiveSocket, clearAuthAndReconnect } from '../client.js';
 import { getAllWarnedUsers, getWarns, addWarn, clearWarns, deleteSingleWarn } from '../services/warnStore.js';
-import { getAllContacts } from '../services/contactStore.js';
+import { getAllContacts, getContact } from '../services/contactStore.js';
 import { HISTORIC_TARGETS, resolveHistoricMembers, applyHistoricWarns } from '../services/warnResolver.js';
-import { getAllGroupsActivity } from '../services/groupActivityStore.js';
+import { getAllGroupsActivity, getGroupLeaderboard } from '../services/groupActivityStore.js';
 import {
   getAllPermissions,
   addTrustedUser,
@@ -404,6 +404,80 @@ function formatPhoneNumber(num) {
   }
   return `+${clean}`;
 }
+
+      // 3. GET /api/public/top-taverne ou /api/public/top : Consultation publique du Top 50 Activité Taverne d'Ionia
+      if ((pathname === '/api/public/top-taverne' || pathname === '/api/public/top') && method === 'GET') {
+        const TAVERNE_GROUP_JID = '120363421814868699@g.us';
+        const TAVERNE_GROUP_NAME = "Taverne d'Ionia";
+
+        const groupData = getGroupLeaderboard(TAVERNE_GROUP_JID, 50);
+        const totalMessages = groupData.totalMessages || 0;
+        const hourly = (groupData.hourlyActivity && groupData.hourlyActivity.length === 24)
+          ? groupData.hourlyActivity
+          : Array(24).fill(0);
+        const peakInfo = groupData.peakInfo || { peakHour: null, peakCount: 0, formatted: 'Calme' };
+
+        const allGroupInfo = getAllGroupsActivity().find(g => g.groupJid === TAVERNE_GROUP_JID);
+        const totalUsersCount = allGroupInfo ? allGroupInfo.userCount : (groupData.leaderboard || []).length;
+
+        const maxSpeakerCount = Math.max(1, groupData.leaderboard?.[0]?.count || 1);
+
+        const top50 = (groupData.leaderboard || []).map((u, idx) => {
+          const count = u.count || 0;
+          const rawId = u.id || '';
+          const cleanNum = rawId.split('@')[0].split(':')[0];
+          const isLid = rawId.endsWith('@lid');
+
+          // Enrichir avec contactStore si disponible
+          const contact = getContact(cleanNum) || getContact(rawId);
+          let name = u.name;
+          if ((!name || name.startsWith('+') || name === rawId || name === cleanNum) && contact) {
+            name = contact.notify || contact.name || name;
+          }
+          if (!name || name === rawId || name === cleanNum) {
+            name = isLid ? 'Membre Taverne' : (formatPhoneNumber(cleanNum) || 'Membre');
+          }
+
+          let formattedNumber = '';
+          if (isLid) {
+            formattedNumber = `LID: ${cleanNum}`;
+          } else if (cleanNum) {
+            formattedNumber = formatPhoneNumber(cleanNum);
+          }
+
+          const sharePercent = totalMessages > 0 ? (count / totalMessages) * 100 : 0;
+          const barWidthPercent = Math.min(100, Math.round((count / maxSpeakerCount) * 100));
+
+          return {
+            rank: idx + 1,
+            id: rawId,
+            number: cleanNum,
+            formattedNumber,
+            name,
+            count,
+            percentage: `${sharePercent.toFixed(1)}%`,
+            share: Math.round(sharePercent * 10) / 10,
+            barWidth: barWidthPercent,
+            lastSeen: u.lastSeen || null
+          };
+        });
+
+        const top3Count = top50.slice(0, 3).reduce((acc, u) => acc + (u.count || 0), 0);
+        const top3Share = totalMessages > 0 ? ((top3Count / totalMessages) * 100).toFixed(1) : '0';
+
+        return sendJson(res, 200, {
+          success: true,
+          groupJid: TAVERNE_GROUP_JID,
+          groupName: (groupData.groupName && groupData.groupName !== TAVERNE_GROUP_JID) ? groupData.groupName : TAVERNE_GROUP_NAME,
+          totalMessages,
+          userCount: totalUsersCount,
+          topCount: top50.length,
+          top3Share: `${top3Share}%`,
+          hourlyActivity: hourly,
+          peakInfo,
+          top: top50
+        });
+      }
 
       // 4. GET /api/public/warns : Consultation publique du casier communautaire
       if (pathname === '/api/public/warns' && method === 'GET') {

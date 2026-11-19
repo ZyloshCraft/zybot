@@ -110,12 +110,11 @@ export async function getCandidateModels(apiKey) {
     }
   }
 
-  // 3. Fallback dur si aucun modèle détecté
-  if (candidates.length === 0) {
-    if (configuredModel && configuredModel !== 'auto') {
-      candidates.push(configuredModel);
+  // 3. Fallback dur si peu ou pas de modèles détectés
+  for (const fb of ['gemma-4-31b-it', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen']) {
+    if (!candidates.includes(fb)) {
+      candidates.push(fb);
     }
-    candidates.push('gemma-4-31b-it', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen');
   }
 
   return candidates;
