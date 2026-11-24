@@ -304,6 +304,46 @@ export async function handleGroupAntiLink({ sock, msg, jid, text, senderJid }) {
   return true;
 }
 
+/**
+ * Purge automatiquement les entrées dont la période probatoire est expirée
+ */
+export function pruneExpiredAntiRaid(customMaxAgeMs = null) {
+  const config = getConfig();
+  const maxAgeMs = customMaxAgeMs || ((config.antiRaid?.probationMinutes || 10) * 60 * 1000);
+  const now = Date.now();
+  let changed = false;
+
+  for (const groupJid of Object.keys(antiRaidData.recentJoins)) {
+    const groupJoins = antiRaidData.recentJoins[groupJid];
+    if (!groupJoins || typeof groupJoins !== 'object') continue;
+
+    for (const participantJid of Object.keys(groupJoins)) {
+      const joinedAt = groupJoins[participantJid];
+      if (!joinedAt || now - joinedAt >= maxAgeMs) {
+        delete groupJoins[participantJid];
+        if (antiRaidData.linkWarnings[groupJid]) {
+          delete antiRaidData.linkWarnings[groupJid][participantJid];
+        }
+        changed = true;
+      }
+    }
+
+    if (Object.keys(groupJoins).length === 0) {
+      delete antiRaidData.recentJoins[groupJid];
+      if (antiRaidData.linkWarnings[groupJid] && Object.keys(antiRaidData.linkWarnings[groupJid]).length === 0) {
+        delete antiRaidData.linkWarnings[groupJid];
+      }
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    saveAntiRaidData();
+  }
+  return changed;
+}
+
 export function getAntiRaidData() {
+  pruneExpiredAntiRaid();
   return { ...antiRaidData };
 }
