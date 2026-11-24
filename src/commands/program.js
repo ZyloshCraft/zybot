@@ -1,4 +1,4 @@
-import { jidNormalizedUser } from '@whiskeysockets/baileys';
+import { jidNormalizedUser, downloadMediaMessage } from '@whiskeysockets/baileys';
 import {
   addScheduledMessage,
   removeScheduledMessage,
@@ -37,7 +37,8 @@ export default {
       const lines = ['⏰ *Messages programmés :*'];
       list.forEach((item, idx) => {
         const dest = item.jid.endsWith('@g.us') ? 'Groupe' : `+${item.jid.split('@')[0]}`;
-        lines.push(`${idx + 1}. [${item.formattedDate}] ➔ ${dest} : "${item.message}" (\`${item.id}\`)`);
+        const mediaTag = item.media ? ` [📎 ${item.media.type}]` : '';
+        lines.push(`${idx + 1}. [${item.formattedDate}] ➔ ${dest}${mediaTag} : "${item.message || '(média sans texte)'}" (\`${item.id}\`)`);
       });
 
       await replyOrEdit(sock, jid, msg, lines.join('\n'));
@@ -109,6 +110,38 @@ export default {
       return;
     }
 
+    // Détecter un éventuel média cité ou direct (image, vidéo, audio, document, sticker)
+    const msgContent = msg.message;
+    const contextInfo =
+      msgContent?.extendedTextMessage?.contextInfo ||
+      msgContent?.[Object.keys(msgContent || {})[0]]?.contextInfo;
+    const quotedMessage = contextInfo?.quotedMessage;
+
+    let attachedMedia = null;
+    const mediaSource = quotedMessage || msgContent;
+    if (mediaSource) {
+      try {
+        if (mediaSource.imageMessage) {
+          const buffer = await downloadMediaMessage({ message: mediaSource, key: msg.key }, 'buffer', {});
+          attachedMedia = { buffer, type: 'image', mimetype: mediaSource.imageMessage.mimetype || 'image/jpeg', fileName: 'photo.jpg' };
+        } else if (mediaSource.videoMessage) {
+          const buffer = await downloadMediaMessage({ message: mediaSource, key: msg.key }, 'buffer', {});
+          attachedMedia = { buffer, type: 'video', mimetype: mediaSource.videoMessage.mimetype || 'video/mp4', fileName: 'video.mp4' };
+        } else if (mediaSource.audioMessage) {
+          const buffer = await downloadMediaMessage({ message: mediaSource, key: msg.key }, 'buffer', {});
+          attachedMedia = { buffer, type: 'audio', mimetype: mediaSource.audioMessage.mimetype || 'audio/mp4', fileName: 'audio.mp3', ptt: Boolean(mediaSource.audioMessage.ptt) };
+        } else if (mediaSource.stickerMessage) {
+          const buffer = await downloadMediaMessage({ message: mediaSource, key: msg.key }, 'buffer', {});
+          attachedMedia = { buffer, type: 'sticker', mimetype: 'image/webp', fileName: 'sticker.webp' };
+        } else if (mediaSource.documentMessage) {
+          const buffer = await downloadMediaMessage({ message: mediaSource, key: msg.key }, 'buffer', {});
+          attachedMedia = { buffer, type: 'document', mimetype: mediaSource.documentMessage.mimetype || 'application/octet-stream', fileName: mediaSource.documentMessage.fileName || 'document.pdf' };
+        }
+      } catch (err) {
+        console.warn('[program] Téléchargement média échoué:', err.message);
+      }
+    }
+
     // Déterminer la cible :
     // - Si dans un groupe et aucun destinataire forcé : le groupe courant
     // - Si en privé : destinataire spécifié, ou la discussion courante
@@ -132,7 +165,8 @@ export default {
       jid: targetJid,
       message: messageText,
       targetTimestamp: targetDate.getTime(),
-      formattedDate: formattedTarget
+      formattedDate: formattedTarget,
+      media: attachedMedia
     });
 
     let destDisplay = '';
@@ -149,12 +183,14 @@ export default {
       destDisplay = `+${targetJid.split('@')[0]}`;
     }
 
+    const mediaNotice = attachedMedia ? ` avec un média (${attachedMedia.type})` : '';
+
     // 1. Réponse dans la discussion courante
     await replyOrEdit(
       sock,
       jid,
       msg,
-      `✅ Message programmé pour le ${formattedTarget} vers *${destDisplay}*`
+      `✅ Message${mediaNotice} programmé pour le ${formattedTarget} vers *${destDisplay}*`
     );
 
     // 2. Notification détaillée envoyée dans le groupe dédié (notifds) ou en privé (Moi)

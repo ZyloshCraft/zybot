@@ -138,8 +138,8 @@
   <!-- ======================================================== -->
   <main id="mainContent" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6 hidden">
 
-    <!-- 4 Cartes KPI Playit.gg (Zéro Débordement) -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <!-- 5 Cartes KPI Playit.gg (Zéro Débordement) -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       
       <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 sm:p-5 shadow-sm min-w-0">
         <div class="flex items-center justify-between">
@@ -157,6 +157,15 @@
         </div>
         <div class="mt-2 text-2xl font-bold font-mono text-white tracking-tight" id="kpiTrustedCount">0</div>
         <div class="mt-1 text-xs text-[#8b9bb4]"><span id="kpiRevokedCount">0</span> révoqués</div>
+      </div>
+
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 sm:p-5 shadow-sm min-w-0">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#8b9bb4]">Messages Programmés</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">FILE D'ATTENTE</span>
+        </div>
+        <div class="mt-2 text-2xl font-bold font-mono text-white tracking-tight" id="kpiScheduledCount">0</div>
+        <div class="mt-1 text-xs text-[#8b9bb4]">Messages planifiés</div>
       </div>
 
       <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-4 sm:p-5 shadow-sm min-w-0">
@@ -184,6 +193,9 @@
       <nav class="flex space-x-8 overflow-x-auto custom-scroll" aria-label="SuperAdmin Tabs">
         <button class="playit-tab active" data-tab="tab-perms">
           Permissions
+        </button>
+        <button class="playit-tab" data-tab="tab-scheduled">
+          Messages programmés
         </button>
         <button class="playit-tab" data-tab="tab-notifs">
           Notifications & Alertes
@@ -304,6 +316,192 @@
                 <tr><td colspan="3" class="py-6 text-center text-[#8b9bb4]">Chargement...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 1.5 : MESSAGES PROGRAMMÉS (/program)                -->
+    <!-- ======================================================== -->
+    <section id="tab-scheduled" class="tab-panel hidden space-y-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- COLONNE GAUCHE (5 col) : FORMULAIRE DE PROGRAMMATION -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                <span>⏰</span> Programmer un Message
+              </h3>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30">
+                MÉDIA RÉEL
+              </span>
+            </div>
+            <p class="text-xs text-[#8b9bb4] mb-4">
+              Planifiez un message texte ou avec média réel (photo, vidéo, audio vocal, document) qui sera envoyé automatiquement par le bot à l'heure voulue.
+            </p>
+
+            <form id="scheduleMessageForm" class="space-y-4">
+              <!-- Destinataire -->
+              <div>
+                <label class="block text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider mb-1.5">
+                  Destinataire
+                </label>
+                <!-- Sélecteur de type de cible -->
+                <div class="grid grid-cols-3 gap-1.5 p-1 bg-[#091322] border border-[#1d314c] rounded-md mb-2 text-xs">
+                  <button type="button" id="destTypeGroupBtn" class="py-1 px-2 rounded font-medium text-white bg-[#1d314c] transition" onclick="setDestType('group')">
+                    Groupe
+                  </button>
+                  <button type="button" id="destTypeSelfBtn" class="py-1 px-2 rounded font-medium text-[#8b9bb4] hover:text-white transition" onclick="setDestType('self')">
+                    Moi (Notes)
+                  </button>
+                  <button type="button" id="destTypeCustomBtn" class="py-1 px-2 rounded font-medium text-[#8b9bb4] hover:text-white transition" onclick="setDestType('custom')">
+                    Numéro direct
+                  </button>
+                </div>
+
+                <!-- Input selon type -->
+                <div id="destGroupContainer">
+                  <select id="scheduledGroupSelect" class="w-full bg-[#060d17] border border-[#1d314c] focus:border-[#f97316] rounded-md px-3 py-2 text-xs text-white focus:outline-none">
+                    <option value="">-- Sélectionner un groupe WhatsApp --</option>
+                  </select>
+                </div>
+                <div id="destCustomContainer" class="hidden">
+                  <input type="text" id="scheduledCustomInput" placeholder="Ex: +33 6 12 34 56 78 ou 33612345678@s.whatsapp.net" class="w-full bg-[#060d17] border border-[#1d314c] focus:border-[#f97316] rounded-md px-3 py-2 text-xs text-white font-mono placeholder:text-gray-600 focus:outline-none">
+                </div>
+                <div id="destSelfContainer" class="hidden">
+                  <div class="p-2.5 bg-[#060d17] border border-[#1d314c] rounded text-xs text-[#8b9bb4] flex items-center gap-2">
+                    <span class="text-emerald-400">👤</span>
+                    <span>Le message sera envoyé dans votre discussion personnelle WhatsApp (Moi / Chat avec vous-même).</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Date et Heure -->
+              <div>
+                <label class="block text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider mb-1.5">
+                  Date et Heure d'envoi
+                </label>
+                <input type="datetime-local" id="scheduledDateTimeInput" required class="w-full bg-[#060d17] border border-[#1d314c] focus:border-[#f97316] rounded-md px-3 py-2 text-xs text-white focus:outline-none font-mono">
+                
+                <!-- Raccourcis rapides -->
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  <button type="button" onclick="setQuickSchedule(15)" class="text-[11px] px-2 py-0.5 rounded bg-[#1d314c]/70 hover:bg-[#1d314c] text-[#8b9bb4] hover:text-white transition">
+                    +15m
+                  </button>
+                  <button type="button" onclick="setQuickSchedule(60)" class="text-[11px] px-2 py-0.5 rounded bg-[#1d314c]/70 hover:bg-[#1d314c] text-[#8b9bb4] hover:text-white transition">
+                    +1h
+                  </button>
+                  <button type="button" onclick="setQuickSchedule(180)" class="text-[11px] px-2 py-0.5 rounded bg-[#1d314c]/70 hover:bg-[#1d314c] text-[#8b9bb4] hover:text-white transition">
+                    +3h
+                  </button>
+                  <button type="button" onclick="setQuickScheduleTonight()" class="text-[11px] px-2 py-0.5 rounded bg-[#1d314c]/70 hover:bg-[#1d314c] text-[#8b9bb4] hover:text-white transition">
+                    Ce soir 20h
+                  </button>
+                  <button type="button" onclick="setQuickScheduleTomorrow(9)" class="text-[11px] px-2 py-0.5 rounded bg-[#1d314c]/70 hover:bg-[#1d314c] text-[#8b9bb4] hover:text-white transition">
+                    Demain 09h
+                  </button>
+                </div>
+              </div>
+
+              <!-- Texte / Légende -->
+              <div>
+                <label class="block text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider mb-1.5 flex justify-between">
+                  <span>Message / Légende</span>
+                  <span id="scheduledCharCount" class="text-[10px] text-gray-500 font-mono">0 car.</span>
+                </label>
+                <textarea id="scheduledTextInput" rows="3" placeholder="Écrivez le message à envoyer ou la légende qui accompagnera le média..." class="w-full bg-[#060d17] border border-[#1d314c] focus:border-[#f97316] rounded-md px-3 py-2 text-xs text-white focus:outline-none placeholder:text-gray-600 resize-y"></textarea>
+              </div>
+
+              <!-- Zone Média Attaché -->
+              <div class="border-t border-[#1d314c] pt-3">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider flex items-center gap-1.5">
+                    <span>📎</span> Attacher un Média
+                  </span>
+                  <span class="text-[11px] text-gray-500">Photo, Vidéo, Audio, Doc</span>
+                </div>
+
+                <!-- Input File caché + Zone de Drop -->
+                <input type="file" id="scheduledFileInput" class="hidden" accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.zip,.txt">
+                
+                <div id="scheduledDropZone" class="border-2 border-dashed border-[#1d314c] hover:border-[#f97316]/50 hover:bg-[#091322] rounded-md p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-1.5">
+                  <div class="w-9 h-9 rounded-full bg-[#1d314c]/50 flex items-center justify-center text-lg text-[#8b9bb4]">
+                    📁
+                  </div>
+                  <div class="text-xs text-white font-medium">Glissez un fichier ici ou <span class="text-[#f97316] underline">cliquez pour parcourir</span></div>
+                  <div class="text-[11px] text-[#8b9bb4]">Images (PNG, JPG), Vidéos (MP4), Audios (MP3, OGG, M4A), Documents (PDF...)</div>
+                </div>
+
+                <!-- Prévisualisation du média sélectionné -->
+                <div id="scheduledMediaPreview" class="hidden mt-3 p-3 bg-[#060d17] border border-[#1d314c] rounded-md">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <!-- Image preview -->
+                      <img id="mediaPreviewImg" src="" alt="Aperçu" class="hidden w-14 h-14 object-cover rounded border border-[#1d314c] shrink-0">
+                      <!-- Video preview -->
+                      <video id="mediaPreviewVideo" src="" class="hidden w-20 h-14 object-cover rounded border border-[#1d314c] shrink-0" controls></video>
+                      <!-- Audio icon -->
+                      <div id="mediaAudioIcon" class="hidden w-12 h-12 rounded bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">
+                        🎵
+                      </div>
+                      <!-- Doc icon -->
+                      <div id="mediaDocIcon" class="hidden w-12 h-12 rounded bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-xl shrink-0">
+                        📄
+                      </div>
+                      <div class="min-w-0">
+                        <div id="mediaPreviewName" class="text-xs font-semibold text-white truncate font-mono">nom_du_fichier.ext</div>
+                        <div id="mediaPreviewSize" class="text-[11px] text-[#8b9bb4] mt-0.5">0 Ko • Type</div>
+                        
+                        <!-- Option note vocale pour l'audio -->
+                        <div id="audioPttContainer" class="hidden mt-1.5 flex items-center gap-1.5">
+                          <input type="checkbox" id="mediaPttCheckbox" class="rounded bg-[#060d17] border-[#1d314c] text-[#f97316] focus:ring-0">
+                          <label for="mediaPttCheckbox" class="text-[11px] text-amber-300">Envoyer comme note vocale WhatsApp (PTT)</label>
+                        </div>
+                      </div>
+                    </div>
+                    <button type="button" onclick="clearScheduledMedia()" class="text-rose-400 hover:text-rose-300 text-xs px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 transition shrink-0">
+                      ✕ Retirer
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bouton d'action Soumission -->
+              <button type="submit" id="scheduleSubmitBtn" class="w-full bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold text-xs py-2.5 px-4 rounded-md shadow-sm transition flex items-center justify-center gap-2">
+                <span>🚀</span> Programmer ce message
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- COLONNE DROITE (7 col) : LISTE DES MESSAGES PROGRAMMÉS -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm">
+            <div class="flex items-center justify-between pb-3 border-b border-[#1d314c]">
+              <div>
+                <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                  <span>📋</span> File d'Attente des Messages Programmés
+                </h3>
+                <p class="text-xs text-[#8b9bb4] mt-0.5">
+                  <span id="scheduledCountBadge" class="font-mono text-[#f97316] font-semibold">0</span> message(s) en attente d'envoi automatique.
+                </p>
+              </div>
+              <button onclick="loadScheduledMessages()" class="text-xs bg-[#1d314c] hover:bg-[#2a4468] text-white px-3 py-1.5 rounded transition flex items-center gap-1.5">
+                <span>🔄</span> Rafraîchir
+              </button>
+            </div>
+
+            <!-- Conteneur des cartes de messages programmés -->
+            <div id="scheduledMessagesList" class="mt-4 space-y-3">
+              <div class="text-center py-12 text-[#8b9bb4] text-xs">
+                Chargement des messages programmés...
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1037,6 +1235,7 @@
         const targetId = tabBtn.getAttribute('data-tab');
         document.getElementById(targetId)?.classList.remove('hidden');
 
+        if (targetId === 'tab-scheduled') loadScheduledMessages();
         if (targetId === 'tab-antidelete') loadAntiDeleteHistory();
         if (targetId === 'tab-audit') loadAuditLogs();
       });
@@ -1047,6 +1246,7 @@
       loadStatus();
       loadGroupsForSelect();
       loadPermissions();
+      loadScheduledMessages();
       loadNotifications();
       loadGiveaways();
       loadPersopings();
@@ -1054,6 +1254,9 @@
       loadAntiDeleteHistory();
       loadAuditLogs();
       loadSuperConfig();
+      if (!document.getElementById('scheduledDateTimeInput')?.value) {
+        setQuickSchedule(60);
+      }
     }
 
     // A. Récupérer les groupes réels pour les sélecteurs
@@ -1065,6 +1268,7 @@
 
         const targetSelect = document.getElementById('targetGroupSelect');
         const gwSelect = document.getElementById('gwGroupSelect');
+        const schedSelect = document.getElementById('scheduledGroupSelect');
 
         let optionsHtml = '<option value="">-- Sélectionner un groupe WhatsApp --</option>';
         availableGroups.forEach(g => {
@@ -1075,6 +1279,7 @@
 
         if (targetSelect) targetSelect.innerHTML = optionsHtml;
         if (gwSelect) gwSelect.innerHTML = optionsHtml;
+        if (schedSelect) schedSelect.innerHTML = optionsHtml;
       } catch (err) {}
     }
 
@@ -1194,6 +1399,500 @@
       showToast('Règle supprimée.');
       loadPermissions();
     };
+
+    // ══════════════════════════════════════════════════════════
+    // MODULE : MESSAGES PROGRAMMÉS (/program & SuperAdmin)
+    // ══════════════════════════════════════════════════════════
+    let currentDestType = 'group';
+    let attachedMediaData = null;
+
+    function setDestType(type) {
+      currentDestType = type;
+      const btnGroup = document.getElementById('destTypeGroupBtn');
+      const btnSelf = document.getElementById('destTypeSelfBtn');
+      const btnCustom = document.getElementById('destTypeCustomBtn');
+      const boxGroup = document.getElementById('destGroupContainer');
+      const boxSelf = document.getElementById('destSelfContainer');
+      const boxCustom = document.getElementById('destCustomContainer');
+
+      [btnGroup, btnSelf, btnCustom].forEach(b => {
+        if (!b) return;
+        b.className = 'py-1 px-2 rounded font-medium text-[#8b9bb4] hover:text-white transition';
+      });
+
+      if (type === 'group') {
+        if (btnGroup) btnGroup.className = 'py-1 px-2 rounded font-medium text-white bg-[#1d314c] transition';
+        boxGroup?.classList.remove('hidden');
+        boxSelf?.classList.add('hidden');
+        boxCustom?.classList.add('hidden');
+      } else if (type === 'self') {
+        if (btnSelf) btnSelf.className = 'py-1 px-2 rounded font-medium text-white bg-[#1d314c] transition';
+        boxGroup?.classList.add('hidden');
+        boxSelf?.classList.remove('hidden');
+        boxCustom?.classList.add('hidden');
+      } else {
+        if (btnCustom) btnCustom.className = 'py-1 px-2 rounded font-medium text-white bg-[#1d314c] transition';
+        boxGroup?.classList.add('hidden');
+        boxSelf?.classList.add('hidden');
+        boxCustom?.classList.remove('hidden');
+      }
+    }
+
+    function formatToLocalDatetimeString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    function setQuickSchedule(minutes) {
+      const target = new Date(Date.now() + minutes * 60000);
+      const input = document.getElementById('scheduledDateTimeInput');
+      if (input) input.value = formatToLocalDatetimeString(target);
+    }
+
+    function setQuickScheduleTonight() {
+      const now = new Date();
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0);
+      if (target.getTime() <= now.getTime()) {
+        target.setDate(target.getDate() + 1);
+      }
+      const input = document.getElementById('scheduledDateTimeInput');
+      if (input) input.value = formatToLocalDatetimeString(target);
+    }
+
+    function setQuickScheduleTomorrow(hour) {
+      const now = new Date();
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, hour, 0, 0);
+      const input = document.getElementById('scheduledDateTimeInput');
+      if (input) input.value = formatToLocalDatetimeString(target);
+    }
+
+    // Gestion du média (Drag & Drop + File Input)
+    const dropZone = document.getElementById('scheduledDropZone');
+    const fileInput = document.getElementById('scheduledFileInput');
+
+    if (dropZone && fileInput) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.add('border-[#f97316]', 'bg-[#091322]');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('border-[#f97316]', 'bg-[#091322]');
+        }, false);
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length) handleSelectedMediaFile(files[0]);
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length) handleSelectedMediaFile(e.target.files[0]);
+      });
+    }
+
+    function handleSelectedMediaFile(file) {
+      if (!file) return;
+
+      if (file.size > 20 * 1024 * 1024) {
+        showToast('Fichier trop volumineux (limite 20 Mo)', true);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64Data = e.target.result;
+        let type = 'document';
+        if (file.type.startsWith('image/')) type = 'image';
+        else if (file.type.startsWith('video/')) type = 'video';
+        else if (file.type.startsWith('audio/')) type = 'audio';
+
+        attachedMediaData = {
+          type,
+          fileName: file.name,
+          mimetype: file.type || 'application/octet-stream',
+          size: file.size,
+          base64: base64Data,
+          ptt: false
+        };
+
+        // UI Preview
+        const previewBox = document.getElementById('scheduledMediaPreview');
+        const dropBox = document.getElementById('scheduledDropZone');
+        const imgEl = document.getElementById('mediaPreviewImg');
+        const videoEl = document.getElementById('mediaPreviewVideo');
+        const audioIcon = document.getElementById('mediaAudioIcon');
+        const docIcon = document.getElementById('mediaDocIcon');
+        const nameEl = document.getElementById('mediaPreviewName');
+        const sizeEl = document.getElementById('mediaPreviewSize');
+        const pttBox = document.getElementById('audioPttContainer');
+
+        [imgEl, videoEl, audioIcon, docIcon, pttBox].forEach(el => el?.classList.add('hidden'));
+
+        if (nameEl) nameEl.textContent = file.name;
+        const sizeFormatted = file.size > 1024 * 1024
+          ? (file.size / (1024 * 1024)).toFixed(1) + ' Mo'
+          : Math.round(file.size / 1024) + ' Ko';
+        if (sizeEl) sizeEl.textContent = `${sizeFormatted} • ${type.toUpperCase()}`;
+
+        if (type === 'image') {
+          if (imgEl) {
+            imgEl.src = base64Data;
+            imgEl.classList.remove('hidden');
+          }
+        } else if (type === 'video') {
+          if (videoEl) {
+            videoEl.src = base64Data;
+            videoEl.classList.remove('hidden');
+          }
+        } else if (type === 'audio') {
+          audioIcon?.classList.remove('hidden');
+          pttBox?.classList.remove('hidden');
+        } else {
+          docIcon?.classList.remove('hidden');
+        }
+
+        dropBox?.classList.add('hidden');
+        previewBox?.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearScheduledMedia() {
+      attachedMediaData = null;
+      const fileInput = document.getElementById('scheduledFileInput');
+      if (fileInput) fileInput.value = '';
+
+      document.getElementById('scheduledMediaPreview')?.classList.add('hidden');
+      document.getElementById('scheduledDropZone')?.classList.remove('hidden');
+
+      const imgEl = document.getElementById('mediaPreviewImg');
+      const videoEl = document.getElementById('mediaPreviewVideo');
+      if (imgEl) imgEl.src = '';
+      if (videoEl) videoEl.src = '';
+    }
+
+    // Compteur de caractères texte
+    const schedTextArea = document.getElementById('scheduledTextInput');
+    const schedCharCount = document.getElementById('scheduledCharCount');
+    if (schedTextArea && schedCharCount) {
+      schedTextArea.addEventListener('input', () => {
+        schedCharCount.textContent = `${schedTextArea.value.length} car.`;
+      });
+    }
+
+    // Chargement de la liste des messages programmés
+    async function loadScheduledMessages() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/scheduled`);
+        const data = await res.json();
+        const list = data.items || [];
+
+        const badge = document.getElementById('scheduledCountBadge');
+        if (badge) badge.textContent = list.length;
+        const kpi = document.getElementById('kpiScheduledCount');
+        if (kpi) kpi.textContent = list.length;
+
+        renderScheduledList(list);
+      } catch (err) {
+        console.error('Erreur chargement messages programmés:', err);
+      }
+    }
+
+    function renderScheduledList(list) {
+      const container = document.getElementById('scheduledMessagesList');
+      if (!container) return;
+
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 bg-[#091322] border border-[#1d314c] rounded-md text-center">
+            <div class="text-3xl mb-2">⏰</div>
+            <div class="text-xs font-semibold text-white">Aucun message programmé</div>
+            <div class="text-[11px] text-[#8b9bb4] mt-1 max-w-sm mx-auto">
+              Utilisez le formulaire ci-contre ou tapez <span class="font-mono text-[#f97316]">/program</span> dans WhatsApp pour planifier vos envois.
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const now = Date.now();
+
+      container.innerHTML = list.map(item => {
+        const remainingMs = item.targetTimestamp - now;
+        let countdownBadge = '';
+        if (remainingMs <= 0) {
+          countdownBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">En cours d\'envoi</span>';
+        } else {
+          const totalSec = Math.floor(remainingMs / 1000);
+          const totalMin = Math.floor(totalSec / 60);
+          const hours = Math.floor(totalMin / 60);
+          const days = Math.floor(hours / 24);
+
+          let relStr = '';
+          if (days > 0) relStr = `Dans ${days}j ${hours % 24}h`;
+          else if (hours > 0) relStr = `Dans ${hours}h ${totalMin % 60}m`;
+          else if (totalMin > 0) relStr = `Dans ${totalMin} min`;
+          else relStr = `Dans ${totalSec}s`;
+
+          countdownBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${relStr}</span>`;
+        }
+
+        let mediaHtml = '';
+        if (item.media) {
+          const mType = (item.media.type || 'image').toUpperCase();
+          const mediaUrl = `${API_BASE}/superadmin/scheduled/media/${item.id}`;
+
+          if (item.media.type === 'image') {
+            mediaHtml = `
+              <div class="mt-2.5 p-2 bg-[#060d17] border border-[#1d314c] rounded-md flex items-center gap-3">
+                <img src="${mediaUrl}" alt="Aperçu" class="w-12 h-12 object-cover rounded border border-[#1d314c] cursor-pointer" onclick="window.open('${mediaUrl}', '_blank')">
+                <div class="min-w-0">
+                  <div class="text-[11px] font-semibold text-white truncate font-mono">${escapeHtml(item.media.fileName || 'Image')}</div>
+                  <div class="text-[10px] text-[#8b9bb4]">Photo attachée • Cliquez pour agrandir</div>
+                </div>
+              </div>
+            `;
+          } else if (item.media.type === 'video') {
+            mediaHtml = `
+              <div class="mt-2.5 p-2 bg-[#060d17] border border-[#1d314c] rounded-md flex items-center gap-3">
+                <video src="${mediaUrl}" class="w-16 h-12 object-cover rounded border border-[#1d314c]" controls></video>
+                <div class="min-w-0">
+                  <div class="text-[11px] font-semibold text-white truncate font-mono">${escapeHtml(item.media.fileName || 'Vidéo')}</div>
+                  <div class="text-[10px] text-[#8b9bb4]">Vidéo MP4 prête pour WhatsApp</div>
+                </div>
+              </div>
+            `;
+          } else if (item.media.type === 'audio') {
+            const isPtt = item.media.ptt ? ' (Note vocale)' : '';
+            mediaHtml = `
+              <div class="mt-2.5 p-2 bg-[#060d17] border border-[#1d314c] rounded-md space-y-1">
+                <div class="text-[11px] font-semibold text-amber-300 flex items-center gap-1">
+                  <span>🎵</span> Audio${isPtt} : ${escapeHtml(item.media.fileName || 'Audio')}
+                </div>
+                <audio src="${mediaUrl}" controls class="w-full h-8"></audio>
+              </div>
+            `;
+          } else {
+            mediaHtml = `
+              <div class="mt-2.5 p-2 bg-[#060d17] border border-[#1d314c] rounded-md flex items-center gap-2.5">
+                <span class="text-xl">📄</span>
+                <div class="min-w-0">
+                  <div class="text-[11px] font-semibold text-white truncate font-mono">${escapeHtml(item.media.fileName || 'Fichier')}</div>
+                  <div class="text-[10px] text-[#8b9bb4]">Document joint (${mType})</div>
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        const isGroup = item.jid.endsWith('@g.us');
+        const destIcon = isGroup ? '👥' : (item.targetName?.includes('Moi') ? '👤' : '💬');
+
+        return `
+          <div class="p-3.5 bg-[#091322] border border-[#1d314c] hover:border-[#2a4468] rounded-md transition shadow-sm space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-xs font-bold text-white flex items-center gap-1 truncate">
+                    <span>${destIcon}</span> ${escapeHtml(item.targetName || item.jid)}
+                  </span>
+                  <span class="font-mono text-[10px] text-[#8b9bb4]">(${escapeHtml(item.jid)})</span>
+                </div>
+                <div class="text-[11px] text-[#8b9bb4] mt-0.5 flex items-center gap-1 font-mono">
+                  <span>📅 ${escapeHtml(item.formattedDate)}</span>
+                </div>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                ${countdownBadge}
+              </div>
+            </div>
+
+            <!-- Texte du message -->
+            ${item.message ? `
+              <div class="p-2.5 bg-[#060d17] border border-[#1d314c] rounded text-xs text-white whitespace-pre-wrap font-sans">
+                ${escapeHtml(item.message)}
+              </div>
+            ` : ''}
+
+            <!-- Média attaché -->
+            ${mediaHtml}
+
+            <!-- Actions -->
+            <div class="pt-2 border-t border-[#1d314c]/70 flex items-center justify-between text-xs">
+              <span class="font-mono text-[10px] text-gray-500">ID: ${escapeHtml(item.id)}</span>
+              <div class="flex items-center gap-2">
+                <button onclick="forceSendScheduled('${item.id}')" class="px-2.5 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1 font-medium text-[11px]">
+                  <span>🚀</span> Envoyer maintenant
+                </button>
+                <button onclick="deleteScheduled('${item.id}')" class="px-2.5 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition flex items-center gap-1 font-medium text-[11px]">
+                  <span>🗑️</span> Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function forceSendScheduled(id) {
+      if (!confirm("Voulez-vous forcer l'envoi immédiat de ce message vers WhatsApp sans attendre la date programmée ?")) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/scheduled/send-now`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Message envoyé immédiatement avec succès !');
+          loadScheduledMessages();
+        } else {
+          showToast(data.error || 'Erreur lors de l\'envoi immédiat', true);
+        }
+      } catch (err) {
+        showToast('Erreur réseau lors de l\'envoi immédiat', true);
+      }
+    }
+
+    async function deleteScheduled(id) {
+      if (!confirm("Voulez-vous vraiment annuler et supprimer ce message programmé ?")) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/scheduled/delete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Message programmé annulé.');
+          loadScheduledMessages();
+        } else {
+          showToast(data.error || 'Erreur lors de l\'annulation', true);
+        }
+      } catch (err) {
+        showToast('Erreur réseau lors de l\'annulation', true);
+      }
+    }
+
+    // Soumission du formulaire de programmation
+    const scheduleForm = document.getElementById('scheduleMessageForm');
+    if (scheduleForm) {
+      scheduleForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        let target = '';
+        let targetName = '';
+
+        if (currentDestType === 'group') {
+          const sel = document.getElementById('scheduledGroupSelect');
+          target = sel?.value || '';
+          targetName = sel?.options[sel.selectedIndex]?.text?.split(' (')[0] || '';
+          if (!target) {
+            showToast('Veuillez sélectionner un groupe WhatsApp.', true);
+            return;
+          }
+        } else if (currentDestType === 'self') {
+          target = 'moi';
+          targetName = 'Chat personnel (Moi)';
+        } else {
+          target = document.getElementById('scheduledCustomInput')?.value?.trim() || '';
+          targetName = target;
+          if (!target) {
+            showToast('Veuillez saisir un numéro de téléphone ou JID.', true);
+            return;
+          }
+        }
+
+        const dateVal = document.getElementById('scheduledDateTimeInput')?.value;
+        if (!dateVal) {
+          showToast('Veuillez sélectionner une date et heure d\'envoi.', true);
+          return;
+        }
+
+        const targetTimestamp = new Date(dateVal).getTime();
+        if (isNaN(targetTimestamp) || targetTimestamp <= Date.now()) {
+          showToast('La date d\'envoi doit être dans le futur.', true);
+          return;
+        }
+
+        const messageText = document.getElementById('scheduledTextInput')?.value?.trim() || '';
+        if (!messageText && !attachedMediaData) {
+          showToast('Veuillez saisir un message ou joindre un fichier média.', true);
+          return;
+        }
+
+        let mediaPayload = null;
+        if (attachedMediaData) {
+          const pttCheck = document.getElementById('mediaPttCheckbox');
+          mediaPayload = {
+            type: attachedMediaData.type,
+            fileName: attachedMediaData.fileName,
+            mimetype: attachedMediaData.mimetype,
+            base64: attachedMediaData.base64,
+            ptt: Boolean(pttCheck?.checked)
+          };
+        }
+
+        const submitBtn = document.getElementById('scheduleSubmitBtn');
+        const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span>⏳</span> Programmation en cours...';
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/superadmin/scheduled/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              target,
+              targetName,
+              message: messageText,
+              targetTimestamp,
+              media: mediaPayload
+            })
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            showToast('Message programmé avec succès !');
+            // Reset
+            document.getElementById('scheduledTextInput').value = '';
+            document.getElementById('scheduledCharCount').textContent = '0 car.';
+            clearScheduledMedia();
+            setQuickSchedule(60);
+            loadScheduledMessages();
+          } else {
+            showToast(data.error || 'Erreur lors de la programmation', true);
+          }
+        } catch (err) {
+          showToast('Erreur réseau lors de la programmation', true);
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+          }
+        }
+      });
+    }
 
     // D. Centre de Notifications Hub
     async function loadNotifications() {

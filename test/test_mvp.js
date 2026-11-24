@@ -801,4 +801,139 @@ globalThis.fetch = originalFetch;
 
 console.log('✅ Test 25 réussi : Traduction multi-niveaux et fallback anti-erreur MyMemory validés.');
 
+// Test 26: Programmation de messages avec médias réels et endpoints SuperAdmin
+const {
+  addScheduledMessage,
+  listScheduledMessages,
+  removeScheduledMessage,
+  forceSendScheduledMessage,
+  getScheduledMessage,
+  dispatchScheduledMessage
+} = await import('../src/services/scheduler.js');
+const fsModule = (await import('node:fs')).default;
+
+// 1. Ajout d'un message programmé avec média
+const fakeImgBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+const schedItem = addScheduledMessage({
+  jid: '120363421814868699@g.us',
+  targetName: "Taverne d'Ionia",
+  message: 'Voici l\'image programmée pour l\'événement',
+  targetTimestamp: Date.now() + 3600000,
+  media: {
+    type: 'image',
+    fileName: 'test_event.png',
+    mimetype: 'image/png',
+    base64: fakeImgBase64
+  }
+});
+
+assert.ok(schedItem.id, 'Le message programmé doit avoir un identifiant');
+assert.ok(schedItem.media, 'Le média doit être attaché');
+assert.strictEqual(schedItem.media.type, 'image');
+assert.ok(fsModule.existsSync(schedItem.media.path), 'Le fichier média temporaire doit être créé sur le disque');
+
+// 2. Vérification de la liste
+const allSched = listScheduledMessages();
+const found = allSched.find(m => m.id === schedItem.id);
+assert.ok(found, 'Le message doit figurer dans la liste des messages programmés');
+assert.strictEqual(found.hasMedia, true, 'hasMedia doit être vrai');
+
+// 3. Test envoi dispatch avec mock socket
+let sentPayload = null;
+let sentJid = null;
+const schedMockSock = {
+  sendMessage: async (dest, content) => {
+    sentJid = dest;
+    sentPayload = content;
+    return { key: { id: 'sent_sched_1' } };
+  },
+  sendPresenceUpdate: async () => {}
+};
+
+await dispatchScheduledMessage(schedMockSock, schedItem);
+assert.strictEqual(sentJid, '120363421814868699@g.us');
+assert.ok(sentPayload.image, 'Le payload doit contenir le buffer image WhatsApp');
+assert.strictEqual(sentPayload.caption, 'Voici l\'image programmée pour l\'événement');
+assert.ok(!fsModule.existsSync(schedItem.media.path), 'Le fichier média doit avoir été nettoyé après envoi');
+removeScheduledMessage(schedItem.id);
+
+// 4. Test suppression avec nettoyage
+const schedItem2 = addScheduledMessage({
+  jid: '120363421814868699@g.us',
+  message: 'Autre test',
+  targetTimestamp: Date.now() + 7200000,
+  media: {
+    type: 'audio',
+    fileName: 'vocal.mp3',
+    mimetype: 'audio/mp3',
+    base64: fakeImgBase64,
+    ptt: true
+  }
+});
+assert.ok(fsModule.existsSync(schedItem2.media.path));
+removeScheduledMessage(schedItem2.id);
+assert.ok(!fsModule.existsSync(schedItem2.media.path), 'La suppression doit détruire le fichier média associé');
+
+// 5. Test API SuperAdmin
+const testSrv = startWebServer(3059);
+try {
+  // Test GET /api/superadmin/scheduled sans auth -> 401 ou 403
+  const unauthRes = await fetch('http://127.0.0.1:3059/api/superadmin/scheduled');
+  assert.ok([401, 403].includes(unauthRes.status), 'Accès sans auth SuperAdmin doit être refusé');
+
+  // Login SuperAdmin
+  const cfg = getConfig();
+  const superPwd = cfg.web?.superadminPassword || 'Jevaisencore-2020';
+  const loginRes = await fetch('http://127.0.0.1:3059/api/superadmin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: superPwd })
+  });
+  const cookie = loginRes.headers.get('set-cookie');
+
+  // Test GET /api/superadmin/scheduled authentifié -> 200
+  const authRes = await fetch('http://127.0.0.1:3059/api/superadmin/scheduled', {
+    headers: { Cookie: cookie }
+  });
+  assert.strictEqual(authRes.status, 200);
+  const authData = await authRes.json();
+  assert.strictEqual(authData.success, true);
+
+  // Test POST /api/superadmin/scheduled/create
+  const createRes = await fetch('http://127.0.0.1:3059/api/superadmin/scheduled/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({
+      target: '120363421814868699@g.us',
+      targetName: 'Taverne d\'Ionia',
+      message: 'Test message API',
+      targetTimestamp: Date.now() + 1800000,
+      media: {
+        type: 'image',
+        fileName: 'test.jpg',
+        mimetype: 'image/jpeg',
+        base64: fakeImgBase64
+      }
+    })
+  });
+  assert.strictEqual(createRes.status, 200);
+  const createData = await createRes.json();
+  assert.strictEqual(createData.success, true);
+  assert.ok(createData.item.id);
+
+  // Test POST /api/superadmin/scheduled/delete
+  const delRes = await fetch('http://127.0.0.1:3059/api/superadmin/scheduled/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({ id: createData.item.id })
+  });
+  assert.strictEqual(delRes.status, 200);
+  const delData = await delRes.json();
+  assert.strictEqual(delData.success, true);
+} finally {
+  stopWebServer();
+}
+
+console.log('✅ Test 26 réussi : Programmation de messages avec médias réels et endpoints SuperAdmin validés.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

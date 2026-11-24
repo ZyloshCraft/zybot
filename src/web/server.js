@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import os from 'node:os';
 import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { jidNormalizedUser } from '@whiskeysockets/baileys';
 import { getConfig, updateConfig, updateWebPasswords } from '../config.js';
 import { getConnectionState, getActiveSocket, clearAuthAndReconnect } from '../client.js';
 import { getAllWarnedUsers, getWarns, addWarn, clearWarns, deleteSingleWarn } from '../services/warnStore.js';
@@ -24,6 +25,14 @@ import { getAntiRaidData, clearMemberAntiRaid } from '../services/antiLinkProtec
 import { getInterceptedMessages, clearInterceptedMessages } from '../services/antiDeleteStore.js';
 import { getAuditLogs, clearAuditLogs, recordAuditLog } from '../services/auditLogStore.js';
 import { getCandidateModels } from '../services/geminiService.js';
+import {
+  listScheduledMessages,
+  addScheduledMessage,
+  removeScheduledMessage,
+  forceSendScheduledMessage,
+  getScheduledMessage,
+  parseScheduledTime
+} from '../services/scheduler.js';
 
 // Cache des groupes WhatsApp pour éviter le spam de requêtes Baileys
 let groupsParticipatingCache = { data: null, timestamp: 0 };
@@ -196,12 +205,12 @@ function sendJson(res, statusCode, data, headers = {}) {
   res.end(JSON.stringify(data));
 }
 
-function parseJsonBody(req) {
+function parseJsonBody(req, maxBytes = 25 * 1024 * 1024) {
   return new Promise((resolve, reject) => {
     let body = '';
     req.on('data', (chunk) => {
       body += chunk;
-      if (body.length > 1e6) {
+      if (body.length > maxBytes) {
         req.destroy();
         reject(new Error('Payload trop volumineux'));
       }
@@ -722,6 +731,147 @@ function formatPhoneNumber(num) {
         if (!id) return sendJson(res, 400, { error: 'ID requis.' });
         const updated = updatePersoping(id, { text, author, origin });
         return sendJson(res, 200, { success: !!updated, persoping: updated });
+      }
+
+      // 3.5 Messages programmés (/program & SuperAdmin)
+      if (pathname === '/api/superadmin/scheduled' && method === 'GET') {
+        const list = listScheduledMessages();
+        return sendJson(res, 200, { success: true, count: list.length, items: list });
+      }
+
+      if (pathname === '/api/superadmin/scheduled/create' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { target, jid: rawJid, targetName, message, targetTimestamp, targetDate, media } = body;
+        const sock = getActiveSocket();
+
+        const inputDest = target || rawJid;
+        if (!inputDest) {
+          return sendJson(res, 400, { error: 'Destinataire (groupe, numéro ou "Moi") requis.' });
+        }
+
+        let targetJid = null;
+        const trimmedDest = String(inputDest).trim();
+        if (trimmedDest.toLowerCase() === 'moi' || trimmedDest.toLowerCase() === 'self') {
+          targetJid = sock?.user?.id ? jidNormalizedUser(sock.user.id) : null;
+          if (!targetJid) {
+            return sendJson(res, 400, { error: 'Impossible de déterminer le JID personnel du bot (non connecté).' });
+          }
+        } else if (trimmedDest.endsWith('@g.us') || trimmedDest.endsWith('@s.whatsapp.net') || trimmedDest.endsWith('@lid')) {
+          targetJid = trimmedDest;
+        } else {
+          const cfg = getConfig();
+          if (cfg.groupAliases?.[trimmedDest.toLowerCase()]) {
+            targetJid = cfg.groupAliases[trimmedDest.toLowerCase()];
+          } else {
+            let digits = trimmedDest.replace(/[^0-9]/g, '');
+            if (digits.startsWith('0') && digits.length === 10) {
+              digits = '33' + digits.slice(1);
+            }
+            if (digits.length >= 8) {
+              targetJid = `${digits}@s.whatsapp.net`;
+            }
+          }
+        }
+
+        if (!targetJid) {
+          return sendJson(res, 400, { error: `Destinataire "${inputDest}" non reconnu ou invalide.` });
+        }
+
+        let timestamp = targetTimestamp;
+        if (!timestamp && targetDate) {
+          const parsed = parseScheduledTime(targetDate);
+          if (parsed) timestamp = parsed.getTime();
+        }
+
+        if (!timestamp || isNaN(timestamp) || timestamp <= Date.now()) {
+          return sendJson(res, 400, { error: 'Date et heure d\'envoi invalides ou déjà passées.' });
+        }
+
+        if (!message && (!media || (!media.base64 && !media.path && !media.buffer))) {
+          return sendJson(res, 400, { error: 'Veuillez saisir un message texte ou attacher un média.' });
+        }
+
+        let resolvedName = targetName;
+        if (!resolvedName) {
+          if (targetJid.endsWith('@g.us')) {
+            const groups = await getEnrichedGroups().catch(() => []);
+            const match = groups.find((g) => g.jid === targetJid);
+            resolvedName = match?.name || 'Groupe';
+          } else if (sock?.user?.id && targetJid === jidNormalizedUser(sock.user.id)) {
+            resolvedName = 'Chat personnel (Moi)';
+          } else {
+            resolvedName = `+${targetJid.split('@')[0]}`;
+          }
+        }
+
+        const item = addScheduledMessage({
+          jid: targetJid,
+          targetName: resolvedName,
+          message: (message || '').trim(),
+          targetTimestamp: timestamp,
+          media: media || null
+        });
+
+        recordAuditLog({
+          action: 'SCHEDULED_MESSAGE_CREATED',
+          actor: 'SuperAdmin',
+          details: `Message programmé pour le ${item.formattedDate} vers ${item.targetName} (${item.jid})${item.media ? ` avec média (${item.media.type})` : ''}`
+        });
+
+        return sendJson(res, 200, { success: true, item });
+      }
+
+      if (pathname === '/api/superadmin/scheduled/delete' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { id } = body;
+        if (!id) return sendJson(res, 400, { error: 'ID du message requis.' });
+
+        const item = getScheduledMessage(id);
+        const ok = removeScheduledMessage(id);
+        if (ok) {
+          recordAuditLog({
+            action: 'SCHEDULED_MESSAGE_DELETED',
+            actor: 'SuperAdmin',
+            details: `Message programmé supprimé (${id})`
+          });
+          return sendJson(res, 200, { success: true });
+        }
+        return sendJson(res, 404, { error: 'Message programmé introuvable.' });
+      }
+
+      if (pathname === '/api/superadmin/scheduled/send-now' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { id } = body;
+        if (!id) return sendJson(res, 400, { error: 'ID du message requis.' });
+
+        try {
+          const sentItem = await forceSendScheduledMessage(id, getActiveSocket);
+          recordAuditLog({
+            action: 'SCHEDULED_MESSAGE_FORCE_SENT',
+            actor: 'SuperAdmin',
+            details: `Envoi immédiat forcé du message programmé (${id}) vers ${sentItem.targetName || sentItem.jid}`
+          });
+          return sendJson(res, 200, { success: true, item: sentItem });
+        } catch (err) {
+          return sendJson(res, 500, { error: `Échec de l'envoi immédiat: ${err.message}` });
+        }
+      }
+
+      if (pathname.startsWith('/api/superadmin/scheduled/media/') && method === 'GET') {
+        const id = pathname.replace('/api/superadmin/scheduled/media/', '');
+        const item = getScheduledMessage(id);
+        if (!item || !item.media || !item.media.path || !fs.existsSync(item.media.path)) {
+          return sendJson(res, 404, { error: 'Média introuvable sur le disque.' });
+        }
+
+        const stat = fs.statSync(item.media.path);
+        res.writeHead(200, {
+          'Content-Type': item.media.mimetype || 'application/octet-stream',
+          'Content-Length': stat.size,
+          'Cache-Control': 'public, max-age=3600'
+        });
+        fs.createReadStream(item.media.path).pipe(res);
+        return;
       }
 
       // 4. Anti-Raid & Protection Anti-Lien

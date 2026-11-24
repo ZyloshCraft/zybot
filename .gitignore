@@ -11,6 +11,8 @@ persopings.json
 anti_raid.json
 antidelete_history.json
 audit_logs.json
+scheduled_messages.json
+scheduled_media/
 bot.pid
 .DS_Store
 *.log
