@@ -19,7 +19,6 @@ export const DATA_FILES = [
   'permissions.json',
   'persopings.json',
   'giveaways.json',
-  'contacts.json',
   'anti_raid.json',
   'antidelete_history.json',
   'audit_logs.json',
