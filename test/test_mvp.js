@@ -946,13 +946,26 @@ assert.strictEqual(allLb.period, 'all');
 assert.ok(weekLb.totalMessages >= 2, 'Le Top semaine doit inclure les messages enregistrés aujourd\'hui');
 console.log('✅ Test 27 réussi : Classements Hebdo, Mensuel et Global validés.');
 
-// Test 28: Service de Backup ZIP
-const { createBackupBuffer } = await import('../src/services/backupService.js');
+// Test 28: Export & Import Complet ZIP (Migration d'hébergeur)
+const { createBackupBuffer, parseZipBuffer, restoreBackupFromZip, buildZipBuffer } = await import('../src/services/backupService.js');
 const zipRes = createBackupBuffer();
 assert.ok(Buffer.isBuffer(zipRes.buffer), 'Le backup doit être un Buffer');
 assert.strictEqual(zipRes.buffer.slice(0, 2).toString('utf-8'), 'PK', 'Le buffer doit avoir la signature ZIP (PK)');
 assert.ok(zipRes.filesCount >= 1, 'Au moins un fichier JSON doit être archivé');
-console.log('✅ Test 28 réussi : Génération d\'archive Backup ZIP validée.');
+assert.ok(zipRes.includedFiles.includes('config.json'), 'config.json doit être inclus dans l\'export');
+
+// Test parsing + restauration + filtrage de sécurité
+const parsedEntries = parseZipBuffer(zipRes.buffer);
+assert.strictEqual(parsedEntries.length, zipRes.filesCount);
+
+const maliciousZip = buildZipBuffer([
+  { name: '../evil.js', data: Buffer.from('console.log(1)') },
+  { name: 'stats.json', data: Buffer.from(fsModule.existsSync('stats.json') ? fsModule.readFileSync('stats.json') : '{}') }
+]);
+const restoreRes = restoreBackupFromZip(maliciousZip);
+assert.ok(restoreRes.skippedFiles.includes('../evil.js'), 'Les fichiers hors whitelist / path traversal doivent être rejetés');
+assert.ok(restoreRes.restoredFiles.includes('stats.json'), 'stats.json doit être restauré');
+console.log('✅ Test 28 réussi : Export & Import complet ZIP (migration + sécurité) validés.');
 
 // Test 29: Message de bienvenue Taverne d'Ionia & API Admin /api/welcome
 const { handleGroupParticipantsUpdate } = await import('../src/services/groupEvents.js');

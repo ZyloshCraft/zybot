@@ -35,9 +35,7 @@ import {
 } from '../services/scheduler.js';
 import {
   createBackupBuffer,
-  listBackups,
-  saveBackupSnapshot,
-  getBackupFilePath
+  restoreBackupFromZip
 } from '../services/backupService.js';
 import {
   listMacros,
@@ -920,40 +918,11 @@ function formatPhoneNumber(num) {
         return;
       }
 
-      // 3.6 Backups Automatiques & Export ZIP (SuperAdmin)
-      if (pathname === '/api/superadmin/backups' && method === 'GET') {
-        const backups = listBackups();
-        return sendJson(res, 200, { success: true, backups });
-      }
-
-      if (pathname === '/api/superadmin/backups/create' && method === 'POST') {
-        const snapshot = saveBackupSnapshot(7);
-        recordAuditLog({
-          action: 'BACKUP_CREATED',
-          actor: 'SuperAdmin',
-          details: `Sauvegarde manuelle créée : ${snapshot.fileName} (${snapshot.filesCount} fichiers)`
-        });
-        return sendJson(res, 200, { success: true, backup: snapshot });
-      }
-
+      // 3.6 Export & Import Complet ZIP (Migration d'hébergeur - SuperAdmin)
       if (pathname === '/api/superadmin/backups/download' && method === 'GET') {
-        const fileParam = parsedUrl.searchParams.get('file');
-        if (fileParam) {
-          const filePath = getBackupFilePath(fileParam);
-          if (!filePath) return sendJson(res, 404, { error: 'Backup introuvable.' });
-          const stat = fs.statSync(filePath);
-          res.writeHead(200, {
-            'Content-Type': 'application/zip',
-            'Content-Disposition': `attachment; filename="${fileParam}"`,
-            'Content-Length': stat.size
-          });
-          fs.createReadStream(filePath).pipe(res);
-          return;
-        }
-
         const { buffer } = createBackupBuffer();
         const stamp = new Date().toISOString().slice(0, 10);
-        const dlName = `zybot-backup-${stamp}.zip`;
+        const dlName = `zybot-export-${stamp}.zip`;
         res.writeHead(200, {
           'Content-Type': 'application/zip',
           'Content-Disposition': `attachment; filename="${dlName}"`,
@@ -961,6 +930,45 @@ function formatPhoneNumber(num) {
         });
         res.end(buffer);
         return;
+      }
+
+      if (pathname === '/api/superadmin/backups/import' && method === 'POST') {
+        const body = await parseJsonBody(req, 100 * 1024 * 1024);
+        const { base64, skipRestart } = body;
+        if (!base64 || typeof base64 !== 'string') {
+          return sendJson(res, 400, { error: 'Archive ZIP (base64) requise.' });
+        }
+
+        try {
+          const cleanBase64 = base64.replace(/^data:[^;]+;base64,/, '');
+          const zipBuffer = Buffer.from(cleanBase64, 'base64');
+          const result = restoreBackupFromZip(zipBuffer);
+
+          recordAuditLog({
+            action: 'BACKUP_IMPORTED',
+            actor: 'SuperAdmin',
+            details: `Import complet restauré (${result.restoredFiles.length} fichiers)`
+          });
+
+          const willRestart = !skipRestart && process.env.pm_id !== undefined;
+          sendJson(res, 200, {
+            success: true,
+            restoredFiles: result.restoredFiles,
+            skippedFiles: result.skippedFiles,
+            restarting: willRestart
+          });
+
+          if (willRestart) {
+            setTimeout(() => {
+              exec('pm2 restart zybot', (err) => {
+                if (err) console.error('[BackupImport] Erreur restart PM2:', err.message);
+              });
+            }, 1500);
+          }
+          return;
+        } catch (err) {
+          return sendJson(res, 400, { error: `Échec de l'import : ${err.message}` });
+        }
       }
 
       // 3.7 Macros / Réponses Rapides (/r <nom> & SuperAdmin)
