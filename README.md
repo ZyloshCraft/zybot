@@ -4,12 +4,12 @@
   <img src="https://img.shields.io/badge/Version-v1.28.0-orange?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/Node.js-v20+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/Baileys-v7.0-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="Baileys" />
-  <img src="https://img.shields.io/badge/Commandes-38%20actives-blueviolet?style=for-the-badge" alt="Commandes" />
+  <img src="https://img.shields.io/badge/Commandes-39%20actives-blueviolet?style=for-the-badge" alt="Commandes" />
   <img src="https://img.shields.io/badge/Mode-Zero--Trace%20Stealth-emerald?style=for-the-badge&logo=security&logoColor=white" alt="Stealth" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
-> 📖 **[Guide Complet du Bot (Wiki)](WIKI.md)** — Documentation exhaustive des 38 commandes, de l'architecture furtive, du système Anti-Raid, du moteur Anti-Spam et du tableau de bord WebGUI (Playit.gg).
+> 📖 **[Guide Complet du Bot (Wiki)](WIKI.md)** — Documentation exhaustive des 39 commandes, de l'architecture furtive, du système Anti-Raid, du moteur Anti-Spam et du tableau de bord WebGUI (Playit.gg).
 
 **ZyBot** est un selfbot WhatsApp modulaire, discret et ultra-épuré pour compte personnel, conçu sur l'architecture **Baileys** (`@whiskeysockets/baileys`). Doté d'un **moteur anti-détection avancé (Stealth Engine)**, d'un **système Anti-Delete & Anti-Edit**, d'un **tableau de bord WebGUI public et SuperAdmin**, d'un **moteur IA multi-modèles (Gemini / Gemma)** et d'un **système Anti-Spam d'activité**, il s'exécute directement sur votre session sans laisser de traces suspectes.
 
@@ -20,18 +20,20 @@
 ZyBot intègre une interface web complète conçue selon le design system sombre épuré **Playit.gg** (`#091322`, `#0e1b2e`, `#1d314c`, `#f97316`) :
 
 - **🏆 Top 50 Activité (Taverne d'Ionia)** :
-  - Classement en temps réel des 50 membres les plus actifs avec podium en surbrillance.
+  - Classement en temps réel des 50 membres les plus actifs avec podium en surbrillance et filtre **Global / 30 jours / 7 jours**.
   - Statistiques complètes : volumes de messages, part de l'activité du groupe et date du dernier message.
   - **Graphique interactif 24h (Courbe Spline SVG)** : Courbe d'activité dynamique animée avec gradient, détection de l'heure de pointe et infobulles précises au survol.
   - Recherche instantanée par pseudo, numéro ou identifiant.
 - **⚖️ Casier Communautaire de Modération** :
   - Consultation publique des avertissements attribués par la modération.
   - Modal interactive dévoilant la date, le groupe et le motif précis de chaque infraction.
+- **🔧 Panel Admin** :
+  - Gestion des warns, activité des groupes, flux de logs PM2 en direct et onglet **Bienvenue Taverne** (message d'accueil personnalisable avec `{mention}`).
 - **🛡️ Panel SuperAdmin & Sécurité (`/superadmin`)** :
-  - Observabilité système en direct (RAM, CPU, uptime, latence, statut WhatsApp).
-  - Gestion des mots de passe admin et superadmin avec hash SHA-256 et sessions JWT.
-  - Sélecteur dynamique de modèles IA (Gemma 4 31B, Gemini 3.5 Flash, Gemini 3.1 Flash-Lite, etc.).
-  - Journal d'audit complet (`AuditLogStore`), explorateur Anti-Delete et gestion des Giveaways.
+  - **Messages programmés avec médias** : Planification de vrais messages WhatsApp (texte, images, vidéos, notes vocales PTT, documents) avec aperçu et envoi forcé.
+  - **Macros (`/r`)** : Gestion des réponses rapides pré-enregistrées (texte + médias).
+  - **Export / Import Complet (`.zip`)** : Sauvegarde et restauration complète de toutes les bases (`config`, `tops`, `message_history`, `warns`, `macros`, médias...) pour migrer d'hébergeur en un clic.
+  - Observabilité système en direct (RAM, CPU, uptime, statut WhatsApp), sélecteur de modèles IA (Gemini / Gemma), Audit Logs et Anti-Delete.
 
 ---
 
@@ -74,7 +76,7 @@ Les événements sont acheminés sans encombrer votre messagerie personnelle ver
 
 ---
 
-## ⚡ Répertoire des 38 Commandes Actives
+## ⚡ Répertoire des 39 Commandes Actives
 
 Toutes les commandes se déclenchent avec le préfixe `/` (exécutables par vous-même ou les membres de confiance autorisés via `/trust`).
 
@@ -93,7 +95,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables par vous
 ### 📊 Activité, Statistiques & Intelligence Artificielle
 | Commande | Syntaxe | Description |
 | :--- | :--- | :--- |
-| **`/top`** | `/top [nb\|groupe]` | *(Alias: `/classement`, `/leaderboard`, `/activite`)* Affiche le classement des membres les plus actifs et l'heure de pointe. |
+| **`/top`** | `/top [nb\|week\|month\|groupe]` | *(Alias: `/classement`, `/leaderboard`, `/activite`)* Affiche le classement des membres les plus actifs (global, 7j ou 30j) et l'heure de pointe. |
 | **`/ask`** | `/ask <question>` | *(Alias: `/ai`, `/gemini`)* Pose une question à l'assistant IA (Gemini / Gemma). |
 | **`/bref`** | `/bref [nb]` | *(Alias: `/tldr`)* Résumé clair et concis des derniers messages du groupe par IA. |
 | **`/resume`** | `/resume [nb]` | *(Alias: `/summary`)* Analyse synthétique d'une conversation par IA. |
@@ -122,7 +124,7 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables par vous
 | **`/temp`** | `/temp <durée\|off>` | Active l'auto-destruction programmée de tous vos prochains messages dans ce chat. |
 | **`/clear`** | `/clear <nb> [all\|me]` | Supprime vos derniers messages instantanément (~1s pour 10 messages). |
 | **`/edit`** | *(En réponse)* `/edit <texte>` | Modifie l'un de vos messages récents sur place. |
-| **`/translate`** | `/translate [lang] [texte]` | Traduit un texte avec bascule multi-fournisseurs (MyMemory / Google). |
+| **`/translate`** | `/translate [lang] [texte]` | Traduit un texte avec bascule multi-fournisseurs (Google Chrome API / GTX / MyMemory / Gemini). |
 | **`/calc`** | `/calc <calcul>` | Calcule instantanément une expression mathématique. |
 | **`/meteo`** | `/meteo [ville]` | Affiche la météo en direct d'une ville. |
 
@@ -132,7 +134,8 @@ Toutes les commandes se déclenchent avec le préfixe `/` (exécutables par vous
 | **`/alert`** | `/alert [list\|add\|del\|ignore]` | Surveille des mots-clés avec mode strict anti-spam et blacklist troll. |
 | **`/dnd`** | `/dnd [on\|off\|durée]` | Mode Ne Pas Déranger : coupe le son des notifications push ntfy la nuit ou temporairement. |
 | **`/ntfy`** | `/ntfy <canal\|off>` | Active les notifications push prioritaires sur smartphone (iOS/Android). |
-| **`/program`** | `/program` | Mode guidé interactif pour programmer l'envoi de messages différés sans traces. |
+| **`/program`** | `/program` | Mode guidé interactif (ou réponse à un média) pour programmer l'envoi de messages différés. |
+| **`/r`** | `/r <nom\|list\|add\|del>` | *(Alias: `/macro`, `/macros`, `/faq`)* Envoie ou gère des réponses rapides pré-enregistrées (texte + média). |
 | **`/export`** | `/export [nb]` | Exporte les N derniers messages du chat sous forme d'archive texte propre dans `notifds`. |
 | **`/alias`** | `/alias [list\|add\|del]` | Gère les alias courts pour les groupes WhatsApp. |
 | **`/groupe`** | `/groupe [alias <nom>]` | Liste vos groupes ou associe un identifiant à un nom court. |
@@ -166,7 +169,7 @@ npm install
 ```bash
 npm test
 ```
-*Valide automatiquement les 24 tests unitaires de régression, de sécurité et d'API.*
+*Valide automatiquement les 30 tests unitaires de régression, de sécurité et d'API.*
 
 ### 4. Lancer ZyBot
 ```bash
