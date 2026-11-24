@@ -84,6 +84,11 @@ const DEFAULT_CONFIG = {
     probationMinutes: 10,
     maxWarnings: 5
   },
+  welcome: {
+    enabled: true,
+    groupJid: '120363421814868699@g.us',
+    message: 'Bienvenue sur la Taverne d\'Ionia, {mention} ! 👋 N\'hésite pas à lire les règles disponibles dans la description du groupe.'
+  },
   notifications: {
     groupEvents: true,
     pseudoChanges: true,

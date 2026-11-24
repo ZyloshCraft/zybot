@@ -33,6 +33,18 @@ import {
   getScheduledMessage,
   parseScheduledTime
 } from '../services/scheduler.js';
+import {
+  createBackupBuffer,
+  listBackups,
+  saveBackupSnapshot,
+  getBackupFilePath
+} from '../services/backupService.js';
+import {
+  listMacros,
+  getMacro,
+  upsertMacro,
+  deleteMacro
+} from '../services/macroStore.js';
 
 // Cache des groupes WhatsApp pour éviter le spam de requêtes Baileys
 let groupsParticipatingCache = { data: null, timestamp: 0 };
@@ -418,8 +430,10 @@ function formatPhoneNumber(num) {
       if ((pathname === '/api/public/top-taverne' || pathname === '/api/public/top') && method === 'GET') {
         const TAVERNE_GROUP_JID = '120363421814868699@g.us';
         const TAVERNE_GROUP_NAME = "Taverne d'Ionia";
+        const rawPeriod = (parsedUrl.searchParams.get('period') || 'all').toLowerCase();
+        const period = ['week', 'month', 'all'].includes(rawPeriod) ? rawPeriod : 'all';
 
-        const groupData = getGroupLeaderboard(TAVERNE_GROUP_JID, 50);
+        const groupData = getGroupLeaderboard(TAVERNE_GROUP_JID, 50, period);
         const totalMessages = groupData.totalMessages || 0;
         const hourly = (groupData.hourlyActivity && groupData.hourlyActivity.length === 24)
           ? groupData.hourlyActivity
@@ -476,6 +490,7 @@ function formatPhoneNumber(num) {
 
         return sendJson(res, 200, {
           success: true,
+          period,
           groupJid: TAVERNE_GROUP_JID,
           groupName: (groupData.groupName && groupData.groupName !== TAVERNE_GROUP_JID) ? groupData.groupName : TAVERNE_GROUP_NAME,
           totalMessages,
@@ -576,6 +591,37 @@ function formatPhoneNumber(num) {
       if ((pathname === '/api/groups' || pathname === '/api/groups/activity') && method === 'GET') {
         const groups = await getEnrichedGroups();
         return sendJson(res, 200, { success: true, count: groups.length, groups });
+      }
+
+      // GET / POST /api/welcome : Message de bienvenue Taverne (accessible Panel Admin & SuperAdmin)
+      if (pathname === '/api/welcome' && method === 'GET') {
+        const cfg = getConfig();
+        const welcome = cfg.welcome || {
+          enabled: true,
+          groupJid: '120363421814868699@g.us',
+          message: "Bienvenue sur la Taverne d'Ionia, {mention} ! 👋 N'hésite pas à lire les règles disponibles dans la description du groupe."
+        };
+        return sendJson(res, 200, { success: true, welcome });
+      }
+
+      if (pathname === '/api/welcome' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const currentCfg = getConfig();
+        const prev = currentCfg.welcome || {};
+        const nextWelcome = {
+          enabled: typeof body.enabled === 'boolean' ? body.enabled : (prev.enabled ?? true),
+          groupJid: body.groupJid || prev.groupJid || '120363421814868699@g.us',
+          message: typeof body.message === 'string' && body.message.trim()
+            ? body.message.trim()
+            : (prev.message || "Bienvenue sur la Taverne d'Ionia, {mention} ! 👋 N'hésite pas à lire les règles disponibles dans la description du groupe.")
+        };
+        updateConfig((cur) => ({ ...cur, welcome: nextWelcome }));
+        recordAuditLog({
+          action: 'WELCOME_CONFIG_UPDATED',
+          actor: 'Admin',
+          details: `Bienvenue Taverne ${nextWelcome.enabled ? 'activé' : 'désactivé'}`
+        });
+        return sendJson(res, 200, { success: true, welcome: nextWelcome });
       }
 
       // GET /api/permissions : Liste des membres autorisés et révoqués
@@ -871,6 +917,106 @@ function formatPhoneNumber(num) {
           'Cache-Control': 'public, max-age=3600'
         });
         fs.createReadStream(item.media.path).pipe(res);
+        return;
+      }
+
+      // 3.6 Backups Automatiques & Export ZIP (SuperAdmin)
+      if (pathname === '/api/superadmin/backups' && method === 'GET') {
+        const backups = listBackups();
+        return sendJson(res, 200, { success: true, backups });
+      }
+
+      if (pathname === '/api/superadmin/backups/create' && method === 'POST') {
+        const snapshot = saveBackupSnapshot(7);
+        recordAuditLog({
+          action: 'BACKUP_CREATED',
+          actor: 'SuperAdmin',
+          details: `Sauvegarde manuelle créée : ${snapshot.fileName} (${snapshot.filesCount} fichiers)`
+        });
+        return sendJson(res, 200, { success: true, backup: snapshot });
+      }
+
+      if (pathname === '/api/superadmin/backups/download' && method === 'GET') {
+        const fileParam = parsedUrl.searchParams.get('file');
+        if (fileParam) {
+          const filePath = getBackupFilePath(fileParam);
+          if (!filePath) return sendJson(res, 404, { error: 'Backup introuvable.' });
+          const stat = fs.statSync(filePath);
+          res.writeHead(200, {
+            'Content-Type': 'application/zip',
+            'Content-Disposition': `attachment; filename="${fileParam}"`,
+            'Content-Length': stat.size
+          });
+          fs.createReadStream(filePath).pipe(res);
+          return;
+        }
+
+        const { buffer } = createBackupBuffer();
+        const stamp = new Date().toISOString().slice(0, 10);
+        const dlName = `zybot-backup-${stamp}.zip`;
+        res.writeHead(200, {
+          'Content-Type': 'application/zip',
+          'Content-Disposition': `attachment; filename="${dlName}"`,
+          'Content-Length': buffer.length
+        });
+        res.end(buffer);
+        return;
+      }
+
+      // 3.7 Macros / Réponses Rapides (/r <nom> & SuperAdmin)
+      if (pathname === '/api/superadmin/macros' && method === 'GET') {
+        const macros = listMacros();
+        return sendJson(res, 200, { success: true, count: macros.length, macros });
+      }
+
+      if (pathname === '/api/superadmin/macros/save' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { name, text, media, keepExistingMedia } = body;
+        if (!name || !String(name).trim()) {
+          return sendJson(res, 400, { error: 'Nom de macro requis.' });
+        }
+        if (!text && !media && !keepExistingMedia) {
+          return sendJson(res, 400, { error: 'Un texte ou un média est requis.' });
+        }
+
+        const macro = upsertMacro({ name, text, media, keepExistingMedia: Boolean(keepExistingMedia) });
+        recordAuditLog({
+          action: 'MACRO_SAVED',
+          actor: 'SuperAdmin',
+          details: `Macro /r ${macro.name} enregistrée`
+        });
+        return sendJson(res, 200, { success: true, macro });
+      }
+
+      if (pathname === '/api/superadmin/macros/delete' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { name } = body;
+        if (!name) return sendJson(res, 400, { error: 'Nom de macro requis.' });
+        const ok = deleteMacro(name);
+        if (ok) {
+          recordAuditLog({
+            action: 'MACRO_DELETED',
+            actor: 'SuperAdmin',
+            details: `Macro /r ${name} supprimée`
+          });
+          return sendJson(res, 200, { success: true });
+        }
+        return sendJson(res, 404, { error: 'Macro introuvable.' });
+      }
+
+      if (pathname.startsWith('/api/superadmin/macros/media/') && method === 'GET') {
+        const name = pathname.replace('/api/superadmin/macros/media/', '');
+        const macro = getMacro(name);
+        if (!macro || !macro.media || !macro.media.path || !fs.existsSync(macro.media.path)) {
+          return sendJson(res, 404, { error: 'Média de macro introuvable.' });
+        }
+        const stat = fs.statSync(macro.media.path);
+        res.writeHead(200, {
+          'Content-Type': macro.media.mimetype || 'application/octet-stream',
+          'Content-Length': stat.size,
+          'Cache-Control': 'public, max-age=3600'
+        });
+        fs.createReadStream(macro.media.path).pipe(res);
         return;
       }
 

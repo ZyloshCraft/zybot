@@ -13,6 +13,9 @@ antidelete_history.json
 audit_logs.json
 scheduled_messages.json
 scheduled_media/
+macros.json
+macros_media/
+backups/
 bot.pid
 .DS_Store
 *.log

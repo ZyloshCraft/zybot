@@ -197,6 +197,9 @@
         <button class="playit-tab" data-tab="tab-scheduled">
           Messages programmés
         </button>
+        <button class="playit-tab" data-tab="tab-macros">
+          Macros (/r)
+        </button>
         <button class="playit-tab" data-tab="tab-notifs">
           Notifications & Alertes
         </button>
@@ -825,10 +828,104 @@
     </section>
 
     <!-- ======================================================== -->
+    <!-- TAB 5.5 : MACROS / RÉPONSES RAPIDES (/r)                 -->
+    <!-- ======================================================== -->
+    <section id="tab-macros" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Formulaire Création/Édition Macro -->
+        <div class="lg:col-span-5 bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm">
+          <h3 class="text-sm font-bold text-white tracking-tight mb-1 flex items-center gap-2">
+            <span>⚡</span> Créer / Modifier une Macro
+          </h3>
+          <p class="text-xs text-[#8b9bb4] mb-4">
+            Créez un modèle de réponse rapide appelable dans WhatsApp via <span class="font-mono text-[#f97316]">/r &lt;nom&gt;</span>.
+          </p>
+
+          <form id="macroForm" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider mb-1.5">
+                Nom du raccourci (sans espace)
+              </label>
+              <div class="flex items-center">
+                <span class="px-2.5 py-2 bg-[#091322] border border-r-0 border-[#1d314c] rounded-l-md text-xs font-mono text-[#f97316]">/r</span>
+                <input type="text" id="macroNameInput" required placeholder="regles" pattern="[a-zA-Z0-9_-]+" class="w-full bg-[#060d17] border border-[#1d314c] focus:border-[#f97316] rounded-r-md px-3 py-2 text-xs text-white font-mono focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider mb-1.5">
+                Texte / Légende
+              </label>
+              <textarea id="macroTextInput" rows="4" placeholder="Tapez le contenu de la réponse rapide..." class="w-full bg-[#060d17] border border-[#1d314c] focus:border-[#f97316] rounded-md px-3 py-2 text-xs text-white focus:outline-none resize-y"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider mb-1.5">
+                Média optionnel (Image, Vidéo, Doc)
+              </label>
+              <input type="file" id="macroFileInput" accept="image/*,video/*,application/pdf,.doc,.docx" class="w-full text-xs text-[#8b9bb4] file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#1d314c] file:text-white hover:file:bg-[#2a4468] cursor-pointer">
+              <div id="macroFilePreview" class="hidden mt-2 text-[11px] text-emerald-400 font-mono flex items-center justify-between bg-[#060d17] px-2.5 py-1.5 rounded border border-[#1d314c]">
+                <span id="macroFileName" class="truncate"></span>
+                <button type="button" onclick="clearMacroMedia()" class="text-rose-400 hover:text-rose-300 ml-2">✕</button>
+              </div>
+            </div>
+
+            <button type="submit" class="w-full bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold text-xs py-2.5 px-4 rounded-md shadow-sm transition">
+              💾 Enregistrer la Macro
+            </button>
+          </form>
+        </div>
+
+        <!-- Liste des Macros -->
+        <div class="lg:col-span-7 bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm">
+          <div class="flex items-center justify-between pb-3 border-b border-[#1d314c]">
+            <div>
+              <h3 class="text-sm font-bold text-white tracking-tight">Macros Enregistrées (<span id="macroCountBadge" class="font-mono text-[#f97316]">0</span>)</h3>
+              <p class="text-xs text-[#8b9bb4] mt-0.5">Cliquez sur un badge pour l'éditer ou supprimez-le.</p>
+            </div>
+            <button onclick="loadMacros()" class="text-xs bg-[#1d314c] hover:bg-[#2a4468] text-white px-3 py-1.5 rounded transition">
+              🔄 Rafraîchir
+            </button>
+          </div>
+
+          <div id="macrosListContainer" class="mt-4 space-y-3">
+            <div class="text-center py-8 text-xs text-[#8b9bb4]">Chargement des macros...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
     <!-- TAB 6 : RÉGLAGES BOT                                     -->
     <!-- ======================================================== -->
     <section id="tab-settings" class="tab-panel hidden space-y-6">
       
+      <!-- Backups Automatiques & Export ZIP -->
+      <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+              <span>💾</span> Sauvegardes Automatiques & Export (.zip)
+            </h3>
+            <p class="text-xs text-[#8b9bb4] mt-0.5">
+              Sauvegarde quotidienne automatique (rotation sur 7 jours) de toutes les bases JSON (<span class="font-mono">warns</span>, <span class="font-mono">group_activity</span>, <span class="font-mono">config</span>, <span class="font-mono">macros</span>...).
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="createBackupNow()" class="px-3 py-1.5 rounded bg-[#1d314c] hover:bg-[#2a4468] text-white text-xs font-medium transition cursor-pointer">
+              📸 Snapshot maintenant
+            </button>
+            <a href="./api/superadmin/backups/download" class="px-3.5 py-1.5 rounded bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold transition inline-flex items-center gap-1.5">
+              ⬇️ Télécharger Backup (.zip)
+            </a>
+          </div>
+        </div>
+
+        <div id="backupsListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-2">
+          <div class="text-xs text-[#8b9bb4]">Chargement des sauvegardes...</div>
+        </div>
+      </div>
+
       <!-- Anti-Raid & Protection Anti-Lien -->
       <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm space-y-4">
         <div>
@@ -1236,6 +1333,8 @@
         document.getElementById(targetId)?.classList.remove('hidden');
 
         if (targetId === 'tab-scheduled') loadScheduledMessages();
+        if (targetId === 'tab-macros') loadMacros();
+        if (targetId === 'tab-settings') loadBackups();
         if (targetId === 'tab-antidelete') loadAntiDeleteHistory();
         if (targetId === 'tab-audit') loadAuditLogs();
       });
@@ -1247,6 +1346,8 @@
       loadGroupsForSelect();
       loadPermissions();
       loadScheduledMessages();
+      loadMacros();
+      loadBackups();
       loadNotifications();
       loadGiveaways();
       loadPersopings();
@@ -1892,6 +1993,161 @@
           }
         }
       });
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // MODULE : MACROS / RÉPONSES RAPIDES & BACKUPS
+    // ══════════════════════════════════════════════════════════
+    let attachedMacroMedia = null;
+
+    document.getElementById('macroFileInput')?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (file.size > 15 * 1024 * 1024) {
+        showToast('Fichier macro trop volumineux (max 15 Mo)', true);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        let type = 'document';
+        if (file.type.startsWith('image/')) type = 'image';
+        else if (file.type.startsWith('video/')) type = 'video';
+        attachedMacroMedia = {
+          type,
+          fileName: file.name,
+          mimetype: file.type || 'application/octet-stream',
+          base64: ev.target.result
+        };
+        document.getElementById('macroFileName').textContent = `${file.name} (${type})`;
+        document.getElementById('macroFilePreview')?.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function clearMacroMedia() {
+      attachedMacroMedia = null;
+      const inp = document.getElementById('macroFileInput');
+      if (inp) inp.value = '';
+      document.getElementById('macroFilePreview')?.classList.add('hidden');
+    }
+
+    async function loadMacros() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/macros`);
+        const data = await res.json();
+        const list = data.macros || [];
+        const badge = document.getElementById('macroCountBadge');
+        if (badge) badge.textContent = list.length;
+
+        const container = document.getElementById('macrosListContainer');
+        if (!container) return;
+
+        if (!list.length) {
+          container.innerHTML = '<div class="p-6 text-center text-xs text-[#8b9bb4] bg-[#091322] border border-[#1d314c] rounded">Aucune macro enregistrée.</div>';
+          return;
+        }
+
+        container.innerHTML = list.map(m => `
+          <div class="p-3.5 bg-[#091322] border border-[#1d314c] rounded-md space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="px-2 py-0.5 rounded bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/30 font-mono text-xs font-bold">/r ${escapeHtml(m.name)}</span>
+              <div class="flex items-center gap-2">
+                ${m.hasMedia ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20">📎 ${escapeHtml(m.media.type)}</span>` : ''}
+                <button type="button" onclick="deleteMacroItem('${escapeHtml(m.name)}')" class="text-[11px] px-2 py-0.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition">🗑️ Supprimer</button>
+              </div>
+            </div>
+            ${m.text ? `<div class="p-2 bg-[#060d17] border border-[#1d314c] rounded text-xs text-white whitespace-pre-wrap">${escapeHtml(m.text)}</div>` : ''}
+            ${m.hasMedia && m.media.type === 'image' ? `<img src="${API_BASE}/superadmin/macros/media/${encodeURIComponent(m.name)}" class="w-16 h-16 object-cover rounded border border-[#1d314c]" alt="media">` : ''}
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Erreur chargement macros:', err);
+      }
+    }
+
+    document.getElementById('macroForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('macroNameInput')?.value?.trim() || '';
+      const text = document.getElementById('macroTextInput')?.value?.trim() || '';
+      if (!name) return showToast('Nom requis.', true);
+      if (!text && !attachedMacroMedia) return showToast('Texte ou média requis.', true);
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/macros/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, text, media: attachedMacroMedia })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Macro /r ${data.macro.name} enregistrée !`);
+          document.getElementById('macroNameInput').value = '';
+          document.getElementById('macroTextInput').value = '';
+          clearMacroMedia();
+          loadMacros();
+        } else {
+          showToast(data.error || 'Erreur sauvegarde macro', true);
+        }
+      } catch (err) {
+        showToast('Erreur réseau', true);
+      }
+    });
+
+    async function deleteMacroItem(name) {
+      if (!confirm(`Supprimer la macro /r ${name} ?`)) return;
+      const res = await fetch(`${API_BASE}/superadmin/macros/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Macro /r ${name} supprimée.`);
+        loadMacros();
+      }
+    }
+
+    async function loadBackups() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/backups`);
+        const data = await res.json();
+        const list = data.backups || [];
+        const container = document.getElementById('backupsListContainer');
+        if (!container) return;
+
+        if (!list.length) {
+          container.innerHTML = '<div class="col-span-full text-xs text-[#8b9bb4]">Aucun snapshot local pour le moment. Cliquez sur « Snapshot maintenant » ou téléchargez directement.</div>';
+          return;
+        }
+
+        container.innerHTML = list.map(b => {
+          const kb = (b.size / 1024).toFixed(1);
+          return `
+            <a href="./api/superadmin/backups/download?file=${encodeURIComponent(b.fileName)}" class="p-2.5 bg-[#091322] border border-[#1d314c] hover:border-[#f97316]/50 rounded flex items-center justify-between text-xs transition">
+              <div class="min-w-0">
+                <div class="font-mono text-white truncate">${escapeHtml(b.fileName)}</div>
+                <div class="text-[10px] text-[#8b9bb4]">${kb} Ko</div>
+              </div>
+              <span class="text-[#f97316] font-semibold ml-2 shrink-0">⬇️</span>
+            </a>
+          `;
+        }).join('');
+      } catch (err) {}
+    }
+
+    async function createBackupNow() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/backups/create`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Snapshot créé : ${data.backup.fileName}`);
+          loadBackups();
+        } else {
+          showToast(data.error || 'Erreur backup', true);
+        }
+      } catch (err) {
+        showToast('Erreur réseau backup', true);
+      }
     }
 
     // D. Centre de Notifications Hub

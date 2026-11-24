@@ -936,4 +936,55 @@ try {
 
 console.log('✅ Test 26 réussi : Programmation de messages avec médias réels et endpoints SuperAdmin validés.');
 
+// Test 27: Top Hebdo / Mensuel / Global
+const weekLb = getGroupLeaderboard('120363421814868699@g.us', 50, 'week');
+const monthLb = getGroupLeaderboard('120363421814868699@g.us', 50, 'month');
+const allLb = getGroupLeaderboard('120363421814868699@g.us', 50, 'all');
+assert.strictEqual(weekLb.period, 'week');
+assert.strictEqual(monthLb.period, 'month');
+assert.strictEqual(allLb.period, 'all');
+assert.ok(weekLb.totalMessages >= 2, 'Le Top semaine doit inclure les messages enregistrés aujourd\'hui');
+console.log('✅ Test 27 réussi : Classements Hebdo, Mensuel et Global validés.');
+
+// Test 28: Service de Backup ZIP
+const { createBackupBuffer } = await import('../src/services/backupService.js');
+const zipRes = createBackupBuffer();
+assert.ok(Buffer.isBuffer(zipRes.buffer), 'Le backup doit être un Buffer');
+assert.strictEqual(zipRes.buffer.slice(0, 2).toString('utf-8'), 'PK', 'Le buffer doit avoir la signature ZIP (PK)');
+assert.ok(zipRes.filesCount >= 1, 'Au moins un fichier JSON doit être archivé');
+console.log('✅ Test 28 réussi : Génération d\'archive Backup ZIP validée.');
+
+// Test 29: Message de bienvenue Taverne d'Ionia & API Admin /api/welcome
+const { handleGroupParticipantsUpdate } = await import('../src/services/groupEvents.js');
+let welcomeSent = null;
+const welcomeMockSock = {
+  sendMessage: async (dest, content) => {
+    if (dest === '120363421814868699@g.us') {
+      welcomeSent = { dest, content };
+    }
+    return { key: { id: 'w_1' } };
+  }
+};
+await handleGroupParticipantsUpdate(welcomeMockSock, {
+  id: '120363421814868699@g.us',
+  action: 'add',
+  participants: ['33612345678@s.whatsapp.net']
+});
+assert.ok(welcomeSent, 'Un message de bienvenue doit être envoyé dans la Taverne d\'Ionia');
+assert.ok(welcomeSent.content.text.includes('@33612345678'), 'Le nouveau membre doit être mentionné');
+assert.ok(Array.isArray(welcomeSent.content.mentions) && welcomeSent.content.mentions.includes('33612345678@s.whatsapp.net'));
+console.log('✅ Test 29 réussi : Message de bienvenue Taverne d\'Ionia validé.');
+
+// Test 30: Macros / Réponses Rapides (/r)
+const { upsertMacro, getMacro, listMacros, deleteMacro } = await import('../src/services/macroStore.js');
+const rCmd = getCommand('r');
+assert.ok(rCmd, 'La commande /r doit être enregistrée');
+const savedMacro = upsertMacro({ name: 'testregles', text: 'Lisez les règles !' });
+assert.strictEqual(savedMacro.name, 'testregles');
+assert.strictEqual(getMacro('testregles')?.text, 'Lisez les règles !');
+assert.ok(listMacros().some(m => m.name === 'testregles'));
+assert.strictEqual(deleteMacro('testregles'), true);
+assert.strictEqual(getMacro('testregles'), null);
+console.log('✅ Test 30 réussi : Macros / Réponses Rapides (/r) validées.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

@@ -27,6 +27,30 @@ export async function handleGroupParticipantsUpdate(sock, event) {
   }
 
   const config = getConfig();
+
+  // 1.5 Message de bienvenue simple dans la Taverne d'Ionia (customisable depuis le panel Admin)
+  const welcomeCfg = config.welcome || {};
+  const welcomeGroup = welcomeCfg.groupJid || '120363421814868699@g.us';
+  if (action === 'add' && welcomeCfg.enabled !== false && groupJid === welcomeGroup) {
+    const template =
+      welcomeCfg.message ||
+      "Bienvenue sur la Taverne d'Ionia, {mention} ! 👋 N'hésite pas à lire les règles disponibles dans la description.";
+    for (const participant of participants) {
+      const pId = typeof participant === 'string' ? participant : (participant?.id || participant?.jid || String(participant || ''));
+      if (!pId) continue;
+      const cleanNum = pId.split('@')[0].split(':')[0];
+      const mentionTag = `@${cleanNum}`;
+      const welcomeText = template.includes('{mention}') || template.includes('{user}')
+        ? template.replace(/\{mention\}|\{user\}/g, mentionTag)
+        : `${mentionTag} ${template}`;
+      try {
+        await sock.sendMessage(groupJid, { text: welcomeText, mentions: [pId] });
+      } catch (err) {
+        console.error(`[GroupEvents] Erreur envoi message de bienvenue à ${groupJid}:`, err.message);
+      }
+    }
+  }
+
   if (config.notifications?.groupEvents === false) return;
 
   const targets = new Set();

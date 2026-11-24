@@ -11,15 +11,31 @@ export default {
 
     let targetJid = jid;
     let limit = 10;
+    let period = 'all';
+
+    // Extraire éventuelle période (week/hebdo/semaine, month/mois, all/global)
+    const filteredArgs = [];
+    for (const a of args) {
+      const lower = a.toLowerCase();
+      if (['week', 'hebdo', 'semaine', '7j'].includes(lower)) {
+        period = 'week';
+      } else if (['month', 'mois', 'mensuel', '30j'].includes(lower)) {
+        period = 'month';
+      } else if (['all', 'global', 'total'].includes(lower)) {
+        period = 'all';
+      } else {
+        filteredArgs.push(a);
+      }
+    }
 
     // Parser les arguments (limite ou recherche de groupe)
-    if (args.length > 0) {
-      const parsedNum = parseInt(args[0], 10);
+    if (filteredArgs.length > 0) {
+      const parsedNum = parseInt(filteredArgs[0], 10);
       if (!isNaN(parsedNum) && parsedNum > 0) {
         limit = Math.min(parsedNum, 30);
       } else if (!isGroup) {
         // En privé : recherche de groupe par mot-clé
-        const query = args.join(' ').toLowerCase();
+        const query = filteredArgs.join(' ').toLowerCase();
         const all = getAllGroupsActivity();
         const found = all.find(g => (g.groupName || '').toLowerCase().includes(query) || g.groupJid.includes(query));
         if (found) {
@@ -29,7 +45,7 @@ export default {
             sock,
             jid,
             msg,
-            `⚠️ Aucun groupe trouvé correspondant à "${args.join(' ')}".\nTapez \`/top\` directement dans un groupe ou utilisez \`/top <nom>\`.`
+            `⚠️ Aucun groupe trouvé correspondant à "${filteredArgs.join(' ')}".\nTapez \`/top\` directement dans un groupe ou utilisez \`/top <nom>\`.`
           );
           return;
         }
@@ -72,22 +88,23 @@ export default {
       if (meta?.subject) groupName = meta.subject;
     } catch {}
 
-    const { totalMessages, leaderboard } = getGroupLeaderboard(targetJid, limit);
+    const { totalMessages, leaderboard } = getGroupLeaderboard(targetJid, limit, period);
+    const periodLabel = period === 'week' ? '7 derniers jours' : period === 'month' ? '30 derniers jours' : 'Global';
 
     if (!leaderboard || leaderboard.length === 0 || totalMessages === 0) {
       await replyOrEdit(
         sock,
         jid,
         msg,
-        `📊 Aucune activité enregistrée pour *${groupName}* pour le moment.`
+        `📊 Aucune activité enregistrée pour *${groupName}* (${periodLabel}) pour le moment.`
       );
       return;
     }
 
     const medals = ['🥇', '🥈', '🥉'];
     const lines = [
-      `🏆 *Classement d'activité — ${groupName}*`,
-      `📊 Messages totaux enregistrés : *${totalMessages.toLocaleString('fr-FR')}*`,
+      `🏆 *Classement d'activité — ${groupName}* (${periodLabel})`,
+      `📊 Messages enregistrés : *${totalMessages.toLocaleString('fr-FR')}*`,
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     ];
 

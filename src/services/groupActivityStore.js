@@ -41,6 +41,34 @@ function scheduleSave() {
 // Initialiser au chargement
 loadGroupActivity();
 
+function getLocalDayKey(ts = Date.now()) {
+  const d = new Date(ts);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function getRecentDayKeys(daysCount) {
+  const keys = new Set();
+  const now = new Date();
+  for (let i = 0; i < daysCount; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    keys.add(getLocalDayKey(d.getTime()));
+  }
+  return keys;
+}
+
+function pruneOldDays(dailyMap, maxDays = 35) {
+  if (!dailyMap || typeof dailyMap !== 'object') return;
+  const keys = Object.keys(dailyMap);
+  if (keys.length <= maxDays) return;
+  const keep = getRecentDayKeys(maxDays);
+  for (const k of keys) {
+    if (!keep.has(k)) delete dailyMap[k];
+  }
+}
+
 /**
  * Enregistre un message envoyé dans un groupe et met à jour l'activité horaire
  * @param {object} params
@@ -54,6 +82,7 @@ export function recordGroupMessage({ groupJid, groupName, senderJid, pushName, t
   if (!groupJid || !senderJid) return;
 
   const now = timestamp || Date.now();
+  const dayKey = getLocalDayKey(now);
 
   if (!activityData[groupJid]) {
     activityData[groupJid] = {
@@ -62,6 +91,7 @@ export function recordGroupMessage({ groupJid, groupName, senderJid, pushName, t
       totalMessages: 0,
       lastUpdate: now,
       hourlyActivity: Array(24).fill(0),
+      daily: {},
       users: {}
     };
   }
@@ -72,6 +102,10 @@ export function recordGroupMessage({ groupJid, groupName, senderJid, pushName, t
   }
   group.totalMessages = (group.totalMessages || 0) + 1;
   group.lastUpdate = now;
+
+  if (!group.daily || typeof group.daily !== 'object') group.daily = {};
+  group.daily[dayKey] = (group.daily[dayKey] || 0) + 1;
+  pruneOldDays(group.daily);
 
   // Initialiser hourlyActivity si inexistant
   if (!group.hourlyActivity || !Array.isArray(group.hourlyActivity) || group.hourlyActivity.length !== 24) {
@@ -88,6 +122,7 @@ export function recordGroupMessage({ groupJid, groupName, senderJid, pushName, t
       id: senderJid,
       name: pushName || `+${userKey}`,
       count: 0,
+      daily: {},
       lastSeen: now
     };
   }
@@ -95,6 +130,10 @@ export function recordGroupMessage({ groupJid, groupName, senderJid, pushName, t
   const user = group.users[userKey];
   user.count = (user.count || 0) + 1;
   user.lastSeen = now;
+  if (!user.daily || typeof user.daily !== 'object') user.daily = {};
+  user.daily[dayKey] = (user.daily[dayKey] || 0) + 1;
+  pruneOldDays(user.daily);
+
   if (pushName && (!user.name || user.name.startsWith('+'))) {
     user.name = pushName;
   }
@@ -138,13 +177,16 @@ export function computePeakHour(hourlyActivity) {
  * Récupère le classement et les statistiques temporelles d'un groupe
  * @param {string} groupJid
  * @param {number} [limit=15]
+ * @param {'all'|'month'|'week'} [period='all']
  */
-export function getGroupLeaderboard(groupJid, limit = 15) {
+export function getGroupLeaderboard(groupJid, limit = 15, period = 'all') {
+  const normalizedPeriod = period === 'week' || period === 'month' ? period : 'all';
   const group = activityData[groupJid];
   if (!group || !group.users) {
     return {
       groupJid,
       groupName: group?.groupName || groupJid,
+      period: normalizedPeriod,
       totalMessages: 0,
       hourlyActivity: Array(24).fill(0),
       peakInfo: { peakHour: null, peakCount: 0, formatted: 'Calme' },
@@ -156,14 +198,61 @@ export function getGroupLeaderboard(groupJid, limit = 15) {
     ? group.hourlyActivity
     : Array(24).fill(0);
 
-  const sortedUsers = Object.values(group.users)
+  if (normalizedPeriod === 'all') {
+    const sortedUsers = Object.values(group.users)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit);
+
+    return {
+      groupJid,
+      groupName: group.groupName || groupJid,
+      period: 'all',
+      totalMessages: group.totalMessages || 0,
+      hourlyActivity: hourly,
+      peakInfo: computePeakHour(hourly),
+      leaderboard: sortedUsers
+    };
+  }
+
+  const daysCount = normalizedPeriod === 'week' ? 7 : 30;
+  const dayKeys = getRecentDayKeys(daysCount);
+
+  let periodTotal = 0;
+  if (group.daily && typeof group.daily === 'object') {
+    for (const k of dayKeys) {
+      periodTotal += group.daily[k] || 0;
+    }
+  }
+
+  const mappedUsers = [];
+  let sumUsers = 0;
+  for (const u of Object.values(group.users)) {
+    let pCount = 0;
+    if (u.daily && typeof u.daily === 'object') {
+      for (const k of dayKeys) {
+        pCount += u.daily[k] || 0;
+      }
+    }
+    if (pCount > 0) {
+      sumUsers += pCount;
+      mappedUsers.push({
+        id: u.id,
+        name: u.name,
+        count: pCount,
+        lastSeen: u.lastSeen
+      });
+    }
+  }
+
+  const sortedUsers = mappedUsers
     .sort((a, b) => b.count - a.count)
     .slice(0, limit);
 
   return {
     groupJid,
     groupName: group.groupName || groupJid,
-    totalMessages: group.totalMessages || 0,
+    period: normalizedPeriod,
+    totalMessages: Math.max(periodTotal, sumUsers),
     hourlyActivity: hourly,
     peakInfo: computePeakHour(hourly),
     leaderboard: sortedUsers

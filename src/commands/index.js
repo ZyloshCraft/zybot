@@ -36,6 +36,7 @@ import gwCmd from './gw.js';
 import brefCmd from './bref.js';
 import lockCmd from './lock.js';
 import askCmd from './ask.js';
+import macroCmd from './macro.js';
 
 const commands = new Map();
 
@@ -86,6 +87,7 @@ registerCommand(gwCmd);
 registerCommand(brefCmd);
 registerCommand(lockCmd);
 registerCommand(askCmd);
+registerCommand(macroCmd);
 
 export function getCommand(name) {
   if (!name) return undefined;

@@ -5,6 +5,7 @@ import { loadConfig } from './config.js';
 import { createWhatsAppClient, getActiveSocket } from './client.js';
 import { startScheduler } from './services/scheduler.js';
 import { startAutoUpdater } from './services/autoUpdater.js';
+import { startAutoBackup } from './services/backupService.js';
 import { startWebServer, stopWebServer } from './web/server.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,9 +57,10 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 // 1. Charger la configuration
 loadConfig();
 
-// 2. Démarrer le service de programmation, les mises à jour automatiques et la WebGUI
+// 2. Démarrer le service de programmation, les mises à jour automatiques, les backups et la WebGUI
 startScheduler(getActiveSocket);
 startAutoUpdater(getActiveSocket);
+startAutoBackup();
 startWebServer();
 
 // 3. Lancer le client WhatsApp

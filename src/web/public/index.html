@@ -176,16 +176,30 @@
             <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">Taverne d'Ionia</h1>
             <p class="text-xs text-[#8b9bb4]">Classement des 50 membres les plus actifs et analyse temporelle sur 24 heures.</p>
           </div>
-          <button 
-            onclick="loadPublicTop()" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#0e1b2e] hover:bg-[#14253f] border border-[#1d314c] hover:border-[#f97316]/50 text-white text-xs font-medium transition-colors cursor-pointer self-start sm:self-auto"
-            title="Actualiser les statistiques"
-          >
-            <svg id="publicTopRefreshIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            <span id="publicTopLastUpdate" class="font-mono text-[11px] text-[#8b9bb4]">En direct</span>
-          </button>
+          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <!-- Sélecteur de période : Global / 30j / 7j -->
+            <div class="inline-flex items-center p-0.5 rounded-md bg-[#091322] border border-[#1d314c] text-xs">
+              <button type="button" id="topPeriodBtn-all" onclick="setPublicTopPeriod('all')" class="px-2.5 py-1 rounded font-medium bg-[#1d314c] text-white transition cursor-pointer">
+                Global
+              </button>
+              <button type="button" id="topPeriodBtn-month" onclick="setPublicTopPeriod('month')" class="px-2.5 py-1 rounded font-medium text-[#8b9bb4] hover:text-white transition cursor-pointer">
+                30 jours
+              </button>
+              <button type="button" id="topPeriodBtn-week" onclick="setPublicTopPeriod('week')" class="px-2.5 py-1 rounded font-medium text-[#8b9bb4] hover:text-white transition cursor-pointer">
+                7 jours
+              </button>
+            </div>
+            <button 
+              onclick="loadPublicTop()" 
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#0e1b2e] hover:bg-[#14253f] border border-[#1d314c] hover:border-[#f97316]/50 text-white text-xs font-medium transition-colors cursor-pointer"
+              title="Actualiser les statistiques"
+            >
+              <svg id="publicTopRefreshIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <span id="publicTopLastUpdate" class="font-mono text-[11px] text-[#8b9bb4]">En direct</span>
+            </button>
+          </div>
         </div>
 
         <!-- Bandeau de statistiques épuré -->
@@ -539,6 +553,9 @@
           <button class="playit-tab" data-tab="tab-groups">
             Activité Groupes
           </button>
+          <button class="playit-tab" data-tab="tab-welcome">
+            Bienvenue Taverne
+          </button>
           <button class="playit-tab" data-tab="tab-logs">
             Logs PM2
           </button>
@@ -683,6 +700,50 @@
           <div class="col-span-full p-8 text-center text-[#8b9bb4]">Chargement des groupes WhatsApp...</div>
         </div>
 
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- SECTION 2.5 : MESSAGE DE BIENVENUE TAVERNE (ADMIN)     -->
+      <!-- ====================================================== -->
+      <section id="tab-welcome" class="tab-content hidden space-y-5">
+        <div class="bg-[#0e1b2e] border border-[#1d314c] rounded-md p-5 shadow-sm max-w-2xl">
+          <div class="flex items-center justify-between gap-4 mb-2">
+            <div>
+              <h3 class="text-sm font-bold text-white tracking-tight">Message de Bienvenue — Taverne d'Ionia</h3>
+              <p class="text-xs text-[#8b9bb4] mt-0.5">
+                Envoyé automatiquement lorsqu'un nouveau membre rejoint la Taverne d'Ionia.
+              </p>
+            </div>
+            <label class="inline-flex items-center gap-2 cursor-pointer shrink-0">
+              <input type="checkbox" id="welcomeEnabledCheckbox" class="rounded bg-[#060d17] border-[#1d314c] text-[#f97316] focus:ring-0">
+              <span class="text-xs font-semibold text-white">Actif</span>
+            </label>
+          </div>
+
+          <form id="welcomeConfigForm" class="space-y-4 mt-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-[#8b9bb4] mb-1.5">
+                Message personnalisé
+              </label>
+              <textarea
+                id="welcomeMessageInput"
+                rows="3"
+                placeholder="Bienvenue sur la Taverne d'Ionia, {mention} ! 👋 N'hésite pas à lire les règles dans la description du groupe."
+                class="w-full px-3 py-2 rounded-md bg-[#091322] border border-[#1d314c] text-white placeholder-[#8b9bb4]/60 text-xs outline-none focus:border-[#f97316] resize-y"
+              ></textarea>
+              <p class="text-[11px] text-[#8b9bb4] mt-1.5">
+                Astuce : Utilisez <span class="font-mono text-[#f97316]">{mention}</span> pour mentionner automatiquement le nouveau membre.
+              </p>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-[#1d314c]">
+              <span id="welcomeSaveStatus" class="text-xs text-emerald-400 hidden">✓ Enregistré</span>
+              <button type="submit" class="ml-auto px-4 py-2 rounded-md bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold transition-colors cursor-pointer">
+                Enregistrer le message
+              </button>
+            </div>
+          </form>
+        </div>
       </section>
 
       <!-- ====================================================== -->
@@ -1120,6 +1181,8 @@
 
         if (activeTab === 'tab-groups') {
           loadGroupsActivity();
+        } else if (activeTab === 'tab-welcome') {
+          loadWelcomeConfig();
         } else if (activeTab === 'tab-logs') {
           loadLogs();
         }
@@ -1258,13 +1321,30 @@
       loadPublicWarns();
     }
 
+    let currentTopPeriod = 'all';
+
+    function setPublicTopPeriod(period) {
+      currentTopPeriod = period;
+      ['all', 'month', 'week'].forEach(p => {
+        const btn = document.getElementById(`topPeriodBtn-${p}`);
+        if (!btn) return;
+        if (p === period) {
+          btn.className = 'px-2.5 py-1 rounded font-medium bg-[#1d314c] text-white transition cursor-pointer';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded font-medium text-[#8b9bb4] hover:text-white transition cursor-pointer';
+        }
+      });
+      loadPublicTop(period);
+    }
+
     // 2.1 Chargement du Top 50 Activité Taverne d'Ionia
-    async function loadPublicTop() {
+    async function loadPublicTop(periodOverride) {
+      const period = periodOverride || currentTopPeriod || 'all';
       const refreshIcon = document.getElementById('publicTopRefreshIcon');
       if (refreshIcon) refreshIcon.classList.add('animate-spin');
 
       try {
-        const res = await fetch(`${API_BASE}/public/top-taverne`);
+        const res = await fetch(`${API_BASE}/public/top-taverne?period=${encodeURIComponent(period)}`);
         const data = await res.json();
         if (!data || !data.success) throw new Error(data?.error || 'Erreur récupération top');
 
@@ -1682,9 +1762,52 @@
           loadWarns()
         ]);
         if (activeTab === 'tab-groups') loadGroupsActivity();
+        if (activeTab === 'tab-welcome') loadWelcomeConfig();
         if (activeTab === 'tab-logs') loadLogs();
       } catch (err) {}
     }
+
+    async function loadWelcomeConfig() {
+      try {
+        const res = await apiFetch('/api/welcome');
+        const data = await res.json();
+        if (data.success && data.welcome) {
+          const chk = document.getElementById('welcomeEnabledCheckbox');
+          const txt = document.getElementById('welcomeMessageInput');
+          if (chk) chk.checked = data.welcome.enabled !== false;
+          if (txt) txt.value = data.welcome.message || '';
+        }
+      } catch (err) {
+        console.error('Erreur chargement welcome config:', err);
+      }
+    }
+
+    document.getElementById('welcomeConfigForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const enabled = Boolean(document.getElementById('welcomeEnabledCheckbox')?.checked);
+      const message = document.getElementById('welcomeMessageInput')?.value?.trim() || '';
+      if (!message) {
+        alert('Veuillez saisir un message de bienvenue.');
+        return;
+      }
+      try {
+        const res = await apiFetch('/api/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled, message })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const st = document.getElementById('welcomeSaveStatus');
+          if (st) {
+            st.classList.remove('hidden');
+            setTimeout(() => st.classList.add('hidden'), 3000);
+          }
+        }
+      } catch (err) {
+        alert('Erreur lors de la sauvegarde.');
+      }
+    });
 
     async function loadBotStatus() {
       try {
