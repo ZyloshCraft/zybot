@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../..');
 
 export const DATA_FILES = [
+  '.env',
   'config.json',
   'warns.json',
   'group_activity.json',
