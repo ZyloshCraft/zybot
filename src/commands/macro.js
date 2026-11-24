@@ -6,7 +6,7 @@ export default {
   name: 'r',
   aliases: ['macro', 'macros', 'faq'],
   description: 'Envoie ou gère des réponses rapides pré-enregistrées (/r <nom>)',
-  async execute({ sock, msg, jid, args }) {
+  async execute({ sock, msg, jid, args, isOwner = true }) {
     const sub = args[0]?.toLowerCase();
 
     // 1. Lister toutes les macros : /r ou /r list
@@ -32,8 +32,12 @@ export default {
       return;
     }
 
-    // 2. Ajouter / Modifier une macro : /r add <nom> | <texte>
+    // 2. Ajouter / Modifier une macro : /r add <nom> | <texte> (réservé au propriétaire)
     if (sub === 'add' || sub === 'set') {
+      if (!isOwner) {
+        await replyOrEdit(sock, jid, msg, '⛔ Seul le propriétaire peut ajouter ou modifier une macro.');
+        return;
+      }
       const rest = args.slice(1).join(' ').trim();
       const [rawName, ...textParts] = rest.split('|');
       const name = rawName?.trim();
@@ -87,8 +91,12 @@ export default {
       return;
     }
 
-    // 3. Supprimer une macro : /r del <nom>
+    // 3. Supprimer une macro : /r del <nom> (réservé au propriétaire)
     if (sub === 'del' || sub === 'delete' || sub === 'rm') {
+      if (!isOwner) {
+        await replyOrEdit(sock, jid, msg, '⛔ Seul le propriétaire peut supprimer une macro.');
+        return;
+      }
       const target = args[1]?.trim();
       if (!target) {
         await replyOrEdit(sock, jid, msg, 'Usage : `/r del <nom>`');

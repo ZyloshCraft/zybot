@@ -998,6 +998,9 @@ assert.strictEqual(getMacro('testregles')?.text, 'Lisez les règles !');
 assert.ok(listMacros().some(m => m.name === 'testregles'));
 assert.strictEqual(deleteMacro('testregles'), true);
 assert.strictEqual(getMacro('testregles'), null);
+addTrustedUser({ target: '33699112233', name: 'MacroTester' });
+assert.strictEqual(await canUserExecuteCommand({ sock: null, senderJid: '33699112233@s.whatsapp.net', commandName: 'r', groupJid: '120363421814868699@g.us', isOwner: false }), true, 'Un membre trust doit pouvoir utiliser /r');
+removeTrustedUser('33699112233');
 console.log('✅ Test 30 réussi : Macros / Réponses Rapides (/r) validées.');
 
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

@@ -176,7 +176,7 @@ export async function canUserExecuteCommand({ sock, senderJid, commandName, grou
   if (isOwner) return true;
 
   const cmd = (commandName || '').toLowerCase();
-  const delegatedCommands = ['warn', 'av', 'texte', 'vocal', 'transcrire', 'transcribe', 'id'];
+  const delegatedCommands = ['warn', 'av', 'texte', 'vocal', 'transcrire', 'transcribe', 'id', 'r', 'macro', 'macros', 'faq'];
 
   // Si ce n'est pas une commande modérateur/déléguée, seul l'owner peut l'exécuter
   if (!delegatedCommands.includes(cmd)) {
