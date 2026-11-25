@@ -43,6 +43,11 @@ import {
   upsertMacro,
   deleteMacro
 } from '../services/macroStore.js';
+import {
+  listAllStatusesDetailed,
+  getStatusById,
+  cacheStatusMedia
+} from '../services/statusStore.js';
 
 // Cache des groupes WhatsApp pour éviter le spam de requêtes Baileys
 let groupsParticipatingCache = { data: null, timestamp: 0 };
@@ -1025,6 +1030,41 @@ function formatPhoneNumber(num) {
           'Cache-Control': 'public, max-age=3600'
         });
         fs.createReadStream(macro.media.path).pipe(res);
+        return;
+      }
+
+      // 3.8 Statuts WhatsApp Archivés & Export Médias (SuperAdmin)
+      if (pathname === '/api/superadmin/statuses' && method === 'GET') {
+        const items = listAllStatusesDetailed();
+        return sendJson(res, 200, { success: true, count: items.length, items });
+      }
+
+      if (pathname.startsWith('/api/superadmin/statuses/media/') && method === 'GET') {
+        const id = decodeURIComponent(pathname.replace('/api/superadmin/statuses/media/', ''));
+        const st = getStatusById(id);
+        if (!st) return sendJson(res, 404, { error: 'Statut introuvable ou expiré.' });
+
+        let mediaPath = st.mediaPath && fs.existsSync(st.mediaPath) ? st.mediaPath : null;
+        if (!mediaPath) {
+          mediaPath = await cacheStatusMedia(st);
+        }
+        if (!mediaPath || !fs.existsSync(mediaPath)) {
+          return sendJson(res, 404, { error: 'Média indisponible ou expiré.' });
+        }
+
+        const stat = fs.statSync(mediaPath);
+        const isDownload = parsedUrl.searchParams.get('download') === '1';
+        const fileName = st.fileName || path.basename(mediaPath);
+        const headers = {
+          'Content-Type': st.mimetype || 'application/octet-stream',
+          'Content-Length': stat.size,
+          'Cache-Control': 'public, max-age=3600'
+        };
+        if (isDownload) {
+          headers['Content-Disposition'] = `attachment; filename="${fileName}"`;
+        }
+        res.writeHead(200, headers);
+        fs.createReadStream(mediaPath).pipe(res);
         return;
       }
 

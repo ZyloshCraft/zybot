@@ -13,6 +13,8 @@ antidelete_history.json
 audit_logs.json
 scheduled_messages.json
 scheduled_media/
+statuses.json
+statuses_media/
 macros.json
 macros_media/
 backups/

@@ -1003,4 +1003,20 @@ assert.strictEqual(await canUserExecuteCommand({ sock: null, senderJid: '3369911
 removeTrustedUser('33699112233');
 console.log('✅ Test 30 réussi : Macros / Réponses Rapides (/r) validées.');
 
+// Test 31: Export & téléchargement des statuts WhatsApp (statusStore + /statut + SuperAdmin)
+const { trackStatus: trackSt, getStatusesForUser: getStUser, listAllStatusesDetailed, getStatusById } = await import('../src/services/statusStore.js');
+trackSt({
+  key: { id: 'st_media_test_1', participant: '33655443322@s.whatsapp.net', remoteJid: 'status@broadcast' },
+  pushName: 'LucasTest',
+  messageTimestamp: Math.floor(Date.now() / 1000),
+  message: { imageMessage: { caption: 'Super coucher de soleil', mimetype: 'image/jpeg' } }
+});
+const lucasByPseudo = getStUser('LucasTest');
+assert.ok(lucasByPseudo.length >= 1, 'Doit retrouver le statut par pseudo');
+const detailedSt = listAllStatusesDetailed();
+const stFound = detailedSt.find(s => s.id === 'st_media_test_1');
+assert.ok(stFound && stFound.type === 'image' && stFound.hasMedia === true, 'Le statut image doit figurer avec hasMedia=true');
+assert.ok(getStatusById('st_media_test_1'), 'getStatusById doit retrouver le statut');
+console.log('✅ Test 31 réussi : Archivage et export des statuts WhatsApp validés.');
+
 console.log('\n🎉 Tous les tests unitaires sont passés avec succès !');

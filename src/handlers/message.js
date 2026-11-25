@@ -142,7 +142,7 @@ export async function handleMessagesUpsert({ sock, upsert, restartClient }) {
 
       // Capture furtive des statuts/stories WhatsApp pour l'archivage (/statut)
       if (jid === 'status@broadcast') {
-        trackStatus(msg);
+        trackStatus(msg, sock);
         continue;
       }
 
